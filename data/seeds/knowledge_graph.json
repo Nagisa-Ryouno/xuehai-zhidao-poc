@@ -1,0 +1,1171 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "source": "data/raw/economics_learning_demo.xlsx",
+    "node_count": 30,
+    "edge_count": 42
+  },
+  "knowledge_points": {
+    "K01": {
+      "knowledge_id": "K01",
+      "knowledge_name": "稀缺性与经济学基本问题",
+      "chapter": "第一章 导论",
+      "description": "研究稀缺资源如何有效配置，理解机会成本与生产可能性边界",
+      "difficulty": 1,
+      "prerequisite": [],
+      "next_knowledge": [
+        "K02",
+        "K03"
+      ]
+    },
+    "K02": {
+      "knowledge_id": "K02",
+      "knowledge_name": "机会成本与生产可能性边界",
+      "chapter": "第一章 导论",
+      "description": "用生产可能性边界说明机会成本递增与资源配置效率",
+      "difficulty": 1,
+      "prerequisite": [
+        "K01"
+      ],
+      "next_knowledge": [
+        "K03",
+        "K23"
+      ]
+    },
+    "K03": {
+      "knowledge_id": "K03",
+      "knowledge_name": "理性人假设与边际分析",
+      "chapter": "第一章 导论",
+      "description": "理解理性人假定，掌握边际收益与边际成本的决策方法",
+      "difficulty": 1,
+      "prerequisite": [
+        "K01",
+        "K02"
+      ],
+      "next_knowledge": [
+        "K04",
+        "K05",
+        "K12",
+        "K17"
+      ]
+    },
+    "K04": {
+      "knowledge_id": "K04",
+      "knowledge_name": "需求定理与需求曲线",
+      "chapter": "第二章 需求与供给",
+      "description": "价格与需求量反向变动关系，需求曲线移动与沿曲线移动的区别",
+      "difficulty": 1,
+      "prerequisite": [
+        "K03"
+      ],
+      "next_knowledge": [
+        "K06",
+        "K08"
+      ]
+    },
+    "K05": {
+      "knowledge_id": "K05",
+      "knowledge_name": "供给定理与供给曲线",
+      "chapter": "第二章 需求与供给",
+      "description": "价格与供给量同向变动关系，供给曲线移动与沿曲线移动的区别",
+      "difficulty": 1,
+      "prerequisite": [
+        "K03"
+      ],
+      "next_knowledge": [
+        "K06",
+        "K10"
+      ]
+    },
+    "K06": {
+      "knowledge_id": "K06",
+      "knowledge_name": "市场均衡与均衡价格",
+      "chapter": "第二章 需求与供给",
+      "description": "供求相等决定均衡价格与均衡数量，理解过剩与短缺",
+      "difficulty": 1,
+      "prerequisite": [
+        "K04",
+        "K05"
+      ],
+      "next_knowledge": [
+        "K07"
+      ]
+    },
+    "K07": {
+      "knowledge_id": "K07",
+      "knowledge_name": "供求变动与均衡分析",
+      "chapter": "第二章 需求与供给",
+      "description": "分析需求或供给变动对均衡价格和数量的影响方向与幅度",
+      "difficulty": 2,
+      "prerequisite": [
+        "K06"
+      ],
+      "next_knowledge": [
+        "K08",
+        "K10"
+      ]
+    },
+    "K08": {
+      "knowledge_id": "K08",
+      "knowledge_name": "需求价格弹性",
+      "chapter": "第三章 弹性",
+      "description": "计算需求价格弹性，区分富有弹性与缺乏弹性，理解弹性与总收益关系",
+      "difficulty": 2,
+      "prerequisite": [
+        "K04",
+        "K07"
+      ],
+      "next_knowledge": [
+        "K09",
+        "K11"
+      ]
+    },
+    "K09": {
+      "knowledge_id": "K09",
+      "knowledge_name": "需求收入弹性与交叉弹性",
+      "chapter": "第三章 弹性",
+      "description": "计算收入弹性判断正常品/劣等品，计算交叉弹性判断替代品/互补品",
+      "difficulty": 2,
+      "prerequisite": [
+        "K08"
+      ],
+      "next_knowledge": [
+        "K11"
+      ]
+    },
+    "K10": {
+      "knowledge_id": "K10",
+      "knowledge_name": "供给弹性",
+      "chapter": "第三章 弹性",
+      "description": "计算供给价格弹性，理解短期与长期供给弹性差异及影响因素",
+      "difficulty": 2,
+      "prerequisite": [
+        "K05",
+        "K07"
+      ],
+      "next_knowledge": [
+        "K11"
+      ]
+    },
+    "K11": {
+      "knowledge_id": "K11",
+      "knowledge_name": "弹性与税收归宿",
+      "chapter": "第三章 弹性",
+      "description": "运用弹性分析税收在买卖双方间的分摊比例与无谓损失",
+      "difficulty": 3,
+      "prerequisite": [
+        "K08",
+        "K09",
+        "K10"
+      ],
+      "next_knowledge": [
+        "K12"
+      ]
+    },
+    "K12": {
+      "knowledge_id": "K12",
+      "knowledge_name": "效用与边际效用递减",
+      "chapter": "第四章 消费者行为",
+      "description": "理解总效用与边际效用，掌握边际效用递减规律",
+      "difficulty": 1,
+      "prerequisite": [
+        "K03"
+      ],
+      "next_knowledge": [
+        "K13",
+        "K14"
+      ]
+    },
+    "K13": {
+      "knowledge_id": "K13",
+      "knowledge_name": "无差异曲线",
+      "chapter": "第四章 消费者行为",
+      "description": "用无差异曲线描述偏好，理解边际替代率递减",
+      "difficulty": 2,
+      "prerequisite": [
+        "K12"
+      ],
+      "next_knowledge": [
+        "K15"
+      ]
+    },
+    "K14": {
+      "knowledge_id": "K14",
+      "knowledge_name": "预算约束线",
+      "chapter": "第四章 消费者行为",
+      "description": "用预算线表示收入与价格约束，分析收入和价格变化对预算线的影响",
+      "difficulty": 2,
+      "prerequisite": [
+        "K12"
+      ],
+      "next_knowledge": [
+        "K15"
+      ]
+    },
+    "K15": {
+      "knowledge_id": "K15",
+      "knowledge_name": "消费者最优选择",
+      "chapter": "第四章 消费者行为",
+      "description": "无差异曲线与预算线切点决定最优消费组合，MRS等于价格比",
+      "difficulty": 3,
+      "prerequisite": [
+        "K13",
+        "K14"
+      ],
+      "next_knowledge": [
+        "K16"
+      ]
+    },
+    "K16": {
+      "knowledge_id": "K16",
+      "knowledge_name": "收入效应与替代效应",
+      "chapter": "第四章 消费者行为",
+      "description": "分解价格变动的收入效应与替代效应，区分正常品、低档品与吉芬品",
+      "difficulty": 3,
+      "prerequisite": [
+        "K15"
+      ],
+      "next_knowledge": [
+        "K17"
+      ]
+    },
+    "K17": {
+      "knowledge_id": "K17",
+      "knowledge_name": "生产函数与边际报酬递减",
+      "chapter": "第五章 生产者行为",
+      "description": "理解总产量、平均产量、边际产量关系及边际报酬递减规律",
+      "difficulty": 2,
+      "prerequisite": [
+        "K03"
+      ],
+      "next_knowledge": [
+        "K18",
+        "K19"
+      ]
+    },
+    "K18": {
+      "knowledge_id": "K18",
+      "knowledge_name": "短期生产与长期生产",
+      "chapter": "第五章 生产者行为",
+      "description": "区分短期与长期生产决策，理解固定投入与可变投入",
+      "difficulty": 2,
+      "prerequisite": [
+        "K17"
+      ],
+      "next_knowledge": [
+        "K20",
+        "K21"
+      ]
+    },
+    "K19": {
+      "knowledge_id": "K19",
+      "knowledge_name": "等产量曲线与边际技术替代率",
+      "chapter": "第五章 生产者行为",
+      "description": "用等产量曲线描述生产技术，理解边际技术替代率递减",
+      "difficulty": 2,
+      "prerequisite": [
+        "K17"
+      ],
+      "next_knowledge": [
+        "K20"
+      ]
+    },
+    "K20": {
+      "knowledge_id": "K20",
+      "knowledge_name": "规模报酬",
+      "chapter": "第五章 生产者行为",
+      "description": "区分规模报酬递增、不变与递减，理解与边际报酬递减的差异",
+      "difficulty": 3,
+      "prerequisite": [
+        "K18",
+        "K19"
+      ],
+      "next_knowledge": [
+        "K22"
+      ]
+    },
+    "K21": {
+      "knowledge_id": "K21",
+      "knowledge_name": "短期成本曲线",
+      "chapter": "第六章 成本理论",
+      "description": "掌握TC、FC、VC、AC、AVC、MC的形状与相互关系",
+      "difficulty": 2,
+      "prerequisite": [
+        "K18"
+      ],
+      "next_knowledge": [
+        "K22",
+        "K24"
+      ]
+    },
+    "K22": {
+      "knowledge_id": "K22",
+      "knowledge_name": "长期成本曲线",
+      "chapter": "第六章 成本理论",
+      "description": "理解长期平均成本曲线的U型成因及与短期成本曲线的包络关系",
+      "difficulty": 3,
+      "prerequisite": [
+        "K20",
+        "K21"
+      ],
+      "next_knowledge": [
+        "K24"
+      ]
+    },
+    "K23": {
+      "knowledge_id": "K23",
+      "knowledge_name": "经济成本与会计成本",
+      "chapter": "第六章 成本理论",
+      "description": "区分显性成本与隐性成本，理解经济利润与会计利润差异",
+      "difficulty": 1,
+      "prerequisite": [
+        "K02"
+      ],
+      "next_knowledge": [
+        "K24"
+      ]
+    },
+    "K24": {
+      "knowledge_id": "K24",
+      "knowledge_name": "边际成本与平均成本关系",
+      "chapter": "第六章 成本理论",
+      "description": "MC穿过AC与AVC最低点，理解成本最小化条件",
+      "difficulty": 2,
+      "prerequisite": [
+        "K21",
+        "K22",
+        "K23"
+      ],
+      "next_knowledge": [
+        "K25"
+      ]
+    },
+    "K25": {
+      "knowledge_id": "K25",
+      "knowledge_name": "完全竞争市场",
+      "chapter": "第七章 市场结构",
+      "description": "完全竞争厂商的短期与长期均衡，P=MC=minAC的效率含义",
+      "difficulty": 2,
+      "prerequisite": [
+        "K24"
+      ],
+      "next_knowledge": [
+        "K26",
+        "K27",
+        "K28",
+        "K29"
+      ]
+    },
+    "K26": {
+      "knowledge_id": "K26",
+      "knowledge_name": "垄断市场",
+      "chapter": "第七章 市场结构",
+      "description": "垄断厂商定价与产量决策，理解垄断的无谓损失与价格歧视",
+      "difficulty": 3,
+      "prerequisite": [
+        "K25"
+      ],
+      "next_knowledge": [
+        "K28"
+      ]
+    },
+    "K27": {
+      "knowledge_id": "K27",
+      "knowledge_name": "垄断竞争市场",
+      "chapter": "第七章 市场结构",
+      "description": "垄断竞争的短期与长期均衡，理解产品差异化与过剩生产能力",
+      "difficulty": 2,
+      "prerequisite": [
+        "K25"
+      ],
+      "next_knowledge": [
+        "K28"
+      ]
+    },
+    "K28": {
+      "knowledge_id": "K28",
+      "knowledge_name": "寡头市场与博弈论入门",
+      "chapter": "第七章 市场结构",
+      "description": "用纳什均衡分析寡头厂商策略互动，理解囚徒困境与卡特尔",
+      "difficulty": 3,
+      "prerequisite": [
+        "K26",
+        "K27"
+      ],
+      "next_knowledge": [
+        "K29"
+      ]
+    },
+    "K29": {
+      "knowledge_id": "K29",
+      "knowledge_name": "外部性与公共物品",
+      "chapter": "第八章 市场失灵",
+      "description": "分析正/负外部性导致的市场失灵，理解公共物品的搭便车问题",
+      "difficulty": 2,
+      "prerequisite": [
+        "K25",
+        "K28"
+      ],
+      "next_knowledge": [
+        "K30"
+      ]
+    },
+    "K30": {
+      "knowledge_id": "K30",
+      "knowledge_name": "信息不对称",
+      "chapter": "第八章 市场失灵",
+      "description": "理解逆向选择与道德风险，分析信号传递与机制设计",
+      "difficulty": 3,
+      "prerequisite": [
+        "K29"
+      ],
+      "next_knowledge": []
+    }
+  },
+  "edges": [
+    {
+      "id": "e-K01-K02",
+      "source": "K01",
+      "target": "K02",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K01-K03",
+      "source": "K01",
+      "target": "K03",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K02-K03",
+      "source": "K02",
+      "target": "K03",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K03-K04",
+      "source": "K03",
+      "target": "K04",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K03-K05",
+      "source": "K03",
+      "target": "K05",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K04-K06",
+      "source": "K04",
+      "target": "K06",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K05-K06",
+      "source": "K05",
+      "target": "K06",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K06-K07",
+      "source": "K06",
+      "target": "K07",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K04-K08",
+      "source": "K04",
+      "target": "K08",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K07-K08",
+      "source": "K07",
+      "target": "K08",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K08-K09",
+      "source": "K08",
+      "target": "K09",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K05-K10",
+      "source": "K05",
+      "target": "K10",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K07-K10",
+      "source": "K07",
+      "target": "K10",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K08-K11",
+      "source": "K08",
+      "target": "K11",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K09-K11",
+      "source": "K09",
+      "target": "K11",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K10-K11",
+      "source": "K10",
+      "target": "K11",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K03-K12",
+      "source": "K03",
+      "target": "K12",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K12-K13",
+      "source": "K12",
+      "target": "K13",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K12-K14",
+      "source": "K12",
+      "target": "K14",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K13-K15",
+      "source": "K13",
+      "target": "K15",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K14-K15",
+      "source": "K14",
+      "target": "K15",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K15-K16",
+      "source": "K15",
+      "target": "K16",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K03-K17",
+      "source": "K03",
+      "target": "K17",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K17-K18",
+      "source": "K17",
+      "target": "K18",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K17-K19",
+      "source": "K17",
+      "target": "K19",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K18-K20",
+      "source": "K18",
+      "target": "K20",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K19-K20",
+      "source": "K19",
+      "target": "K20",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K18-K21",
+      "source": "K18",
+      "target": "K21",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K20-K22",
+      "source": "K20",
+      "target": "K22",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K21-K22",
+      "source": "K21",
+      "target": "K22",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K02-K23",
+      "source": "K02",
+      "target": "K23",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K21-K24",
+      "source": "K21",
+      "target": "K24",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K22-K24",
+      "source": "K22",
+      "target": "K24",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K23-K24",
+      "source": "K23",
+      "target": "K24",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K24-K25",
+      "source": "K24",
+      "target": "K25",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K25-K26",
+      "source": "K25",
+      "target": "K26",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K25-K27",
+      "source": "K25",
+      "target": "K27",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K26-K28",
+      "source": "K26",
+      "target": "K28",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K27-K28",
+      "source": "K27",
+      "target": "K28",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K25-K29",
+      "source": "K25",
+      "target": "K29",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K28-K29",
+      "source": "K28",
+      "target": "K29",
+      "type": "prerequisite"
+    },
+    {
+      "id": "e-K29-K30",
+      "source": "K29",
+      "target": "K30",
+      "type": "prerequisite"
+    }
+  ],
+  "student_records": {
+    "S001": {
+      "K01": {
+        "accuracy": 92.0,
+        "average_time_seconds": 55.0,
+        "practice_count": 8,
+        "mistake_count": 1,
+        "duration_minutes": 30.0,
+        "assessment_score": 90.0
+      },
+      "K02": {
+        "accuracy": 88.0,
+        "average_time_seconds": 60.0,
+        "practice_count": 10,
+        "mistake_count": 2,
+        "duration_minutes": 35.0,
+        "assessment_score": 88.0
+      },
+      "K03": {
+        "accuracy": 90.0,
+        "average_time_seconds": 50.0,
+        "practice_count": 9,
+        "mistake_count": 1,
+        "duration_minutes": 28.0,
+        "assessment_score": 92.0
+      },
+      "K04": {
+        "accuracy": 95.0,
+        "average_time_seconds": 48.0,
+        "practice_count": 12,
+        "mistake_count": 1,
+        "duration_minutes": 40.0,
+        "assessment_score": 94.0
+      },
+      "K05": {
+        "accuracy": 93.0,
+        "average_time_seconds": 52.0,
+        "practice_count": 11,
+        "mistake_count": 1,
+        "duration_minutes": 38.0,
+        "assessment_score": 91.0
+      },
+      "K06": {
+        "accuracy": 91.0,
+        "average_time_seconds": 58.0,
+        "practice_count": 10,
+        "mistake_count": 2,
+        "duration_minutes": 36.0,
+        "assessment_score": 90.0
+      },
+      "K07": {
+        "accuracy": 87.0,
+        "average_time_seconds": 65.0,
+        "practice_count": 14,
+        "mistake_count": 3,
+        "duration_minutes": 45.0,
+        "assessment_score": 85.0
+      },
+      "K08": {
+        "accuracy": 42.0,
+        "average_time_seconds": 95.0,
+        "practice_count": 25,
+        "mistake_count": 15,
+        "duration_minutes": 80.0,
+        "assessment_score": 48.0
+      },
+      "K09": {
+        "accuracy": 58.0,
+        "average_time_seconds": 88.0,
+        "practice_count": 20,
+        "mistake_count": 10,
+        "duration_minutes": 65.0,
+        "assessment_score": 60.0
+      },
+      "K10": {
+        "accuracy": 85.0,
+        "average_time_seconds": 62.0,
+        "practice_count": 12,
+        "mistake_count": 3,
+        "duration_minutes": 40.0,
+        "assessment_score": 84.0
+      },
+      "K11": {
+        "accuracy": 55.0,
+        "average_time_seconds": 90.0,
+        "practice_count": 22,
+        "mistake_count": 12,
+        "duration_minutes": 70.0,
+        "assessment_score": 58.0
+      },
+      "K12": {
+        "accuracy": 90.0,
+        "average_time_seconds": 55.0,
+        "practice_count": 10,
+        "mistake_count": 2,
+        "duration_minutes": 35.0,
+        "assessment_score": 89.0
+      }
+    },
+    "S002": {
+      "K01": {
+        "accuracy": 68.0,
+        "average_time_seconds": 70.0,
+        "practice_count": 10,
+        "mistake_count": 4,
+        "duration_minutes": 40.0,
+        "assessment_score": 65.0
+      },
+      "K03": {
+        "accuracy": 65.0,
+        "average_time_seconds": 75.0,
+        "practice_count": 12,
+        "mistake_count": 5,
+        "duration_minutes": 45.0,
+        "assessment_score": 62.0
+      },
+      "K04": {
+        "accuracy": 70.0,
+        "average_time_seconds": 68.0,
+        "practice_count": 11,
+        "mistake_count": 4,
+        "duration_minutes": 42.0,
+        "assessment_score": 68.0
+      },
+      "K05": {
+        "accuracy": 66.0,
+        "average_time_seconds": 72.0,
+        "practice_count": 10,
+        "mistake_count": 4,
+        "duration_minutes": 40.0,
+        "assessment_score": 64.0
+      },
+      "K06": {
+        "accuracy": 62.0,
+        "average_time_seconds": 80.0,
+        "practice_count": 14,
+        "mistake_count": 6,
+        "duration_minutes": 50.0,
+        "assessment_score": 60.0
+      },
+      "K07": {
+        "accuracy": 58.0,
+        "average_time_seconds": 85.0,
+        "practice_count": 15,
+        "mistake_count": 7,
+        "duration_minutes": 55.0,
+        "assessment_score": 56.0
+      },
+      "K08": {
+        "accuracy": 60.0,
+        "average_time_seconds": 82.0,
+        "practice_count": 13,
+        "mistake_count": 6,
+        "duration_minutes": 48.0,
+        "assessment_score": 58.0
+      },
+      "K12": {
+        "accuracy": 72.0,
+        "average_time_seconds": 65.0,
+        "practice_count": 10,
+        "mistake_count": 3,
+        "duration_minutes": 38.0,
+        "assessment_score": 70.0
+      },
+      "K13": {
+        "accuracy": 64.0,
+        "average_time_seconds": 78.0,
+        "practice_count": 12,
+        "mistake_count": 5,
+        "duration_minutes": 45.0,
+        "assessment_score": 62.0
+      },
+      "K14": {
+        "accuracy": 60.0,
+        "average_time_seconds": 80.0,
+        "practice_count": 13,
+        "mistake_count": 6,
+        "duration_minutes": 48.0,
+        "assessment_score": 58.0
+      },
+      "K15": {
+        "accuracy": 52.0,
+        "average_time_seconds": 90.0,
+        "practice_count": 16,
+        "mistake_count": 8,
+        "duration_minutes": 60.0,
+        "assessment_score": 50.0
+      },
+      "K16": {
+        "accuracy": 48.0,
+        "average_time_seconds": 95.0,
+        "practice_count": 14,
+        "mistake_count": 8,
+        "duration_minutes": 55.0,
+        "assessment_score": 46.0
+      }
+    },
+    "S003": {
+      "K01": {
+        "accuracy": 45.0,
+        "average_time_seconds": 90.0,
+        "practice_count": 15,
+        "mistake_count": 9,
+        "duration_minutes": 60.0,
+        "assessment_score": 42.0
+      },
+      "K02": {
+        "accuracy": 40.0,
+        "average_time_seconds": 95.0,
+        "practice_count": 18,
+        "mistake_count": 11,
+        "duration_minutes": 70.0,
+        "assessment_score": 38.0
+      },
+      "K03": {
+        "accuracy": 42.0,
+        "average_time_seconds": 88.0,
+        "practice_count": 16,
+        "mistake_count": 10,
+        "duration_minutes": 65.0,
+        "assessment_score": 40.0
+      },
+      "K04": {
+        "accuracy": 48.0,
+        "average_time_seconds": 85.0,
+        "practice_count": 14,
+        "mistake_count": 8,
+        "duration_minutes": 55.0,
+        "assessment_score": 45.0
+      },
+      "K05": {
+        "accuracy": 44.0,
+        "average_time_seconds": 90.0,
+        "practice_count": 15,
+        "mistake_count": 9,
+        "duration_minutes": 58.0,
+        "assessment_score": 42.0
+      },
+      "K06": {
+        "accuracy": 38.0,
+        "average_time_seconds": 100.0,
+        "practice_count": 20,
+        "mistake_count": 13,
+        "duration_minutes": 75.0,
+        "assessment_score": 35.0
+      },
+      "K12": {
+        "accuracy": 50.0,
+        "average_time_seconds": 82.0,
+        "practice_count": 14,
+        "mistake_count": 8,
+        "duration_minutes": 55.0,
+        "assessment_score": 48.0
+      },
+      "K13": {
+        "accuracy": 42.0,
+        "average_time_seconds": 92.0,
+        "practice_count": 16,
+        "mistake_count": 10,
+        "duration_minutes": 62.0,
+        "assessment_score": 40.0
+      },
+      "K14": {
+        "accuracy": 40.0,
+        "average_time_seconds": 95.0,
+        "practice_count": 18,
+        "mistake_count": 11,
+        "duration_minutes": 68.0,
+        "assessment_score": 38.0
+      },
+      "K15": {
+        "accuracy": 30.0,
+        "average_time_seconds": 110.0,
+        "practice_count": 25,
+        "mistake_count": 18,
+        "duration_minutes": 90.0,
+        "assessment_score": 28.0
+      },
+      "K17": {
+        "accuracy": 45.0,
+        "average_time_seconds": 88.0,
+        "practice_count": 15,
+        "mistake_count": 9,
+        "duration_minutes": 58.0,
+        "assessment_score": 42.0
+      },
+      "K21": {
+        "accuracy": 35.0,
+        "average_time_seconds": 100.0,
+        "practice_count": 20,
+        "mistake_count": 13,
+        "duration_minutes": 72.0,
+        "assessment_score": 32.0
+      }
+    },
+    "S004": {
+      "K04": {
+        "accuracy": 92.0,
+        "average_time_seconds": 160.0,
+        "practice_count": 10,
+        "mistake_count": 1,
+        "duration_minutes": 50.0,
+        "assessment_score": 90.0
+      },
+      "K05": {
+        "accuracy": 90.0,
+        "average_time_seconds": 155.0,
+        "practice_count": 9,
+        "mistake_count": 1,
+        "duration_minutes": 48.0,
+        "assessment_score": 88.0
+      },
+      "K06": {
+        "accuracy": 94.0,
+        "average_time_seconds": 165.0,
+        "practice_count": 11,
+        "mistake_count": 1,
+        "duration_minutes": 52.0,
+        "assessment_score": 92.0
+      },
+      "K07": {
+        "accuracy": 88.0,
+        "average_time_seconds": 175.0,
+        "practice_count": 12,
+        "mistake_count": 2,
+        "duration_minutes": 55.0,
+        "assessment_score": 86.0
+      },
+      "K08": {
+        "accuracy": 86.0,
+        "average_time_seconds": 180.0,
+        "practice_count": 13,
+        "mistake_count": 2,
+        "duration_minutes": 60.0,
+        "assessment_score": 84.0
+      },
+      "K12": {
+        "accuracy": 93.0,
+        "average_time_seconds": 150.0,
+        "practice_count": 8,
+        "mistake_count": 1,
+        "duration_minutes": 45.0,
+        "assessment_score": 91.0
+      },
+      "K13": {
+        "accuracy": 89.0,
+        "average_time_seconds": 170.0,
+        "practice_count": 11,
+        "mistake_count": 1,
+        "duration_minutes": 52.0,
+        "assessment_score": 87.0
+      },
+      "K14": {
+        "accuracy": 91.0,
+        "average_time_seconds": 168.0,
+        "practice_count": 10,
+        "mistake_count": 1,
+        "duration_minutes": 50.0,
+        "assessment_score": 89.0
+      },
+      "K15": {
+        "accuracy": 87.0,
+        "average_time_seconds": 185.0,
+        "practice_count": 14,
+        "mistake_count": 2,
+        "duration_minutes": 62.0,
+        "assessment_score": 85.0
+      },
+      "K17": {
+        "accuracy": 90.0,
+        "average_time_seconds": 160.0,
+        "practice_count": 10,
+        "mistake_count": 1,
+        "duration_minutes": 48.0,
+        "assessment_score": 88.0
+      },
+      "K21": {
+        "accuracy": 85.0,
+        "average_time_seconds": 175.0,
+        "practice_count": 12,
+        "mistake_count": 2,
+        "duration_minutes": 55.0,
+        "assessment_score": 83.0
+      },
+      "K25": {
+        "accuracy": 88.0,
+        "average_time_seconds": 180.0,
+        "practice_count": 11,
+        "mistake_count": 1,
+        "duration_minutes": 58.0,
+        "assessment_score": 86.0
+      }
+    },
+    "S005": {
+      "K01": {
+        "accuracy": 70.0,
+        "average_time_seconds": 60.0,
+        "practice_count": 20,
+        "mistake_count": 7,
+        "duration_minutes": 55.0,
+        "assessment_score": 68.0
+      },
+      "K03": {
+        "accuracy": 68.0,
+        "average_time_seconds": 65.0,
+        "practice_count": 22,
+        "mistake_count": 8,
+        "duration_minutes": 60.0,
+        "assessment_score": 65.0
+      },
+      "K04": {
+        "accuracy": 72.0,
+        "average_time_seconds": 58.0,
+        "practice_count": 18,
+        "mistake_count": 6,
+        "duration_minutes": 50.0,
+        "assessment_score": 70.0
+      },
+      "K06": {
+        "accuracy": 65.0,
+        "average_time_seconds": 70.0,
+        "practice_count": 24,
+        "mistake_count": 9,
+        "duration_minutes": 65.0,
+        "assessment_score": 62.0
+      },
+      "K08": {
+        "accuracy": 60.0,
+        "average_time_seconds": 75.0,
+        "practice_count": 26,
+        "mistake_count": 11,
+        "duration_minutes": 70.0,
+        "assessment_score": 58.0
+      },
+      "K12": {
+        "accuracy": 74.0,
+        "average_time_seconds": 55.0,
+        "practice_count": 19,
+        "mistake_count": 6,
+        "duration_minutes": 52.0,
+        "assessment_score": 72.0
+      },
+      "K13": {
+        "accuracy": 66.0,
+        "average_time_seconds": 68.0,
+        "practice_count": 21,
+        "mistake_count": 8,
+        "duration_minutes": 58.0,
+        "assessment_score": 64.0
+      },
+      "K15": {
+        "accuracy": 58.0,
+        "average_time_seconds": 80.0,
+        "practice_count": 28,
+        "mistake_count": 12,
+        "duration_minutes": 75.0,
+        "assessment_score": 55.0
+      },
+      "K17": {
+        "accuracy": 68.0,
+        "average_time_seconds": 62.0,
+        "practice_count": 20,
+        "mistake_count": 7,
+        "duration_minutes": 54.0,
+        "assessment_score": 66.0
+      },
+      "K21": {
+        "accuracy": 62.0,
+        "average_time_seconds": 72.0,
+        "practice_count": 23,
+        "mistake_count": 9,
+        "duration_minutes": 62.0,
+        "assessment_score": 60.0
+      },
+      "K25": {
+        "accuracy": 64.0,
+        "average_time_seconds": 70.0,
+        "practice_count": 22,
+        "mistake_count": 8,
+        "duration_minutes": 60.0,
+        "assessment_score": 62.0
+      },
+      "K29": {
+        "accuracy": 60.0,
+        "average_time_seconds": 75.0,
+        "practice_count": 21,
+        "mistake_count": 9,
+        "duration_minutes": 58.0,
+        "assessment_score": 58.0
+      }
+    }
+  }
+}

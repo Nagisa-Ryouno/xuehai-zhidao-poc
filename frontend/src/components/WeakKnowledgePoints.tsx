@@ -8,12 +8,15 @@ import {
   ChevronUp,
   CheckCircle,
   Sparkles,
+  PlayCircle,
 } from 'lucide-react';
 import type {
   WeakKnowledgePoint,
   PrerequisiteKnowledgePoint,
 } from '../types';
 import { BottomSheet } from './common/BottomSheet';
+import { KnowledgePointQuiz } from './student/KnowledgePointQuiz';
+import { useApp } from '../context/useApp';
 
 interface WeakKnowledgePointsProps {
   weakPoints: WeakKnowledgePoint[];
@@ -24,8 +27,20 @@ export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
   weakPoints,
   prerequisitePoints,
 }) => {
+  const { studentId } = useApp();
   const [showAll, setShowAll] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<WeakKnowledgePoint | null>(null);
+  const [sheetMode, setSheetMode] = useState<'detail' | 'quiz'>('detail');
+
+  const handleOpenPoint = (item: WeakKnowledgePoint) => {
+    setSelectedPoint(item);
+    setSheetMode('detail');
+  };
+
+  const handleCloseSheet = () => {
+    setSelectedPoint(null);
+    setSheetMode('detail');
+  };
 
   // Risk classification helper
   const getRiskLevel = (accuracy: number) => {
@@ -108,7 +123,7 @@ export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
             return (
               <div
                 key={item.knowledge_id}
-                onClick={() => setSelectedPoint(item)}
+                onClick={() => handleOpenPoint(item)}
                 className="bg-slate-50/60 hover:bg-white rounded-xl p-4 border border-slate-200/80 hover:border-indigo-300 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group"
               >
                 <div>
@@ -249,82 +264,110 @@ export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
         </div>
       )}
 
-      {/* 移动优先 Bottom Sheet: 知识点学情诊断与强化建议 */}
+      {/* 移动优先 Bottom Sheet: 知识点学情诊断与强化建议 / 专属微测验 */}
       <BottomSheet
         open={!!selectedPoint}
-        onClose={() => setSelectedPoint(null)}
-        title={selectedPoint ? `${selectedPoint.knowledge_id} · ${selectedPoint.knowledge_name}` : undefined}
-        description="薄弱考点深度诊断与专项突破建议"
+        onClose={handleCloseSheet}
+        title={
+          selectedPoint
+            ? sheetMode === 'quiz'
+              ? `微测验 · ${selectedPoint.knowledge_name}`
+              : `${selectedPoint.knowledge_id} · ${selectedPoint.knowledge_name}`
+            : undefined
+        }
+        description={
+          sheetMode === 'quiz'
+            ? '即时作答与智能伴学闭环评估'
+            : '薄弱考点深度诊断与专项突破建议'
+        }
       >
         {selectedPoint && (
-          <div className="space-y-4">
-            {/* 指标卡 */}
-            <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-center">
-              <div>
-                <div className="text-[11px] text-slate-500 font-medium">当前正确率</div>
-                <div className="text-base font-black text-rose-600 mt-0.5">
-                  {selectedPoint.accuracy.toFixed(1)}%
+          sheetMode === 'quiz' ? (
+            <KnowledgePointQuiz
+              knowledgeId={selectedPoint.knowledge_id}
+              knowledgeName={selectedPoint.knowledge_name}
+              studentId={studentId || 'S001'}
+              onBackToDetail={() => setSheetMode('detail')}
+              onFinish={handleCloseSheet}
+            />
+          ) : (
+            <div className="space-y-4">
+              {/* 指标卡 */}
+              <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-center">
+                <div>
+                  <div className="text-[11px] text-slate-500 font-medium">当前正确率</div>
+                  <div className="text-base font-black text-rose-600 mt-0.5">
+                    {selectedPoint.accuracy.toFixed(1)}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-slate-500 font-medium">测评得分</div>
+                  <div className="text-base font-black text-slate-800 mt-0.5">
+                    {selectedPoint.assessment_score.toFixed(0)}分
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-slate-500 font-medium">均题耗时</div>
+                  <div className="text-base font-black text-slate-800 mt-0.5">
+                    {selectedPoint.average_time_seconds.toFixed(0)}秒
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-[11px] text-slate-500 font-medium">测评得分</div>
-                <div className="text-base font-black text-slate-800 mt-0.5">
-                  {selectedPoint.assessment_score.toFixed(0)}分
-                </div>
-              </div>
-              <div>
-                <div className="text-[11px] text-slate-500 font-medium">均题耗时</div>
-                <div className="text-base font-black text-slate-800 mt-0.5">
-                  {selectedPoint.average_time_seconds.toFixed(0)}秒
-                </div>
-              </div>
-            </div>
 
-            {/* 前置依赖卡 */}
-            {selectedPoint.prerequisite && selectedPoint.prerequisite.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-950">
-                  <GitFork className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>前置依赖知识链</span>
+              {/* 前置依赖卡 */}
+              {selectedPoint.prerequisite && selectedPoint.prerequisite.length > 0 && (
+                <div className="p-3.5 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-950">
+                    <GitFork className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>前置依赖知识链</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedPoint.prerequisite.map((preId) => (
+                      <span
+                        key={preId}
+                        className="px-2 py-0.5 rounded-lg bg-white text-indigo-700 font-mono text-xs font-bold border border-indigo-200"
+                      >
+                        {preId}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-indigo-700/80 leading-relaxed">
+                    该考点依赖上述前置知识的稳定支撑，建议确保前置基础扎实后再进行强化训练。
+                  </p>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedPoint.prerequisite.map((preId) => (
-                    <span
-                      key={preId}
-                      className="px-2 py-0.5 rounded-lg bg-white text-indigo-700 font-mono text-xs font-bold border border-indigo-200"
-                    >
-                      {preId}
-                    </span>
-                  ))}
+              )}
+
+              {/* 突破指引 */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <span>AI 学习伴学建议</span>
                 </div>
-                <p className="text-[11px] text-indigo-700/80 leading-relaxed">
-                  该考点依赖上述前置知识的稳定支撑，建议确保前置基础扎实后再进行强化训练。
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  当前知识点属于薄弱攻坚阶段。建议直接通过下方「开始微测验」进行真题自测与闭环评估，验证掌握度后即可触发动态重规划。
                 </p>
               </div>
-            )}
 
-            {/* 突破指引 */}
-            <div className="p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>AI 学习伴学建议</span>
+              {/* 底部关闭/操作按钮 */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleCloseSheet}
+                  className="w-full sm:w-1/3 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-xs transition-all cursor-pointer min-h-[44px]"
+                >
+                  返回学习
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSheetMode('quiz')}
+                  className="w-full sm:w-2/3 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px]"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  <span>开始微测验 (真题突破)</span>
+                </button>
               </div>
-              <p className="text-xs text-amber-800 leading-relaxed">
-                当前知识点属于薄弱攻坚阶段。建议通过下方 AI 学习伴学开启微课答疑或定向做题，验证掌握度后即可触发动态重规划。
-              </p>
             </div>
-
-            {/* 底部关闭/操作按钮 */}
-            <div className="pt-2 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedPoint(null)}
-                className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
-              >
-                我知道了，返回学习
-              </button>
-            </div>
-          </div>
+          )
         )}
       </BottomSheet>
     </div>

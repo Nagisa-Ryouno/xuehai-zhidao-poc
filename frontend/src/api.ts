@@ -14,6 +14,9 @@ import type {
   AssistantResponse,
   AssistantGreetingResponse,
   KnowledgeGraphResponse,
+  QuizKnowledgeListResponse,
+  QuizSubmitRequest,
+  QuizSubmitResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -142,4 +145,25 @@ export async function getStudentKnowledgeGraph(
   studentId: string
 ): Promise<KnowledgeGraphResponse> {
   return request<KnowledgeGraphResponse>(`/students/${studentId}/knowledge-graph`);
+}
+
+/**
+ * 获取指定知识点的微测验题目（服务端权威脱敏，绝不暴露正确答案）
+ */
+export async function getQuizQuestions(
+  knowledgeId: string
+): Promise<QuizKnowledgeListResponse> {
+  return request<QuizKnowledgeListResponse>(`/quiz/${knowledgeId}`);
+}
+
+/**
+ * 提交微测验单题作答，服务端权威判题并持久化 QUESTION_ATTEMPT 学习事件
+ */
+export async function submitQuizAnswer(
+  data: QuizSubmitRequest
+): Promise<QuizSubmitResponse> {
+  return request<QuizSubmitResponse>('/quiz/submit', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }

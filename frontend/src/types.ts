@@ -256,3 +256,42 @@ export interface KnowledgeGraphResponse {
 }
 
 export type GraphFilterType = 'all' | 'weak' | 'recommended' | 'prerequisite';
+
+// ============================================================
+// P0-4/P0-5 分知识点微测验相关类型契约
+// ============================================================
+
+export interface QuizOption {
+  key: string;
+  text: string;
+}
+
+export interface QuizQuestionPublic {
+  question_id: string;
+  knowledge_id: string;
+  stem: string;
+  options: QuizOption[];
+  difficulty: number;
+}
+
+export interface QuizKnowledgeListResponse {
+  knowledge_id: string;
+  knowledge_name: string;
+  questions: QuizQuestionPublic[];
+}
+
+export interface QuizSubmitRequest {
+  student_id: string;
+  question_id: string;
+  selected_option: string;
+  time_spent_ms?: number;
+}
+
+export interface QuizSubmitResponse {
+  is_correct: boolean;
+  correct_option: string;
+  explanation: string;
+  knowledge_id: string;
+  question_id: string;
+  event_id: string;
+}

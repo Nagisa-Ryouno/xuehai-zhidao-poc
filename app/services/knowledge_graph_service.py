@@ -5,7 +5,7 @@ knowledge_graph_service.py
 
 职责：
 1. 从标准种子 JSON (data/seeds/knowledge_graph.json) 读取 30 个知识点与 42 条前置依赖关系
-2. 彻底脱离 openpyxl 依赖，毫秒级快速启动与内存驻留
+2. 彻底脱离 Excel 依赖，毫秒级快速启动与内存驻留
 3. 拓扑方向严格为：前置知识 (source) -> 后续知识 (target)
 4. 结合 ProfileRepository 装配学生个性化掌握状态与 React Flow 分层网格坐标
 5. 提供公开契约方法：get_knowledge_point, get_prerequisites, get_successors,

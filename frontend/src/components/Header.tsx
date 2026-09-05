@@ -1,6 +1,7 @@
 import React from 'react';
 import { GraduationCap, Sparkles, User, ChevronDown } from 'lucide-react';
 import type { StudentListItem } from '../types';
+import { RoleSwitcher } from './RoleSwitcher';
 
 interface HeaderProps {
   students: StudentListItem[];
@@ -41,8 +42,11 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: Service Status & Student Selector */}
+        {/* Right: Service Status, Role Switcher & Student Selector */}
         <div className="flex items-center gap-3 sm:gap-4">
+          {/* Dual-Role Switcher (Student View <-> Teacher Cockpit) */}
+          <RoleSwitcher />
+
           {/* Backend Health Pill */}
           <div
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${

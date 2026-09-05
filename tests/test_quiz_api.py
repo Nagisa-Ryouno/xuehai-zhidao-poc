@@ -24,7 +24,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-# 动态导入（RED 阶段因 quiz_service 尚未实现而报错）
+import bkt_state_service
 import event_service
 import quiz_service
 _api_module = importlib.import_module("04_api")
@@ -33,16 +33,26 @@ app = _api_module.app
 
 class TestQuizApi(unittest.TestCase):
     def setUp(self):
-        # 隔离事件落盘文件，避免污染生产 data/learning_events.jsonl
+        # 隔离事件与 BKT 状态落盘文件，避免污染生产环境
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_events_file = Path(self.temp_dir.name) / "test_quiz_events.jsonl"
+        self.temp_states_file = Path(self.temp_dir.name) / "test_quiz_states.json"
+        self.temp_processed_file = Path(self.temp_dir.name) / "test_quiz_processed.json"
+
         self.orig_events_file = event_service.DEFAULT_EVENTS_FILE
+        self.orig_states_file = bkt_state_service.DEFAULT_STATES_FILE
+        self.orig_processed_file = bkt_state_service.DEFAULT_PROCESSED_FILE
+
         event_service.DEFAULT_EVENTS_FILE = self.temp_events_file
+        bkt_state_service.DEFAULT_STATES_FILE = self.temp_states_file
+        bkt_state_service.DEFAULT_PROCESSED_FILE = self.temp_processed_file
 
         self.client = TestClient(app)
 
     def tearDown(self):
         event_service.DEFAULT_EVENTS_FILE = self.orig_events_file
+        bkt_state_service.DEFAULT_STATES_FILE = self.orig_states_file
+        bkt_state_service.DEFAULT_PROCESSED_FILE = self.orig_processed_file
         self.temp_dir.cleanup()
 
     def test_01_get_quiz_by_knowledge_id_success_and_no_leak(self):

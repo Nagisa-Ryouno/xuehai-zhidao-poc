@@ -287,6 +287,16 @@ export interface QuizSubmitRequest {
   time_spent_ms?: number;
 }
 
+export interface LearningStateSnapshot {
+  updated: boolean;
+  mastery_probability?: number | null;
+  mastery_percent?: number | null;
+  state?: 'WEAK' | 'DEVELOPING' | 'MASTERED' | string;
+  attempts?: number;
+  consecutive_correct?: number;
+  reason?: string;
+}
+
 export interface QuizSubmitResponse {
   is_correct: boolean;
   correct_option: string;
@@ -294,4 +304,5 @@ export interface QuizSubmitResponse {
   knowledge_id: string;
   question_id: string;
   event_id: string;
+  learning_state?: LearningStateSnapshot | null;
 }

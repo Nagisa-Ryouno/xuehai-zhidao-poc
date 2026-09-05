@@ -1,5 +1,22 @@
 # -*- coding: utf-8 -*-
-"""BKT 知识追踪纯领域模型包 (Bayesian Knowledge Tracing Domain).
+from app.domain.bkt.models import (
+    BKTParameters,
+    DEFAULT_BKT_PARAMS,
+    BKTState,
+    BKTUpdateResult,
+)
+from app.domain.bkt.service import (
+    calculate_bkt_update,
+    create_initial_state,
+    apply_attempt,
+)
 
-封装贝叶斯知识追踪概率推断核心算法与状态实体，不依赖外部 I/O。
-"""
+__all__ = [
+    "BKTParameters",
+    "DEFAULT_BKT_PARAMS",
+    "BKTState",
+    "BKTUpdateResult",
+    "calculate_bkt_update",
+    "create_initial_state",
+    "apply_attempt",
+]

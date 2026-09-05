@@ -55,14 +55,12 @@ __all__ = [
 
 def get_prerequisites(knowledge_id: str) -> List[str]:
     """从权威知识图谱中读取知识点的直接前置依赖列表 (Read-Only)"""
-    kp_dict = knowledge_graph_service.knowledge_graph_service._raw_knowledge_points.get(knowledge_id, {})
-    return list(kp_dict.get("prerequisite", []))
+    return knowledge_graph_service.knowledge_graph_service.get_prerequisites(knowledge_id)
 
 
 def get_successors(knowledge_id: str) -> List[str]:
     """从权威知识图谱中读取知识点的直接后继知识点列表 (Read-Only)"""
-    kp_dict = knowledge_graph_service.knowledge_graph_service._raw_knowledge_points.get(knowledge_id, {})
-    return list(kp_dict.get("next_knowledge", []))
+    return knowledge_graph_service.knowledge_graph_service.get_successors(knowledge_id)
 
 
 def is_knowledge_mastered(

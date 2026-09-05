@@ -149,8 +149,7 @@ def get_all_questions(bank_file: Optional[Path] = None) -> List[QuizQuestionInte
 
 def is_valid_knowledge_id(knowledge_id: str) -> bool:
     """校验 knowledge_id 是否存在于真实知识图谱 30 个考点中"""
-    raw_kps = knowledge_graph_service._raw_knowledge_points
-    return knowledge_id in raw_kps
+    return knowledge_graph_service.is_valid_knowledge_id(knowledge_id)
 
 
 def get_question_by_id(
@@ -180,7 +179,7 @@ def get_questions_by_knowledge_id(
     if not is_valid_knowledge_id(knowledge_id):
         raise HTTPException(status_code=404, detail=f"未找到对应知识点：{knowledge_id}")
 
-    raw_kp = knowledge_graph_service._raw_knowledge_points.get(knowledge_id, {})
+    raw_kp = knowledge_graph_service.get_knowledge_point(knowledge_id) or {}
     knowledge_name = raw_kp.get("knowledge_name", knowledge_id)
 
     all_q = get_all_questions(bank_file)

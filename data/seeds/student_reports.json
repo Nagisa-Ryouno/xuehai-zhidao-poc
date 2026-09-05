@@ -1,0 +1,505 @@
+{
+  "S001": {
+    "student_id": "S001",
+    "student": {
+      "student_id": "S001",
+      "student_name": "张同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "掌握微观经济学基础并能够解决综合分析题，重点突破弹性计算薄弱环节"
+    },
+    "learning_overview": {
+      "average_accuracy": 80.5,
+      "average_assessment_score": 80.75,
+      "total_learning_time_minutes": 542.0,
+      "total_practice_count": 163,
+      "total_interaction_count": 217,
+      "average_completion_rate": 95.83,
+      "average_answer_time_seconds": 64.83,
+      "mastery_level": "中等",
+      "speed_status": "答题速度较快",
+      "activity_level": "中",
+      "completion_level": "高"
+    },
+    "diagnosis": {
+      "mastery_description": "整体知识掌握处于中等水平，已经建立基本知识框架，但部分知识点仍存在理解不牢的问题，适合进行针对性强化训练。",
+      "behavior_description": "学习参与度处于中等水平，答题速度较快，学习任务完成度较高。",
+      "main_problems": [
+        "存在局部知识薄弱点",
+        "部分知识薄弱与前置知识掌握不足有关"
+      ],
+      "weak_knowledge_count": 3,
+      "prerequisite_knowledge_count": 2
+    },
+    "personalized_strategy": {
+      "recommendation_type": "薄弱知识点强化",
+      "strategy_description": "张同学当前平均正确率为80.50%，整体掌握程度为中等。系统识别出部分需要强化的知识点，建议按照当前个性化学习路径进行针对性学习，并根据后续学习效果动态调整学习计划。"
+    },
+    "learning_path": [
+      {
+        "stage": 1,
+        "knowledge_id": "K08",
+        "knowledge_name": "需求价格弹性",
+        "chapter": "第三章 弹性",
+        "current_accuracy": 42.0,
+        "priority": "高",
+        "priority_score": 38.6,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅42%，属于明显薄弱知识点；该知识点是其他2个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "计算需求价格弹性，区分富有弹性与缺乏弹性，理解弹性与总收益关系"
+      },
+      {
+        "stage": 2,
+        "knowledge_id": "K09",
+        "knowledge_name": "需求收入弹性与交叉弹性",
+        "chapter": "第三章 弹性",
+        "current_accuracy": 58.0,
+        "priority": "中",
+        "priority_score": 27.5,
+        "learning_goal": "强化知识理解与解题能力",
+        "reason": "当前正确率为58%，掌握程度仍需加强；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "计算收入弹性判断正常品/劣等品，计算交叉弹性判断替代品/互补品"
+      },
+      {
+        "stage": 3,
+        "knowledge_id": "K11",
+        "knowledge_name": "弹性与税收归宿",
+        "chapter": "第三章 弹性",
+        "current_accuracy": 55.0,
+        "priority": "中",
+        "priority_score": 28.2,
+        "learning_goal": "强化知识理解与解题能力",
+        "reason": "当前正确率为55%，掌握程度仍需加强",
+        "difficulty": 3.0,
+        "description": "运用弹性分析税收在买卖双方间的分摊比例与无谓损失"
+      }
+    ],
+    "daily_learning_plan": {
+      "recommended_minutes": 30,
+      "recommended_questions": 8,
+      "focus": "知识理解 + 基础练习"
+    },
+    "optimization_suggestions": [
+      "当前整体掌握程度较好，不建议大量重复基础内容，可增加综合应用训练。"
+    ],
+    "ai_summary": "张同学当前平均正确率为80.50%，整体掌握程度为中等。系统识别出部分需要强化的知识点，建议按照当前个性化学习路径进行针对性学习，并根据后续学习效果动态调整学习计划。"
+  },
+  "S002": {
+    "student_id": "S002",
+    "student": {
+      "student_id": "S002",
+      "student_name": "李同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "夯实供求与消费者行为基础，提升中等难度题目的稳定得分率"
+    },
+    "learning_overview": {
+      "average_accuracy": 62.08,
+      "average_assessment_score": 59.92,
+      "total_learning_time_minutes": 566.0,
+      "total_practice_count": 150,
+      "total_interaction_count": 150,
+      "average_completion_rate": 80.42,
+      "average_answer_time_seconds": 78.33,
+      "mastery_level": "偏弱",
+      "speed_status": "答题速度较快",
+      "activity_level": "中",
+      "completion_level": "中"
+    },
+    "diagnosis": {
+      "mastery_description": "整体知识掌握程度偏弱，部分核心知识点存在明显薄弱情况，建议结合知识依赖关系进行针对性补强。",
+      "behavior_description": "学习参与度处于中等水平，答题速度较快，学习任务完成度处于中等水平。",
+      "main_problems": [
+        "部分核心知识点掌握不足",
+        "部分知识薄弱与前置知识掌握不足有关"
+      ],
+      "weak_knowledge_count": 3,
+      "prerequisite_knowledge_count": 4
+    },
+    "personalized_strategy": {
+      "recommendation_type": "薄弱知识点强化",
+      "strategy_description": "李同学当前平均正确率为62.08%，整体掌握程度为偏弱。系统识别出部分需要强化的知识点，建议按照当前个性化学习路径进行针对性学习，并根据后续学习效果动态调整学习计划。"
+    },
+    "learning_path": [
+      {
+        "stage": 1,
+        "knowledge_id": "K14",
+        "knowledge_name": "预算约束线",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 60.0,
+        "priority": "中",
+        "priority_score": 28.05,
+        "learning_goal": "补齐前置知识基础",
+        "reason": "当前正确率为60%，掌握程度仍需加强；该知识点是其他2个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "用预算线表示收入与价格约束，分析收入和价格变化对预算线的影响"
+      },
+      {
+        "stage": 2,
+        "knowledge_id": "K13",
+        "knowledge_name": "无差异曲线",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 64.0,
+        "priority": "中",
+        "priority_score": 25.65,
+        "learning_goal": "补齐前置知识基础",
+        "reason": "当前正确率为64%，掌握程度仍需加强；该知识点是其他2个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "用无差异曲线描述偏好，理解边际替代率递减"
+      },
+      {
+        "stage": 3,
+        "knowledge_id": "K15",
+        "knowledge_name": "消费者最优选择",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 52.0,
+        "priority": "中",
+        "priority_score": 31.5,
+        "learning_goal": "强化知识理解与解题能力",
+        "reason": "当前正确率为52%，掌握程度仍需加强；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 3.0,
+        "description": "无差异曲线与预算线切点决定最优消费组合，MRS等于价格比"
+      },
+      {
+        "stage": 4,
+        "knowledge_id": "K16",
+        "knowledge_name": "收入效应与替代效应",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 48.0,
+        "priority": "高",
+        "priority_score": 32.4,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅48%，属于明显薄弱知识点",
+        "difficulty": 3.0,
+        "description": "分解价格变动的收入效应与替代效应，区分正常品、低档品与吉芬品"
+      },
+      {
+        "stage": 5,
+        "knowledge_id": "K06",
+        "knowledge_name": "市场均衡与均衡价格",
+        "chapter": "第二章 需求与供给",
+        "current_accuracy": 62.0,
+        "priority": "中",
+        "priority_score": 24.95,
+        "learning_goal": "补齐前置知识基础",
+        "reason": "当前正确率为62%，掌握程度仍需加强；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 1.0,
+        "description": "供求相等决定均衡价格与均衡数量，理解过剩与短缺"
+      },
+      {
+        "stage": 6,
+        "knowledge_id": "K07",
+        "knowledge_name": "供求变动与均衡分析",
+        "chapter": "第二章 需求与供给",
+        "current_accuracy": 58.0,
+        "priority": "中",
+        "priority_score": 26.0,
+        "learning_goal": "强化知识理解与解题能力",
+        "reason": "当前正确率为58%，掌握程度仍需加强",
+        "difficulty": 2.0,
+        "description": "分析需求或供给变动对均衡价格和数量的影响方向与幅度"
+      }
+    ],
+    "daily_learning_plan": {
+      "recommended_minutes": 30,
+      "recommended_questions": 8,
+      "focus": "知识理解 + 基础练习"
+    },
+    "optimization_suggestions": [
+      "建议根据本轮学习效果持续调整学习路径。"
+    ],
+    "ai_summary": "李同学当前平均正确率为62.08%，整体掌握程度为偏弱。系统识别出部分需要强化的知识点，建议按照当前个性化学习路径进行针对性学习，并根据后续学习效果动态调整学习计划。"
+  },
+  "S003": {
+    "student_id": "S003",
+    "student": {
+      "student_id": "S003",
+      "student_name": "王同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "从导论和基础概念开始系统补习，逐步建立完整知识链条以应对期末考核"
+    },
+    "learning_overview": {
+      "average_accuracy": 41.58,
+      "average_assessment_score": 39.17,
+      "total_learning_time_minutes": 788.0,
+      "total_practice_count": 206,
+      "total_interaction_count": 122,
+      "average_completion_rate": 64.67,
+      "average_answer_time_seconds": 92.92,
+      "mastery_level": "较弱",
+      "speed_status": "答题速度较快",
+      "activity_level": "低",
+      "completion_level": "较低"
+    },
+    "diagnosis": {
+      "mastery_description": "整体知识掌握程度较弱，当前存在较多基础知识漏洞，建议优先重建基础知识体系，再逐步进入综合应用训练。",
+      "behavior_description": "学习参与度偏低，答题速度较快，学习任务完成度偏低。",
+      "main_problems": [
+        "整体知识基础较弱",
+        "部分知识薄弱与前置知识掌握不足有关",
+        "学习任务完成度偏低"
+      ],
+      "weak_knowledge_count": 12,
+      "prerequisite_knowledge_count": 9
+    },
+    "personalized_strategy": {
+      "recommendation_type": "基础补强",
+      "strategy_description": "王同学当前整体知识掌握程度为较弱，平均正确率为41.58%。当前主要问题是基础知识掌握不够扎实，因此系统将学习策略定位为“基础补强”。建议首先从“稀缺性与经济学基本问题”开始，逐步补齐基础知识链，再进入后续综合应用训练。"
+    },
+    "learning_path": [
+      {
+        "stage": 1,
+        "knowledge_id": "K01",
+        "knowledge_name": "稀缺性与经济学基本问题",
+        "chapter": "第一章 导论",
+        "current_accuracy": 45.0,
+        "priority": "高",
+        "priority_score": 37.9,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅45%，属于明显薄弱知识点；该知识点是其他11个相关薄弱知识点的前置知识",
+        "difficulty": 1.0,
+        "description": "研究稀缺资源如何有效配置，理解机会成本与生产可能性边界"
+      },
+      {
+        "stage": 2,
+        "knowledge_id": "K02",
+        "knowledge_name": "机会成本与生产可能性边界",
+        "chapter": "第一章 导论",
+        "current_accuracy": 40.0,
+        "priority": "高",
+        "priority_score": 40.9,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅40%，属于明显薄弱知识点；该知识点是其他10个相关薄弱知识点的前置知识",
+        "difficulty": 1.0,
+        "description": "用生产可能性边界说明机会成本递增与资源配置效率"
+      },
+      {
+        "stage": 3,
+        "knowledge_id": "K03",
+        "knowledge_name": "理性人假设与边际分析",
+        "chapter": "第一章 导论",
+        "current_accuracy": 42.0,
+        "priority": "高",
+        "priority_score": 39.7,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅42%，属于明显薄弱知识点；该知识点是其他9个相关薄弱知识点的前置知识",
+        "difficulty": 1.0,
+        "description": "理解理性人假定，掌握边际收益与边际成本的决策方法"
+      },
+      {
+        "stage": 4,
+        "knowledge_id": "K05",
+        "knowledge_name": "供给定理与供给曲线",
+        "chapter": "第二章 需求与供给",
+        "current_accuracy": 44.0,
+        "priority": "高",
+        "priority_score": 35.5,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅44%，属于明显薄弱知识点；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 1.0,
+        "description": "价格与供给量同向变动关系，供给曲线移动与沿曲线移动的区别"
+      },
+      {
+        "stage": 5,
+        "knowledge_id": "K17",
+        "knowledge_name": "生产函数与边际报酬递减",
+        "chapter": "第五章 生产者行为",
+        "current_accuracy": 45.0,
+        "priority": "高",
+        "priority_score": 35.3,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅45%，属于明显薄弱知识点；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "理解总产量、平均产量、边际产量关系及边际报酬递减规律"
+      },
+      {
+        "stage": 6,
+        "knowledge_id": "K12",
+        "knowledge_name": "效用与边际效用递减",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 50.0,
+        "priority": "中",
+        "priority_score": 34.9,
+        "learning_goal": "强化知识理解与解题能力",
+        "reason": "当前正确率为50%，掌握程度仍需加强；该知识点是其他3个相关薄弱知识点的前置知识",
+        "difficulty": 1.0,
+        "description": "理解总效用与边际效用，掌握边际效用递减规律"
+      },
+      {
+        "stage": 7,
+        "knowledge_id": "K14",
+        "knowledge_name": "预算约束线",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 40.0,
+        "priority": "高",
+        "priority_score": 38.3,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅40%，属于明显薄弱知识点；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "用预算线表示收入与价格约束，分析收入和价格变化对预算线的影响"
+      },
+      {
+        "stage": 8,
+        "knowledge_id": "K13",
+        "knowledge_name": "无差异曲线",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 42.0,
+        "priority": "高",
+        "priority_score": 37.1,
+        "learning_goal": "优先修复知识薄弱点",
+        "reason": "当前正确率仅42%，属于明显薄弱知识点；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "用无差异曲线描述偏好，理解边际替代率递减"
+      }
+    ],
+    "daily_learning_plan": {
+      "recommended_minutes": 30,
+      "recommended_questions": 8,
+      "focus": "基础知识理解 + 前置知识补齐，建议分阶段完成"
+    },
+    "optimization_suggestions": [
+      "当前整体掌握程度较弱，建议优先补齐基础知识和前置知识。",
+      "当前学习完成度偏低，建议减少单次学习任务量，提高学习计划完成率。"
+    ],
+    "ai_summary": "王同学当前整体知识掌握程度为较弱，平均正确率为41.58%。当前主要问题是基础知识掌握不够扎实，因此系统将学习策略定位为“基础补强”。建议首先从“稀缺性与经济学基本问题”开始，逐步补齐基础知识链，再进入后续综合应用训练。"
+  },
+  "S004": {
+    "student_id": "S004",
+    "student": {
+      "student_id": "S004",
+      "student_name": "赵同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "保持高正确率的同时压缩答题时间，适应考试限时节奏"
+    },
+    "learning_overview": {
+      "average_accuracy": 89.42,
+      "average_assessment_score": 87.42,
+      "total_learning_time_minutes": 635.0,
+      "total_practice_count": 131,
+      "total_interaction_count": 156,
+      "average_completion_rate": 97.5,
+      "average_answer_time_seconds": 168.58,
+      "mastery_level": "较好",
+      "speed_status": "答题耗时较长",
+      "activity_level": "中",
+      "completion_level": "高"
+    },
+    "diagnosis": {
+      "mastery_description": "整体知识掌握较好，已经具备较稳定的基础能力，后续应减少重复性基础训练，重点提升综合应用和知识迁移能力。",
+      "behavior_description": "学习参与度处于中等水平，答题速度偏慢，学习任务完成度较高。",
+      "main_problems": [
+        "答题效率有待提升"
+      ],
+      "weak_knowledge_count": 0,
+      "prerequisite_knowledge_count": 0
+    },
+    "personalized_strategy": {
+      "recommendation_type": "综合能力提升",
+      "strategy_description": "赵同学当前平均正确率为89.42%，整体知识掌握情况较好。系统未发现需要优先补强的明显薄弱知识点，因此建议减少基础重复训练，重点开展综合应用、跨知识点训练和限时模拟。"
+    },
+    "learning_path": [],
+    "daily_learning_plan": {
+      "recommended_minutes": 35,
+      "recommended_questions": 10,
+      "focus": "综合应用 + 跨知识点训练"
+    },
+    "optimization_suggestions": [
+      "当前知识掌握程度较好，建议减少基础重复训练。",
+      "建议增加综合应用题、跨知识点训练和限时模拟。",
+      "可逐步挑战更高难度知识点，提升知识迁移能力。"
+    ],
+    "ai_summary": "赵同学当前平均正确率为89.42%，整体知识掌握情况较好。系统未发现需要优先补强的明显薄弱知识点，因此建议减少基础重复训练，重点开展综合应用、跨知识点训练和限时模拟。"
+  },
+  "S005": {
+    "student_id": "S005",
+    "student": {
+      "student_id": "S005",
+      "student_name": "刘同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "通过高频互动和练习将学习活跃度转化为实际正确率提升"
+    },
+    "learning_overview": {
+      "average_accuracy": 65.58,
+      "average_assessment_score": 63.33,
+      "total_learning_time_minutes": 719.0,
+      "total_practice_count": 264,
+      "total_interaction_count": 445,
+      "average_completion_rate": 86.92,
+      "average_answer_time_seconds": 67.5,
+      "mastery_level": "偏弱",
+      "speed_status": "答题速度较快",
+      "activity_level": "高",
+      "completion_level": "中"
+    },
+    "diagnosis": {
+      "mastery_description": "整体知识掌握程度偏弱，部分核心知识点存在明显薄弱情况，建议结合知识依赖关系进行针对性补强。",
+      "behavior_description": "学习参与度较高，答题速度较快，学习任务完成度处于中等水平。",
+      "main_problems": [
+        "部分核心知识点掌握不足",
+        "部分知识薄弱与前置知识掌握不足有关",
+        "学习参与度较高但学习效果仍需提升"
+      ],
+      "weak_knowledge_count": 1,
+      "prerequisite_knowledge_count": 2
+    },
+    "personalized_strategy": {
+      "recommendation_type": "高参与度转化训练",
+      "strategy_description": "刘同学学习参与度较高，但当前平均正确率为65.58%，说明学习行为尚未完全转化为知识掌握。建议通过错题复盘、概念理解和针对性练习，提升学习行为向学习效果的转化效率。"
+    },
+    "learning_path": [
+      {
+        "stage": 1,
+        "knowledge_id": "K14",
+        "knowledge_name": "预算约束线",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 50.0,
+        "priority": "中",
+        "priority_score": 32.55,
+        "learning_goal": "补齐前置知识基础",
+        "reason": "当前正确率为50%，掌握程度仍需加强；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "用预算线表示收入与价格约束，分析收入和价格变化对预算线的影响"
+      },
+      {
+        "stage": 2,
+        "knowledge_id": "K13",
+        "knowledge_name": "无差异曲线",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 66.0,
+        "priority": "中",
+        "priority_score": 22.95,
+        "learning_goal": "补齐前置知识基础",
+        "reason": "当前正确率为66%，掌握程度仍需加强；该知识点是其他1个相关薄弱知识点的前置知识",
+        "difficulty": 2.0,
+        "description": "用无差异曲线描述偏好，理解边际替代率递减"
+      },
+      {
+        "stage": 3,
+        "knowledge_id": "K15",
+        "knowledge_name": "消费者最优选择",
+        "chapter": "第四章 消费者行为",
+        "current_accuracy": 58.0,
+        "priority": "中",
+        "priority_score": 26.4,
+        "learning_goal": "强化知识理解与解题能力",
+        "reason": "当前正确率为58%，掌握程度仍需加强",
+        "difficulty": 3.0,
+        "description": "无差异曲线与预算线切点决定最优消费组合，MRS等于价格比"
+      }
+    ],
+    "daily_learning_plan": {
+      "recommended_minutes": 40,
+      "recommended_questions": 12,
+      "focus": "错题复盘 + 理解训练 + 练习转化"
+    },
+    "optimization_suggestions": [
+      "学习参与度较高但正确率仍有限，应重点加强错题复盘和知识理解。"
+    ],
+    "ai_summary": "刘同学学习参与度较高，但当前平均正确率为65.58%，说明学习行为尚未完全转化为知识掌握。建议通过错题复盘、概念理解和针对性练习，提升学习行为向学习效果的转化效率。"
+  }
+}

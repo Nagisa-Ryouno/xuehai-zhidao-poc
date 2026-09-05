@@ -1,0 +1,473 @@
+{
+  "S001": {
+    "student": {
+      "student_id": "S001",
+      "student_name": "张同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "掌握微观经济学基础并能够解决综合分析题，重点突破弹性计算薄弱环节"
+    },
+    "overall_profile": {
+      "average_accuracy": 80.5,
+      "average_assessment_score": 80.75,
+      "total_learning_time_minutes": 542.0,
+      "total_practice_count": 163,
+      "total_interaction_count": 217,
+      "average_completion_rate": 95.83,
+      "average_answer_time_seconds": 64.83,
+      "mastery_level": "中等",
+      "speed_status": "答题速度较快",
+      "activity_level": "中",
+      "completion_level": "高"
+    },
+    "weak_knowledge_points": [
+      {
+        "knowledge_id": "K08",
+        "knowledge_name": "需求价格弹性",
+        "accuracy": 42.0,
+        "assessment_score": 48.0,
+        "average_time_seconds": 95.0,
+        "difficulty": 2,
+        "prerequisite": [
+          "K04",
+          "K07"
+        ]
+      },
+      {
+        "knowledge_id": "K11",
+        "knowledge_name": "弹性与税收归宿",
+        "accuracy": 55.0,
+        "assessment_score": 58.0,
+        "average_time_seconds": 90.0,
+        "difficulty": 3,
+        "prerequisite": [
+          "K08",
+          "K09",
+          "K10"
+        ]
+      },
+      {
+        "knowledge_id": "K09",
+        "knowledge_name": "需求收入弹性与交叉弹性",
+        "accuracy": 58.0,
+        "assessment_score": 60.0,
+        "average_time_seconds": 88.0,
+        "difficulty": 2,
+        "prerequisite": [
+          "K08"
+        ]
+      }
+    ],
+    "prerequisite_knowledge_points": [
+      {
+        "knowledge_id": "K08",
+        "knowledge_name": "需求价格弹性",
+        "accuracy": 42.0,
+        "reason": "该知识点是薄弱知识点需求收入弹性与交叉弹性的前置知识"
+      },
+      {
+        "knowledge_id": "K09",
+        "knowledge_name": "需求收入弹性与交叉弹性",
+        "accuracy": 58.0,
+        "reason": "该知识点是薄弱知识点弹性与税收归宿的前置知识"
+      }
+    ],
+    "diagnosis": [
+      "整体知识掌握程度较好，可进一步进行重点突破",
+      "存在多个知识薄弱点，需要进行针对性学习",
+      "部分薄弱知识点可能与前置知识掌握不足有关，建议优先补齐知识链"
+    ]
+  },
+  "S002": {
+    "student": {
+      "student_id": "S002",
+      "student_name": "李同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "夯实供求与消费者行为基础，提升中等难度题目的稳定得分率"
+    },
+    "overall_profile": {
+      "average_accuracy": 62.08,
+      "average_assessment_score": 59.92,
+      "total_learning_time_minutes": 566.0,
+      "total_practice_count": 150,
+      "total_interaction_count": 150,
+      "average_completion_rate": 80.42,
+      "average_answer_time_seconds": 78.33,
+      "mastery_level": "偏弱",
+      "speed_status": "答题速度较快",
+      "activity_level": "中",
+      "completion_level": "中"
+    },
+    "weak_knowledge_points": [
+      {
+        "knowledge_id": "K16",
+        "knowledge_name": "收入效应与替代效应",
+        "accuracy": 48.0,
+        "assessment_score": 46.0,
+        "average_time_seconds": 95.0,
+        "difficulty": 3,
+        "prerequisite": [
+          "K15"
+        ]
+      },
+      {
+        "knowledge_id": "K15",
+        "knowledge_name": "消费者最优选择",
+        "accuracy": 52.0,
+        "assessment_score": 50.0,
+        "average_time_seconds": 90.0,
+        "difficulty": 3,
+        "prerequisite": [
+          "K13",
+          "K14"
+        ]
+      },
+      {
+        "knowledge_id": "K07",
+        "knowledge_name": "供求变动与均衡分析",
+        "accuracy": 58.0,
+        "assessment_score": 56.0,
+        "average_time_seconds": 85.0,
+        "difficulty": 2,
+        "prerequisite": [
+          "K06"
+        ]
+      }
+    ],
+    "prerequisite_knowledge_points": [
+      {
+        "knowledge_id": "K15",
+        "knowledge_name": "消费者最优选择",
+        "accuracy": 52.0,
+        "reason": "该知识点是薄弱知识点收入效应与替代效应的前置知识"
+      },
+      {
+        "knowledge_id": "K13",
+        "knowledge_name": "无差异曲线",
+        "accuracy": 64.0,
+        "reason": "该知识点是薄弱知识点消费者最优选择的前置知识"
+      },
+      {
+        "knowledge_id": "K14",
+        "knowledge_name": "预算约束线",
+        "accuracy": 60.0,
+        "reason": "该知识点是薄弱知识点消费者最优选择的前置知识"
+      },
+      {
+        "knowledge_id": "K06",
+        "knowledge_name": "市场均衡与均衡价格",
+        "accuracy": 62.0,
+        "reason": "该知识点是薄弱知识点供求变动与均衡分析的前置知识"
+      }
+    ],
+    "diagnosis": [
+      "整体知识掌握程度一般，需要针对薄弱知识点进行强化",
+      "存在多个知识薄弱点，需要进行针对性学习",
+      "部分薄弱知识点可能与前置知识掌握不足有关，建议优先补齐知识链"
+    ]
+  },
+  "S003": {
+    "student": {
+      "student_id": "S003",
+      "student_name": "王同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "从导论和基础概念开始系统补习，逐步建立完整知识链条以应对期末考核"
+    },
+    "overall_profile": {
+      "average_accuracy": 41.58,
+      "average_assessment_score": 39.17,
+      "total_learning_time_minutes": 788.0,
+      "total_practice_count": 206,
+      "total_interaction_count": 122,
+      "average_completion_rate": 64.67,
+      "average_answer_time_seconds": 92.92,
+      "mastery_level": "较弱",
+      "speed_status": "答题速度较快",
+      "activity_level": "低",
+      "completion_level": "较低"
+    },
+    "weak_knowledge_points": [
+      {
+        "knowledge_id": "K15",
+        "knowledge_name": "消费者最优选择",
+        "accuracy": 30.0,
+        "assessment_score": 28.0,
+        "average_time_seconds": 110.0,
+        "difficulty": 3,
+        "prerequisite": [
+          "K13",
+          "K14"
+        ]
+      },
+      {
+        "knowledge_id": "K21",
+        "knowledge_name": "短期成本曲线",
+        "accuracy": 35.0,
+        "assessment_score": 32.0,
+        "average_time_seconds": 100.0,
+        "difficulty": 2,
+        "prerequisite": [
+          "K18"
+        ]
+      },
+      {
+        "knowledge_id": "K06",
+        "knowledge_name": "市场均衡与均衡价格",
+        "accuracy": 38.0,
+        "assessment_score": 35.0,
+        "average_time_seconds": 100.0,
+        "difficulty": 1,
+        "prerequisite": [
+          "K04",
+          "K05"
+        ]
+      },
+      {
+        "knowledge_id": "K02",
+        "knowledge_name": "机会成本与生产可能性边界",
+        "accuracy": 40.0,
+        "assessment_score": 38.0,
+        "average_time_seconds": 95.0,
+        "difficulty": 1,
+        "prerequisite": [
+          "K01"
+        ]
+      },
+      {
+        "knowledge_id": "K14",
+        "knowledge_name": "预算约束线",
+        "accuracy": 40.0,
+        "assessment_score": 38.0,
+        "average_time_seconds": 95.0,
+        "difficulty": 2,
+        "prerequisite": [
+          "K12"
+        ]
+      },
+      {
+        "knowledge_id": "K03",
+        "knowledge_name": "理性人假设与边际分析",
+        "accuracy": 42.0,
+        "assessment_score": 40.0,
+        "average_time_seconds": 88.0,
+        "difficulty": 1,
+        "prerequisite": [
+          "K01",
+          "K02"
+        ]
+      },
+      {
+        "knowledge_id": "K13",
+        "knowledge_name": "无差异曲线",
+        "accuracy": 42.0,
+        "assessment_score": 40.0,
+        "average_time_seconds": 92.0,
+        "difficulty": 2,
+        "prerequisite": [
+          "K12"
+        ]
+      },
+      {
+        "knowledge_id": "K05",
+        "knowledge_name": "供给定理与供给曲线",
+        "accuracy": 44.0,
+        "assessment_score": 42.0,
+        "average_time_seconds": 90.0,
+        "difficulty": 1,
+        "prerequisite": [
+          "K03"
+        ]
+      },
+      {
+        "knowledge_id": "K01",
+        "knowledge_name": "稀缺性与经济学基本问题",
+        "accuracy": 45.0,
+        "assessment_score": 42.0,
+        "average_time_seconds": 90.0,
+        "difficulty": 1,
+        "prerequisite": []
+      },
+      {
+        "knowledge_id": "K17",
+        "knowledge_name": "生产函数与边际报酬递减",
+        "accuracy": 45.0,
+        "assessment_score": 42.0,
+        "average_time_seconds": 88.0,
+        "difficulty": 2,
+        "prerequisite": [
+          "K03"
+        ]
+      },
+      {
+        "knowledge_id": "K04",
+        "knowledge_name": "需求定理与需求曲线",
+        "accuracy": 48.0,
+        "assessment_score": 45.0,
+        "average_time_seconds": 85.0,
+        "difficulty": 1,
+        "prerequisite": [
+          "K03"
+        ]
+      },
+      {
+        "knowledge_id": "K12",
+        "knowledge_name": "效用与边际效用递减",
+        "accuracy": 50.0,
+        "assessment_score": 48.0,
+        "average_time_seconds": 82.0,
+        "difficulty": 1,
+        "prerequisite": [
+          "K03"
+        ]
+      }
+    ],
+    "prerequisite_knowledge_points": [
+      {
+        "knowledge_id": "K13",
+        "knowledge_name": "无差异曲线",
+        "accuracy": 42.0,
+        "reason": "该知识点是薄弱知识点消费者最优选择的前置知识"
+      },
+      {
+        "knowledge_id": "K14",
+        "knowledge_name": "预算约束线",
+        "accuracy": 40.0,
+        "reason": "该知识点是薄弱知识点消费者最优选择的前置知识"
+      },
+      {
+        "knowledge_id": "K18",
+        "knowledge_name": "短期生产与长期生产",
+        "accuracy": null,
+        "reason": "该知识点是薄弱知识点短期成本曲线的前置知识，但当前学习记录不足"
+      },
+      {
+        "knowledge_id": "K04",
+        "knowledge_name": "需求定理与需求曲线",
+        "accuracy": 48.0,
+        "reason": "该知识点是薄弱知识点市场均衡与均衡价格的前置知识"
+      },
+      {
+        "knowledge_id": "K05",
+        "knowledge_name": "供给定理与供给曲线",
+        "accuracy": 44.0,
+        "reason": "该知识点是薄弱知识点市场均衡与均衡价格的前置知识"
+      },
+      {
+        "knowledge_id": "K01",
+        "knowledge_name": "稀缺性与经济学基本问题",
+        "accuracy": 45.0,
+        "reason": "该知识点是薄弱知识点理性人假设与边际分析的前置知识"
+      },
+      {
+        "knowledge_id": "K12",
+        "knowledge_name": "效用与边际效用递减",
+        "accuracy": 50.0,
+        "reason": "该知识点是薄弱知识点无差异曲线的前置知识"
+      },
+      {
+        "knowledge_id": "K02",
+        "knowledge_name": "机会成本与生产可能性边界",
+        "accuracy": 40.0,
+        "reason": "该知识点是薄弱知识点理性人假设与边际分析的前置知识"
+      },
+      {
+        "knowledge_id": "K03",
+        "knowledge_name": "理性人假设与边际分析",
+        "accuracy": 42.0,
+        "reason": "该知识点是薄弱知识点效用与边际效用递减的前置知识"
+      }
+    ],
+    "diagnosis": [
+      "整体知识掌握程度偏弱，需要优先夯实基础",
+      "存在多个知识薄弱点，需要进行针对性学习",
+      "部分薄弱知识点可能与前置知识掌握不足有关，建议优先补齐知识链",
+      "学习互动活跃度较低，需要提高学习参与度"
+    ]
+  },
+  "S004": {
+    "student": {
+      "student_id": "S004",
+      "student_name": "赵同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "保持高正确率的同时压缩答题时间，适应考试限时节奏"
+    },
+    "overall_profile": {
+      "average_accuracy": 89.42,
+      "average_assessment_score": 87.42,
+      "total_learning_time_minutes": 635.0,
+      "total_practice_count": 131,
+      "total_interaction_count": 156,
+      "average_completion_rate": 97.5,
+      "average_answer_time_seconds": 168.58,
+      "mastery_level": "较好",
+      "speed_status": "答题耗时较长",
+      "activity_level": "中",
+      "completion_level": "高"
+    },
+    "weak_knowledge_points": [],
+    "prerequisite_knowledge_points": [],
+    "diagnosis": [
+      "整体知识掌握程度较好，可进一步进行重点突破",
+      "答题正确率较高但耗时较长，需要加强限时训练"
+    ]
+  },
+  "S005": {
+    "student": {
+      "student_id": "S005",
+      "student_name": "刘同学",
+      "major": "经济学",
+      "grade": "大二",
+      "learning_goal": "通过高频互动和练习将学习活跃度转化为实际正确率提升"
+    },
+    "overall_profile": {
+      "average_accuracy": 65.58,
+      "average_assessment_score": 63.33,
+      "total_learning_time_minutes": 719.0,
+      "total_practice_count": 264,
+      "total_interaction_count": 445,
+      "average_completion_rate": 86.92,
+      "average_answer_time_seconds": 67.5,
+      "mastery_level": "偏弱",
+      "speed_status": "答题速度较快",
+      "activity_level": "高",
+      "completion_level": "中"
+    },
+    "weak_knowledge_points": [
+      {
+        "knowledge_id": "K15",
+        "knowledge_name": "消费者最优选择",
+        "accuracy": 58.0,
+        "assessment_score": 55.0,
+        "average_time_seconds": 80.0,
+        "difficulty": 3,
+        "prerequisite": [
+          "K13",
+          "K14"
+        ]
+      }
+    ],
+    "prerequisite_knowledge_points": [
+      {
+        "knowledge_id": "K13",
+        "knowledge_name": "无差异曲线",
+        "accuracy": 66.0,
+        "reason": "该知识点是薄弱知识点消费者最优选择的前置知识"
+      },
+      {
+        "knowledge_id": "K14",
+        "knowledge_name": "预算约束线",
+        "accuracy": null,
+        "reason": "该知识点是薄弱知识点消费者最优选择的前置知识，但当前学习记录不足"
+      }
+    ],
+    "diagnosis": [
+      "整体知识掌握程度一般，需要针对薄弱知识点进行强化",
+      "存在多个知识薄弱点，需要进行针对性学习",
+      "部分薄弱知识点可能与前置知识掌握不足有关，建议优先补齐知识链",
+      "学习参与度较高但知识掌握仍有限，需要提高学习行为向学习效果的转化"
+    ]
+  }
+}

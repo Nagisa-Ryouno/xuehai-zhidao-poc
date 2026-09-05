@@ -33,38 +33,23 @@ from pathlib import Path
 import openpyxl
 
 
-# ============================================================
-# 配置
-# ============================================================
+import sys
 
-BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-PROFILE_FILE = (
-    BASE_DIR
-    / "output"
-    / "student_profiles.json"
-)
+from app.core.config import settings
 
-LEARNING_PATH_FILE = (
-    BASE_DIR
-    / "output"
-    / "learning_paths.json"
-)
+BASE_DIR = settings.PROJECT_ROOT
 
-EXCEL_FILE = (
-    BASE_DIR
-    / "economics_learning_demo.xlsx"
-)
+PROFILE_FILE = settings.STUDENT_PROFILES_FILE if settings.STUDENT_PROFILES_FILE.exists() else BASE_DIR / "output" / "student_profiles.json"
+LEARNING_PATH_FILE = settings.LEARNING_PATHS_FILE if settings.LEARNING_PATHS_FILE.exists() else BASE_DIR / "output" / "learning_paths.json"
+EXCEL_FILE = settings.EXCEL_RAW_FILE if settings.EXCEL_RAW_FILE.exists() else BASE_DIR / "economics_learning_demo.xlsx"
 
-OUTPUT_DIR = (
-    BASE_DIR
-    / "output"
-)
-
-OUTPUT_FILE = (
-    OUTPUT_DIR
-    / "student_reports.json"
-)
+OUTPUT_DIR = settings.SEEDS_DIR
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_FILE = settings.STUDENT_REPORTS_FILE
 
 
 # ============================================================
@@ -132,7 +117,7 @@ for file_path in required_files:
 
         print()
         print(
-            f"❌ 文件不存在：{file_path}"
+            f"[FAIL] 文件不存在：{file_path}"
         )
 
         print()
@@ -143,7 +128,7 @@ for file_path in required_files:
         raise SystemExit(1)
 
 
-print("✓ 所有输入文件检查通过。")
+print("[OK] 所有输入文件检查通过。")
 
 
 # ============================================================
@@ -163,7 +148,7 @@ with open(
 
 
 print(
-    f"✓ 成功读取 {len(profiles)} 名学生的学情画像。"
+    f"[OK] 成功读取 {len(profiles)} 名学生的学情画像。"
 )
 
 
@@ -184,7 +169,7 @@ with open(
 
 
 print(
-    f"✓ 成功读取 {len(learning_paths)} 名学生的学习路径。"
+    f"[OK] 成功读取 {len(learning_paths)} 名学生的学习路径。"
 )
 
 
@@ -203,7 +188,7 @@ wb = openpyxl.load_workbook(
 if "knowledge_points" not in wb.sheetnames:
 
     print(
-        "❌ Excel 中不存在 knowledge_points 工作表"
+        "[FAIL] Excel 中不存在 knowledge_points 工作表"
     )
 
     raise SystemExit(1)
@@ -260,7 +245,7 @@ for row in ws.iter_rows(
 
 
 print(
-    f"✓ 成功读取 {len(knowledge_points)} 个知识点。"
+    f"[OK] 成功读取 {len(knowledge_points)} 个知识点。"
 )
 
 
@@ -1404,7 +1389,7 @@ for student_id, report in student_reports.items():
     print("-" * 70)
 
 print()
-print("✓ 第三阶段执行成功。")
+print("[OK] 第三阶段执行成功。")
 print(
     "下一阶段可以将 student_reports.json "
     "接入 FastAPI 后端。"

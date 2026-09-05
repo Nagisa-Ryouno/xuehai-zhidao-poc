@@ -21,23 +21,25 @@ import openpyxl
 
 
 # =========================
-# 配置
-# =========================
+import sys
 
-BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from app.core.config import settings
+
+BASE_DIR = settings.PROJECT_ROOT
 
 # Excel 数据文件
-EXCEL_PATH = BASE_DIR / "economics_learning_demo.xlsx"
+EXCEL_PATH = settings.EXCEL_RAW_FILE if settings.EXCEL_RAW_FILE.exists() else BASE_DIR / "economics_learning_demo.xlsx"
 
 # 输出目录
-OUTPUT_DIR = BASE_DIR / "output"
+OUTPUT_DIR = settings.SEEDS_DIR
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # 输出 JSON
-OUTPUT_FILE = OUTPUT_DIR / "student_profiles.json"
-
-print(f"项目目录：{BASE_DIR}")
-print(f"Excel路径：{EXCEL_PATH}")
-print(f"Excel是否存在：{EXCEL_PATH.exists()}")
+OUTPUT_FILE = settings.STUDENT_PROFILES_FILE
 
 
 # =========================

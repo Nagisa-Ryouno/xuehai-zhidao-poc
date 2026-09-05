@@ -30,17 +30,22 @@ from collections import defaultdict
 import openpyxl
 
 
-# ============================================================
-# 配置
-# ============================================================
+import sys
 
-BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-PROFILE_FILE = BASE_DIR / "output" / "student_profiles.json"
-EXCEL_FILE = BASE_DIR / "economics_learning_demo.xlsx"
+from app.core.config import settings
 
-OUTPUT_DIR = BASE_DIR / "output"
-OUTPUT_FILE = OUTPUT_DIR / "learning_paths.json"
+BASE_DIR = settings.PROJECT_ROOT
+
+PROFILE_FILE = settings.STUDENT_PROFILES_FILE if settings.STUDENT_PROFILES_FILE.exists() else BASE_DIR / "output" / "student_profiles.json"
+EXCEL_FILE = settings.EXCEL_RAW_FILE if settings.EXCEL_RAW_FILE.exists() else BASE_DIR / "economics_learning_demo.xlsx"
+
+OUTPUT_DIR = settings.SEEDS_DIR
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_FILE = settings.LEARNING_PATHS_FILE
 
 
 # ============================================================
@@ -1462,7 +1467,7 @@ for student_id, result in learning_paths.items():
     ]:
 
         print(
-            f"  • {suggestion}"
+            f"  - {suggestion}"
         )
 
     print()

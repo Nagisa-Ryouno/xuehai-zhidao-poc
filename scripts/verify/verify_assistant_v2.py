@@ -7,8 +7,15 @@ verify_assistant_v2.py
 import os
 import sys
 import json
-import assistant_service
-from llm_service import llm_service
+from pathlib import Path
+
+# 确保能检索到项目根目录
+_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from app.services.assistant_service import assistant_service
+from app.infrastructure.external.llm_client import llm_client as llm_service
 
 print("=" * 70)
 print("学海智导 · AI 学习助手 V2 全量测试套件")

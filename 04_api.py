@@ -35,6 +35,7 @@ from pydantic import BaseModel
 
 import assistant_service
 import event_service
+import quiz_service
 from knowledge_graph_service import knowledge_graph_service
 
 
@@ -540,6 +541,26 @@ def submit_learning_event(event: event_service.LearningEventCreate):
         event_id=stored.event_id,
         server_timestamp=stored.server_timestamp,
     )
+
+
+# ============================================================
+# 分知识点微测验接口 (Knowledge-Point Quizzes)
+# ============================================================
+
+@app.get("/api/quiz/{knowledge_id}", response_model=quiz_service.QuizKnowledgeListResponse)
+def get_quiz_questions(knowledge_id: str):
+    """
+    按知识点查询测验题目（返回脱敏公开模型，严格剔除正确答案与解析）
+    """
+    return quiz_service.get_questions_by_knowledge_id(knowledge_id)
+
+
+@app.post("/api/quiz/submit", response_model=quiz_service.QuizSubmitResponse)
+def submit_quiz_answer(req: quiz_service.QuizSubmitRequest):
+    """
+    提交题目答案，服务端权威判题并自动记录 QUESTION_ATTEMPT 学习行为事件
+    """
+    return quiz_service.submit_quiz_answer(req)
 
 
 # ============================================================

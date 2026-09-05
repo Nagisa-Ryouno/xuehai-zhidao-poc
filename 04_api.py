@@ -34,6 +34,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 import assistant_service
+import event_service
 from knowledge_graph_service import knowledge_graph_service
 
 
@@ -521,6 +522,23 @@ def get_assistant_greeting(
 
     return assistant_service.get_assistant_greeting(
         student_id=student_id
+    )
+
+
+# ============================================================
+# 学习行为事件采集接口 (Learning Events)
+# ============================================================
+
+@app.post("/api/events", response_model=event_service.EventSubmissionResponse)
+def submit_learning_event(event: event_service.LearningEventCreate):
+    """
+    统一接收并持久化来自前端、测验系统或伴学模块的学习行为事件
+    """
+    stored = event_service.record_event(event)
+    return event_service.EventSubmissionResponse(
+        status="success",
+        event_id=stored.event_id,
+        server_timestamp=stored.server_timestamp,
     )
 
 

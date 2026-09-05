@@ -25,8 +25,7 @@ import bkt_service
 import bkt_state_service
 import bkt_event_processor
 import event_service
-_api_mod = importlib.import_module("04_api")
-app = _api_mod.app
+from app.main import app
 
 
 class TestBKTAPI(unittest.TestCase):

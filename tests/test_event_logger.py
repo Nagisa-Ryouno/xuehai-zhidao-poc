@@ -26,8 +26,7 @@ from fastapi.testclient import TestClient
 import importlib
 # 导入应用与事件服务（RED 阶段将因未实现而报错）
 import event_service
-_api_module = importlib.import_module("04_api")
-app = _api_module.app
+from app.main import app
 
 
 class TestLearningEventLogger(unittest.TestCase):

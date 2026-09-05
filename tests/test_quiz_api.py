@@ -27,8 +27,7 @@ from fastapi.testclient import TestClient
 import bkt_state_service
 import event_service
 import quiz_service
-_api_module = importlib.import_module("04_api")
-app = _api_module.app
+from app.main import app
 
 
 class TestQuizApi(unittest.TestCase):

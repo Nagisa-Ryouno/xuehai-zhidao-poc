@@ -30,8 +30,7 @@ import path_state_service
 from path_state_service import PathState
 import quiz_service
 
-_api_mod = importlib.import_module("04_api")
-app = _api_mod.app
+from app.main import app
 
 
 class TestQuizReplanningIntegration(unittest.TestCase):

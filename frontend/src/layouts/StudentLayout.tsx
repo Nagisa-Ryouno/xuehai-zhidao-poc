@@ -16,6 +16,8 @@ import { Footer } from '../components/Footer';
 import { useApp } from '../context/useApp';
 import type { StudentListItem, StudentDashboardResponse } from '../types';
 import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
+import { BottomNav } from '../components/student/BottomNav';
+import { MobileContainer } from '../components/student/MobileContainer';
 
 interface StudentLayoutProps {
   students: StudentListItem[];
@@ -67,8 +69,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         isLoading={isLoading || isSwitching}
       />
 
-      {/* Sub-route Navigation Pill Bar (P0-1 骨架，便于桌面与移动端预览各子路由) */}
-      <div className="bg-white border-b border-slate-200/80 sticky top-18 z-20 shadow-xs">
+      {/* Sub-route Navigation Pill Bar (仅在平板与桌面端展示，移动端由底部 BottomNav 承载) */}
+      <div className="hidden md:block bg-white border-b border-slate-200/80 sticky top-18 z-20 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-1 sm:space-x-2 py-2 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => {
@@ -94,8 +96,9 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content Area with MobileContainer */}
+      <main className="flex-1 w-full py-4 sm:py-8">
+        <MobileContainer>
         {isLoading ? (
           <LoadingSkeleton />
         ) : errorMessage ? (
@@ -221,10 +224,14 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
             )}
           </div>
         ) : null}
+        </MobileContainer>
       </main>
 
       {/* Footer */}
       <Footer />
+
+      {/* Mobile Bottom Navigation (仅在移动端展示) */}
+      <BottomNav />
     </div>
   );
 };

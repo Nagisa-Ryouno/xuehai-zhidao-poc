@@ -34,7 +34,7 @@ class KnowledgeGraphResponse(BaseModel):
     """知识图谱综合响应"""
     student_id: str
     student_name: str
-    knowledge_points: List[Dict[str, Any]]
+    nodes: List[Dict[str, Any]]
     edges: List[Dict[str, Any]]
-    summary: Dict[str, Any]
-    insights: List[Dict[str, Any]]
+    stats: Dict[str, Any]
+    ai_insight: Dict[str, Any]

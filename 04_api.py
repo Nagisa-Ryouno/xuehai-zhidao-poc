@@ -28,7 +28,7 @@ student_reports.json
 
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,6 +40,7 @@ import quiz_service
 import bkt_service
 import bkt_state_service
 import bkt_event_processor
+import path_state_service
 from knowledge_graph_service import knowledge_graph_service
 
 
@@ -666,6 +667,37 @@ def update_learning_state_from_event(req: LearningStateUpdateRequest):
         after=round(result.after_mastery, 6) if result.after_mastery is not None else None,
         changed=result.changed,
         reason=result.reason,
+    )
+
+
+# ============================================================
+# 动态学习路径执行状态 (Path State) 接口
+# ============================================================
+
+class StudentPathStatesResponse(BaseModel):
+    student_id: str
+    states: Dict[str, str]
+
+
+@app.get(
+    "/api/students/{student_id}/path-states",
+    response_model=StudentPathStatesResponse,
+)
+def get_student_path_states(student_id: str):
+    """
+    查询指定学生在知识网络中的路径执行状态字典
+    若 student_id 不存在于系统画像中，抛出 404
+    """
+    profiles = load_json(PROFILE_FILE)
+    if student_id not in profiles:
+        raise HTTPException(
+            status_code=404,
+            detail=f"找不到学生：{student_id}",
+        )
+    states = path_state_service.get_all_path_states(student_id)
+    return StudentPathStatesResponse(
+        student_id=student_id,
+        states={k: v.value for k, v in states.items()},
     )
 
 

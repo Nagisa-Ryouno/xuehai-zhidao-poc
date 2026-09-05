@@ -23,6 +23,8 @@ from pydantic import BaseModel, Field
 import bkt_event_processor
 import event_service
 from knowledge_graph_service import knowledge_graph_service
+import path_replanning_service
+from path_replanning_service import DecisionAuditEnvelope
 
 # ============================================================
 # 文件路径配置
@@ -105,6 +107,9 @@ class QuizSubmitResponse(BaseModel):
     event_id: str
     learning_state: Optional[LearningStateSnapshot] = Field(
         default=None, description="流式闭环自动更新的 BKT 学情状态快照"
+    )
+    replanning: Optional[path_replanning_service.DecisionAuditEnvelope] = Field(
+        default=None, description="局部动态路径重规划审计信封"
     )
 
 
@@ -207,6 +212,7 @@ def submit_quiz_answer(
     events_file: Optional[Path] = None,
     states_file: Optional[Path] = None,
     processed_file: Optional[Path] = None,
+    path_states_file: Optional[Path] = None,
 ) -> QuizSubmitResponse:
     """
     提交测验答案：
@@ -215,7 +221,8 @@ def submit_quiz_answer(
     3. 服务端权威判定 is_correct
     4. 权威生成 LearningEvent (QUESTION_ATTEMPT) 并写入日志
     5. 联动 BKT 事件处理器流式演进学生认知状态，保证严格幂等与事实来源不丢失
-    6. 返回判题响应与最新学情状态快照
+    6. 联动局部动态路径重规划服务 (evaluate_and_replan) 触发路径执行状态演进与审计信封生成
+    7. 返回判题响应、最新学情状态快照与重规划审计信封
     """
     question = get_question_by_id(req.question_id, bank_file)
     if not question:
@@ -260,6 +267,7 @@ def submit_quiz_answer(
     # 保持 Event 为权威事实来源，容错降级，不因 BKT 异常丢弃 Event
     # ============================================================
     learning_state: Optional[LearningStateSnapshot] = None
+    replanning_envelope: Optional[path_replanning_service.DecisionAuditEnvelope] = None
     try:
         bkt_res = bkt_event_processor.process_event(
             stored_event,
@@ -276,6 +284,25 @@ def submit_quiz_answer(
                 attempts=bkt_res.state.attempts,
                 consecutive_correct=bkt_res.state.consecutive_correct,
             )
+            # ============================================================
+            # P0-8 闭环：BKT 更新成功驱动局部动态路径重规划
+            # ============================================================
+            try:
+                prev_mastered = (bkt_res.before_mastery is not None and bkt_res.before_mastery >= 0.80)
+                replanning_envelope = path_replanning_service.evaluate_and_replan(
+                    student_id=req.student_id,
+                    knowledge_id=question.knowledge_id,
+                    before_mastery=bkt_res.before_mastery or 0.20,
+                    after_mastery=bkt_res.after_mastery or bkt_res.state.mastery_probability,
+                    consecutive_incorrect=bkt_res.state.consecutive_incorrect,
+                    previously_mastered=prev_mastered,
+                    is_task_context=True,
+                    trace_id=stored_event.event_id,
+                    states_file=path_states_file,
+                    bkt_states_file=states_file,
+                )
+            except Exception:
+                replanning_envelope = None
         elif bkt_res.status == "already_processed" and bkt_res.state is not None:
             prob = bkt_res.state.mastery_probability
             learning_state = LearningStateSnapshot(
@@ -309,4 +336,5 @@ def submit_quiz_answer(
         question_id=question.question_id,
         event_id=stored_event.event_id,
         learning_state=learning_state,
+        replanning=replanning_envelope,
     )

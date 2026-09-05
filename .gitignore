@@ -42,3 +42,14 @@ OpenTutor-main/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Runtime dynamic storage
+data/runtime/
+data/learning_path_states.json
+data/bkt_states.json
+data/bkt_processed_events.json
+data/learning_events.jsonl
+
+# Testing & caches
+.coverage
+htmlcov/

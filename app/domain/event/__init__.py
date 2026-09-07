@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-app.api.schemas.event
-学习行为事件提交流 DTO 模型
+app.domain.event
+学习行为事件领域模型
 """
 
-from app.domain.event import (
+from app.domain.event.models import (
     LearningEventType,
     LearningEventCreate,
     LearningEvent,

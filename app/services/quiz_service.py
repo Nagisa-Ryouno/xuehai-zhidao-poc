@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import uuid
 
-from fastapi import HTTPException
+from app.core.exceptions import EntityNotFoundError, InvalidOptionError
 from pydantic import BaseModel, Field
 
 import bkt_event_processor
@@ -179,7 +179,7 @@ def get_questions_by_knowledge_id(
     若知识点不存在，抛出 404
     """
     if not is_valid_knowledge_id(knowledge_id):
-        raise HTTPException(status_code=404, detail=f"未找到对应知识点：{knowledge_id}")
+        raise EntityNotFoundError(f"未找到对应知识点：{knowledge_id}")
 
     raw_kp = knowledge_graph_service.get_knowledge_point(knowledge_id) or {}
     knowledge_name = raw_kp.get("knowledge_name", knowledge_id)
@@ -226,13 +226,12 @@ def submit_quiz_answer(
     """
     question = get_question_by_id(req.question_id, bank_file)
     if not question:
-        raise HTTPException(status_code=404, detail=f"题目不存在：{req.question_id}")
+        raise EntityNotFoundError(f"题目不存在：{req.question_id}")
 
     valid_option_keys = [opt.key for opt in question.options]
     if req.selected_option not in valid_option_keys:
-        raise HTTPException(
-            status_code=422,
-            detail=f"非法选项：{req.selected_option}，可选选项为：{valid_option_keys}",
+        raise InvalidOptionError(
+            f"非法选项：{req.selected_option}，可选选项为：{valid_option_keys}"
         )
 
     is_correct = (req.selected_option == question.answer)

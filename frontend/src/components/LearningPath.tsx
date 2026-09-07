@@ -7,20 +7,78 @@ import {
   Compass,
   Clock,
   BookMarked,
+  Lock,
+  PlayCircle,
+  RotateCcw,
 } from 'lucide-react';
-import type { LearningPathStep } from '../types';
+import type { LearningPathStep, PathState } from '../types';
 
 interface LearningPathProps {
   learningPath: LearningPathStep[];
   recommendationType: string;
   studentName: string;
+  pathStates?: Record<string, PathState>;
+  onStartQuiz?: (knowledgeId: string, knowledgeName: string) => void;
 }
 
 export const LearningPath: React.FC<LearningPathProps> = ({
   learningPath,
   recommendationType,
   studentName,
+  pathStates,
+  onStartQuiz,
 }) => {
+  // 解析知识点路径状态：优先读取真实状态字典，未命中时依据阶段序号与当前正确率推导
+  const resolveStepPathState = (step: LearningPathStep, index: number): PathState => {
+    if (pathStates && pathStates[step.knowledge_id]) {
+      return pathStates[step.knowledge_id];
+    }
+    if (step.current_accuracy >= 80) return 'COMPLETED';
+    if (index === 0) return 'IN_PROGRESS';
+    return 'AVAILABLE';
+  };
+
+  const getPathStateConfig = (state: PathState) => {
+    switch (state) {
+      case 'LOCKED':
+        return {
+          badgeText: '🔒 需先掌握前置',
+          badgeClass: 'bg-slate-100 text-slate-600 border-slate-300',
+          buttonText: '需先掌握前置',
+          buttonClass: 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70',
+          disabled: true,
+          ariaLabel: '前置条件未满足，暂未开放学习',
+        };
+      case 'AVAILABLE':
+        return {
+          badgeText: '🔓 已满足学习条件',
+          badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
+          buttonText: '开始微测验',
+          buttonClass: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs cursor-pointer',
+          disabled: false,
+          ariaLabel: '已满足前置学习条件，点击开始微测验',
+        };
+      case 'IN_PROGRESS':
+        return {
+          badgeText: '🎯 正在进行',
+          badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 ring-2 ring-indigo-400/30',
+          buttonText: '继续挑战',
+          buttonClass: 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-sm cursor-pointer ring-2 ring-indigo-400/40',
+          disabled: false,
+          ariaLabel: '当前进行中任务，点击继续挑战微测验',
+        };
+      case 'COMPLETED':
+        return {
+          badgeText: '✓ 已掌握',
+          badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          buttonText: '复习微测验',
+          buttonClass: 'bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs cursor-pointer',
+          disabled: false,
+          ariaLabel: '该考点已达标掌握，点击进入复习微测验',
+        };
+    }
+  };
+
   // Priority badge styling helper
   const getPriorityStyle = (priority: string) => {
     switch (priority) {
@@ -150,8 +208,11 @@ export const LearningPath: React.FC<LearningPathProps> = ({
       ) : (
         /* Timeline Roadmap View */
         <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-4 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-indigo-500 before:via-violet-400 before:to-slate-200">
-          {learningPath.map((step) => {
+          {learningPath.map((step, index) => {
             const isHighPriority = step.priority === '高';
+            const stepState = resolveStepPathState(step, index);
+            const pathStateConfig = getPathStateConfig(stepState);
+
             return (
               <div key={step.stage} className="relative group">
                 {/* Step Circle Marker */}
@@ -181,7 +242,12 @@ export const LearningPath: React.FC<LearningPathProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${pathStateConfig.badgeClass}`}
+                      >
+                        {pathStateConfig.badgeText}
+                      </span>
                       {step.source && (
                         <span
                           className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${getSourceStyle(
@@ -247,6 +313,26 @@ export const LearningPath: React.FC<LearningPathProps> = ({
                         重点考核内容：{step.description}
                       </p>
                     )}
+                  </div>
+
+                  {/* 路径执行动作栏 (P0-1) */}
+                  <div className="pt-3 mt-3 border-t border-slate-200/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                    <div className="text-[11px] text-slate-500">
+                      学习状态：<span className="font-semibold text-slate-800">{pathStateConfig.badgeText}</span>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={pathStateConfig.disabled}
+                      aria-label={pathStateConfig.ariaLabel}
+                      onClick={() => !pathStateConfig.disabled && onStartQuiz?.(step.knowledge_id, step.knowledge_name)}
+                      className={`w-full sm:w-auto px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${pathStateConfig.buttonClass}`}
+                    >
+                      {stepState === 'LOCKED' && <Lock className="w-3.5 h-3.5" />}
+                      {stepState === 'AVAILABLE' && <PlayCircle className="w-3.5 h-3.5" />}
+                      {stepState === 'IN_PROGRESS' && <Target className="w-3.5 h-3.5" />}
+                      {stepState === 'COMPLETED' && <RotateCcw className="w-3.5 h-3.5" />}
+                      <span>{pathStateConfig.buttonText}</span>
+                    </button>
                   </div>
                 </div>
               </div>

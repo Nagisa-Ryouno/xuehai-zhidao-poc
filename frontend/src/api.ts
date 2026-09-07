@@ -17,6 +17,7 @@ import type {
   QuizKnowledgeListResponse,
   QuizSubmitRequest,
   QuizSubmitResponse,
+  StudentPathStatesResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -167,3 +168,13 @@ export async function submitQuizAnswer(
     body: JSON.stringify(data),
   });
 }
+
+/**
+ * 获取指定学生各知识点的学习路径执行状态 (LOCKED / AVAILABLE / IN_PROGRESS / COMPLETED)
+ */
+export async function getStudentPathStates(
+  studentId: string
+): Promise<StudentPathStatesResponse> {
+  return request<StudentPathStatesResponse>(`/students/${studentId}/path-states`);
+}
+

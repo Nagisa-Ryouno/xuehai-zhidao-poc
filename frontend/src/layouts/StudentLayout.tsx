@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { Header } from '../components/Header';
 import { HeroBanner } from '../components/HeroBanner';
 import { StatCards } from '../components/StatCards';
@@ -12,9 +12,11 @@ import { AIAssistant } from '../components/AIAssistant';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { ErrorState } from '../components/ErrorState';
 import { Footer } from '../components/Footer';
+import { BottomSheet } from '../components/common/BottomSheet';
+import { KnowledgePointQuiz } from '../components/student/KnowledgePointQuiz';
 
 import { useApp } from '../context/useApp';
-import type { StudentListItem, StudentDashboardResponse } from '../types';
+import type { StudentListItem, StudentDashboardResponse, PathState } from '../types';
 import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
 import { MobileContainer } from '../components/student/MobileContainer';
@@ -22,26 +24,63 @@ import { MobileContainer } from '../components/student/MobileContainer';
 interface StudentLayoutProps {
   students: StudentListItem[];
   dashboardData: StudentDashboardResponse | null;
+  pathStates?: Record<string, PathState>;
   isLoading: boolean;
   isSwitching: boolean;
   errorMessage: string | null;
   isOnline: boolean;
   onSelectStudent: (studentId: string) => void;
   onRetry: () => void;
+  onRefresh?: () => Promise<void>;
 }
 
 export const StudentLayout: React.FC<StudentLayoutProps> = ({
   students,
   dashboardData,
+  pathStates,
   isLoading,
   isSwitching,
   errorMessage,
   isOnline,
   onSelectStudent,
   onRetry,
+  onRefresh,
 }) => {
   const { studentId, subRoute, navigate } = useApp();
   const assistantRef = useRef<HTMLDivElement | null>(null);
+
+  // 全局统一微测验状态提升 (Step 3: 统一测验启动入口)
+  const [activeQuiz, setActiveQuiz] = useState<{
+    knowledgeId: string;
+    knowledgeName: string;
+  } | null>(null);
+
+  const handleStartQuiz = useCallback(
+    (knowledgeId: string, knowledgeName: string) => {
+      setActiveQuiz({ knowledgeId, knowledgeName });
+    },
+    []
+  );
+
+  const handleCloseQuiz = useCallback(() => {
+    setActiveQuiz(null);
+    if (onRefresh) {
+      onRefresh();
+    }
+  }, [onRefresh]);
+
+  const handleNextKnowledgePoint = useCallback(
+    (nextKnowledgeId: string, nextKnowledgeName: string) => {
+      setActiveQuiz({
+        knowledgeId: nextKnowledgeId,
+        knowledgeName: nextKnowledgeName,
+      });
+      if (onRefresh) {
+        onRefresh();
+      }
+    },
+    [onRefresh]
+  );
 
   const handleJumpToAssistant = () => {
     navigate('/student/assistant');
@@ -134,12 +173,15 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <WeakKnowledgePoints
                   weakPoints={dashboardData.profile.weak_knowledge_points}
                   prerequisitePoints={dashboardData.profile.prerequisite_knowledge_points}
+                  onStartQuiz={handleStartQuiz}
                 />
 
                 {/* 5. AI Knowledge Graph Workbench */}
                 <KnowledgeGraph
                   currentStudentId={studentId}
                   studentName={dashboardData.profile.student.student_name}
+                  pathStates={pathStates}
+                  onStartQuiz={handleStartQuiz}
                   onJumpToAssistant={handleJumpToAssistant}
                 />
 
@@ -148,6 +190,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   learningPath={dashboardData.learning_path.learning_path}
                   recommendationType={dashboardData.learning_path.recommendation_type}
                   studentName={dashboardData.profile.student.student_name}
+                  pathStates={pathStates}
+                  onStartQuiz={handleStartQuiz}
                 />
 
                 {/* 7. AI Summary & Daily Plan */}
@@ -179,6 +223,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <KnowledgeGraph
                   currentStudentId={studentId}
                   studentName={dashboardData.profile.student.student_name}
+                  pathStates={pathStates}
+                  onStartQuiz={handleStartQuiz}
                   onJumpToAssistant={handleJumpToAssistant}
                 />
               </div>
@@ -201,6 +247,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <WeakKnowledgePoints
                   weakPoints={dashboardData.profile.weak_knowledge_points}
                   prerequisitePoints={dashboardData.profile.prerequisite_knowledge_points}
+                  onStartQuiz={handleStartQuiz}
                 />
               </div>
             )}
@@ -229,6 +276,28 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
       {/* Footer */}
       <Footer />
+
+      {/* 全局统一微测验模态抽屉 (Step 3: 打通全链路闭环) */}
+      <BottomSheet
+        open={!!activeQuiz}
+        onClose={handleCloseQuiz}
+        title={
+          activeQuiz
+            ? `${activeQuiz.knowledgeId} · ${activeQuiz.knowledgeName} 微测验突破`
+            : '知识点微测验'
+        }
+      >
+        {activeQuiz && (
+          <KnowledgePointQuiz
+            knowledgeId={activeQuiz.knowledgeId}
+            knowledgeName={activeQuiz.knowledgeName}
+            studentId={studentId}
+            onBackToDetail={() => setActiveQuiz(null)}
+            onFinish={handleCloseQuiz}
+            onNextKnowledgePoint={handleNextKnowledgePoint}
+          />
+        )}
+      </BottomSheet>
 
       {/* Mobile Bottom Navigation (仅在移动端展示) */}
       <BottomNav />

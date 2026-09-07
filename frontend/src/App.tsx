@@ -3,13 +3,14 @@ import { AppProvider } from './context/AppContext';
 import { useApp } from './context/useApp';
 import { StudentLayout } from './layouts/StudentLayout';
 import { TeacherLayout } from './layouts/TeacherLayout';
-import { getStudents, getStudentDashboard, checkHealth } from './api';
-import type { StudentListItem, StudentDashboardResponse } from './types';
+import { getStudents, getStudentDashboard, checkHealth, getStudentPathStates } from './api';
+import type { StudentListItem, StudentDashboardResponse, PathState } from './types';
 
 const AppContent: React.FC = () => {
   const { role, studentId, selectStudent } = useApp();
   const [students, setStudents] = useState<StudentListItem[]>([]);
   const [dashboardData, setDashboardData] = useState<StudentDashboardResponse | null>(null);
+  const [pathStates, setPathStates] = useState<Record<string, PathState>>({});
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSwitching, setIsSwitching] = useState<boolean>(false);
@@ -33,8 +34,12 @@ const AppContent: React.FC = () => {
       const targetId = studentId || studentsRes.students[0]?.student_id || 'S001';
       selectStudent(targetId);
 
-      const dashboard = await getStudentDashboard(targetId);
+      const [dashboard, pathStatesRes] = await Promise.all([
+        getStudentDashboard(targetId),
+        getStudentPathStates(targetId).catch(() => ({ student_id: targetId, states: {} as Record<string, PathState> })),
+      ]);
       setDashboardData(dashboard);
+      setPathStates(pathStatesRes.states || {});
     } catch (err: unknown) {
       setIsOnline(false);
       if (err instanceof Error) {
@@ -51,6 +56,22 @@ const AppContent: React.FC = () => {
     initData();
   }, [initData]);
 
+  // 静默刷新当前学生的学情与路径状态 (无页面重载，闭环自适应体验)
+  const handleRefreshData = useCallback(async () => {
+    if (!studentId) return;
+    try {
+      const [dashboard, pathStatesRes] = await Promise.all([
+        getStudentDashboard(studentId),
+        getStudentPathStates(studentId).catch(() => ({ student_id: studentId, states: {} as Record<string, PathState> })),
+      ]);
+      setDashboardData(dashboard);
+      setPathStates(pathStatesRes.states || {});
+      setIsOnline(true);
+    } catch {
+      // 静默刷新失败不打断当前 UI
+    }
+  }, [studentId]);
+
   // 学生切换处理
   const handleSelectStudent = async (targetStudentId: string) => {
     if (targetStudentId === studentId && dashboardData) return;
@@ -60,8 +81,12 @@ const AppContent: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const dashboard = await getStudentDashboard(targetStudentId);
+      const [dashboard, pathStatesRes] = await Promise.all([
+        getStudentDashboard(targetStudentId),
+        getStudentPathStates(targetStudentId).catch(() => ({ student_id: targetStudentId, states: {} as Record<string, PathState> })),
+      ]);
       setDashboardData(dashboard);
+      setPathStates(pathStatesRes.states || {});
       setIsOnline(true);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -90,12 +115,14 @@ const AppContent: React.FC = () => {
     <StudentLayout
       students={students}
       dashboardData={dashboardData}
+      pathStates={pathStates}
       isLoading={isLoading}
       isSwitching={isSwitching}
       errorMessage={errorMessage}
       isOnline={isOnline}
       onSelectStudent={handleSelectStudent}
       onRetry={initData}
+      onRefresh={handleRefreshData}
     />
   );
 };

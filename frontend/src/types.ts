@@ -305,4 +305,54 @@ export interface QuizSubmitResponse {
   question_id: string;
   event_id: string;
   learning_state?: LearningStateSnapshot | null;
+  replanning?: DecisionAuditEnvelope | null;
 }
+
+// ============================================================
+// 路径执行状态与重规划决策契约 (PathState & Replanning)
+// ============================================================
+
+export type PathState = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
+
+export interface StudentPathStatesResponse {
+  student_id: string;
+  states: Record<string, PathState>;
+}
+
+export type PathAction =
+  | 'UNLOCK_DOWNSTREAM'
+  | 'RETAIN'
+  | 'DEMOTE_TO_REVIEW'
+  | string;
+
+export type ReplanningReasonCode =
+  | 'MASTERY_THRESHOLD_REACHED'
+  | 'MASTERY_STATE_UNCHANGED'
+  | 'PREREQUISITE_NOT_READY'
+  | 'REVIEW_REQUIRED_DEMOTION'
+  | string;
+
+export interface ReplanningCanonicalPayload {
+  rule_version: string;
+  student_id: string;
+  knowledge_id: string;
+  before_mastery: string;
+  after_mastery: string;
+  before_path_state: PathState;
+  after_path_state: PathState;
+  action: PathAction;
+  reason_code: ReplanningReasonCode;
+  affected_nodes: string[];
+}
+
+export interface ReplanningAuditMetadata {
+  decision_id: string;
+  timestamp: string;
+  trace_id?: string | null;
+}
+
+export interface DecisionAuditEnvelope {
+  audit_metadata: ReplanningAuditMetadata;
+  canonical_payload: ReplanningCanonicalPayload;
+}
+

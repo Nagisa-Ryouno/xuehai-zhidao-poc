@@ -12,6 +12,7 @@ import type {
   QuizQuestionPublic,
   QuizSubmitRequest,
   QuizSubmitResponse,
+  DecisionAuditEnvelope,
 } from '../../types';
 
 export type QuizStatus =
@@ -41,6 +42,7 @@ export interface QuizSessionState {
   selectedOption: string | null;
   questionStartTime: number | null;
   lastFeedback: QuizSubmitResponse | null;
+  latestReplanning?: DecisionAuditEnvelope | null;
   records: QuestionRecord[];
   errorMessage: string | null;
 }
@@ -71,6 +73,7 @@ export function initQuizSession(
     selectedOption: null,
     questionStartTime: null,
     lastFeedback: null,
+    latestReplanning: null,
     records: [],
     errorMessage: null,
   };
@@ -228,6 +231,7 @@ export function setSubmitSuccess(
     ...state,
     status: 'feedback',
     lastFeedback: response,
+    latestReplanning: response.replanning ?? state.latestReplanning ?? null,
     records: [...state.records, newRecord],
     errorMessage: null,
   };
@@ -322,3 +326,34 @@ export function formatDuration(ms: number): string {
   }
   return `${(ms / 1000).toFixed(1)}s`;
 }
+
+/**
+ * 认知掌握度数值格式化为规范百分比字符串 (如 0.4566 -> 45.66%)
+ */
+export function formatMasteryPercentage(
+  val: string | number | undefined | null
+): string {
+  if (val === undefined || val === null || val === '') return '0.00%';
+  const num = typeof val === 'string' ? parseFloat(val) : val;
+  if (isNaN(num)) return '0.00%';
+  if (num <= 1.0) {
+    return `${(num * 100).toFixed(2)}%`;
+  }
+  return `${num.toFixed(2)}%`;
+}
+
+/**
+ * 从重规划决策结果中提取本次真正解锁的下游知识点列表
+ */
+export function getUnlockedDownstreamNodes(
+  replanning?: DecisionAuditEnvelope | null,
+  currentKnowledgeId?: string
+): string[] {
+  if (!replanning || replanning.canonical_payload.action !== 'UNLOCK_DOWNSTREAM') {
+    return [];
+  }
+  const affected = replanning.canonical_payload.affected_nodes || [];
+  const curr = currentKnowledgeId || replanning.canonical_payload.knowledge_id;
+  return affected.filter((id) => id !== curr);
+}
+

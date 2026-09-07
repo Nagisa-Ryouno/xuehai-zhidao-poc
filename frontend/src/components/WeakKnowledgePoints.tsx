@@ -21,11 +21,13 @@ import { useApp } from '../context/useApp';
 interface WeakKnowledgePointsProps {
   weakPoints: WeakKnowledgePoint[];
   prerequisitePoints: PrerequisiteKnowledgePoint[];
+  onStartQuiz?: (knowledgeId: string, knowledgeName: string) => void;
 }
 
 export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
   weakPoints,
   prerequisitePoints,
+  onStartQuiz,
 }) => {
   const { studentId } = useApp();
   const [showAll, setShowAll] = useState(false);
@@ -286,7 +288,7 @@ export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
             <KnowledgePointQuiz
               knowledgeId={selectedPoint.knowledge_id}
               knowledgeName={selectedPoint.knowledge_name}
-              studentId={studentId || 'S001'}
+              studentId={studentId}
               onBackToDetail={() => setSheetMode('detail')}
               onFinish={handleCloseSheet}
             />
@@ -359,7 +361,15 @@ export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSheetMode('quiz')}
+                  onClick={() => {
+                    if (onStartQuiz) {
+                      const target = selectedPoint;
+                      handleCloseSheet();
+                      onStartQuiz(target.knowledge_id, target.knowledge_name);
+                    } else {
+                      setSheetMode('quiz');
+                    }
+                  }}
                   className="w-full sm:w-2/3 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px]"
                 >
                   <PlayCircle className="w-4 h-4" />

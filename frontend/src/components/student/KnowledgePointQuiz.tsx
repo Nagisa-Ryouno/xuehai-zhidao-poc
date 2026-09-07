@@ -27,6 +27,8 @@ import {
   calculateQuizSummary,
   resetQuizSession,
   formatDuration,
+  formatMasteryPercentage,
+  getUnlockedDownstreamNodes,
   type QuizSessionState,
 } from './quizModel';
 import { getQuizQuestions, submitQuizAnswer } from '../../api';
@@ -37,6 +39,7 @@ export interface KnowledgePointQuizProps {
   studentId: string;
   onBackToDetail?: () => void;
   onFinish?: () => void;
+  onNextKnowledgePoint?: (nextKnowledgeId: string, nextKnowledgeName: string) => void;
 }
 
 export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
@@ -45,6 +48,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
   studentId,
   onBackToDetail,
   onFinish,
+  onNextKnowledgePoint,
 }) => {
   const [session, setSession] = useState<QuizSessionState>(() =>
     initQuizSession(knowledgeId, knowledgeName)
@@ -317,25 +321,92 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
           </div>
         </div>
 
-        {/* 底部操作栏 */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
-          <button
-            type="button"
-            onClick={handleRestart}
-            className="w-full sm:w-auto flex-1 py-3 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>重新测验</span>
-          </button>
-          <button
-            type="button"
-            onClick={onFinish}
-            className="w-full sm:w-auto flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
-          >
-            <span>返回学习</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        {/* BKT 认知掌握度与路径状态演进结果 (P0-3) */}
+        {session.latestReplanning?.canonical_payload && (
+          <div className="p-4 bg-gradient-to-r from-indigo-50/70 to-violet-50/70 rounded-2xl border border-indigo-200/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-indigo-600" />
+                认知追踪与路径重规划评估
+              </span>
+              <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-white text-indigo-700 border border-indigo-200">
+                {session.latestReplanning.canonical_payload.action}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-indigo-100">
+              <div className="flex items-center gap-1 text-slate-700">
+                <span>认知掌握度：</span>
+                <span className="font-mono font-bold text-slate-600">
+                  {formatMasteryPercentage(session.latestReplanning.canonical_payload.before_mastery)}
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="font-mono font-black text-indigo-600">
+                  {formatMasteryPercentage(session.latestReplanning.canonical_payload.after_mastery)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-slate-700">
+                <span>路径状态：</span>
+                <span className="font-bold text-slate-600">
+                  {session.latestReplanning.canonical_payload.before_path_state}
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="font-bold text-emerald-600">
+                  {session.latestReplanning.canonical_payload.after_path_state}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 底部操作栏与下一步行动指引 (P0-6) */}
+        {(() => {
+          const unlockedDownstream = getUnlockedDownstreamNodes(
+            session.latestReplanning,
+            knowledgeId
+          );
+          const nextTarget = unlockedDownstream.length > 0 ? unlockedDownstream[0] : null;
+
+          return (
+            <div className="pt-2 flex flex-col gap-2.5">
+              {nextTarget ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onNextKnowledgePoint) {
+                      onNextKnowledgePoint(nextTarget, `考点 ${nextTarget}`);
+                    } else if (onFinish) {
+                      onFinish();
+                    }
+                  }}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[48px] animate-pulse"
+                >
+                  <Sparkles className="w-4 h-4 text-emerald-200" />
+                  <span>继续学习下一个考点 {nextTarget}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : null}
+
+              <div className="flex flex-col sm:flex-row items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleRestart}
+                  className="w-full sm:w-auto flex-1 py-3 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>重新测验</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onFinish}
+                  className="w-full sm:w-auto flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
+                >
+                  <span>返回今日任务</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     );
   }
@@ -490,6 +561,47 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
               {session.lastFeedback.explanation}
             </p>
           </div>
+
+          {/* BKT 认知追踪与掌握度跃迁 (P0-3) */}
+          {session.lastFeedback.replanning?.canonical_payload ? (
+            <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                <span>认知掌握度：</span>
+                <span className="font-mono font-bold text-slate-600">
+                  {formatMasteryPercentage(session.lastFeedback.replanning.canonical_payload.before_mastery)}
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="font-mono font-black text-indigo-600">
+                  {formatMasteryPercentage(session.lastFeedback.replanning.canonical_payload.after_mastery)}
+                </span>
+              </div>
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                {session.lastFeedback.replanning.canonical_payload.after_path_state}
+              </span>
+            </div>
+          ) : session.lastFeedback.learning_state?.mastery_percent !== undefined && (
+            <div className="pt-2 border-t border-slate-200/60 flex items-center gap-1.5 text-xs text-slate-700 font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+              <span>当前认知掌握度：</span>
+              <span className="font-mono font-black text-indigo-600">
+                {formatMasteryPercentage(session.lastFeedback.learning_state.mastery_percent)}
+              </span>
+            </div>
+          )}
+
+          {/* 路径重规划决策反馈与后继解锁提示 (P0-4) */}
+          {session.lastFeedback.replanning?.canonical_payload?.action === 'UNLOCK_DOWNSTREAM' && (
+            <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 font-bold flex items-center gap-2 animate-in fade-in duration-200">
+              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div>
+                <span>🎉 恭喜达标！已成功解锁直接后继考点：</span>
+                <span className="font-mono text-emerald-700 font-black underline ml-1">
+                  {getUnlockedDownstreamNodes(session.lastFeedback.replanning, knowledgeId).join('、') || '后继考点'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

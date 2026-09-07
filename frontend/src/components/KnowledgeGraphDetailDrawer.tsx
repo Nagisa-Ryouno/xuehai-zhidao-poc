@@ -12,8 +12,11 @@ import {
   Send,
   Loader2,
   Target,
+  Lock,
+  PlayCircle,
+  RotateCcw,
 } from 'lucide-react';
-import type { KnowledgeGraphNodeData, AssistantResponse } from '../types';
+import type { KnowledgeGraphNodeData, AssistantResponse, PathState } from '../types';
 import { askAssistant } from '../api';
 
 interface KnowledgeGraphDetailDrawerProps {
@@ -21,8 +24,10 @@ interface KnowledgeGraphDetailDrawerProps {
   studentId: string;
   studentName: string;
   allNodesMap: Record<string, KnowledgeGraphNodeData>;
+  pathState?: PathState;
   onClose: () => void;
   onSelectNode: (nodeId: string) => void;
+  onStartQuiz?: (knowledgeId: string, knowledgeName: string) => void;
   onJumpToAssistant?: () => void;
 }
 
@@ -31,8 +36,10 @@ export const KnowledgeGraphDetailDrawer: React.FC<KnowledgeGraphDetailDrawerProp
   studentId,
   studentName,
   allNodesMap,
+  pathState,
   onClose,
   onSelectNode,
+  onStartQuiz,
   onJumpToAssistant,
 }) => {
   const [aiLoading, setAiLoading] = useState<boolean>(false);
@@ -83,6 +90,56 @@ export const KnowledgeGraphDetailDrawer: React.FC<KnowledgeGraphDetailDrawerProp
       setAiLoading(false);
     }
   };
+
+  // 推导考点当前 PathState (优先读取传入状态，保底依据掌握度和推荐标记)
+  const resolvedPathState: PathState =
+    pathState ||
+    (accuracy !== null && accuracy >= 80
+      ? 'COMPLETED'
+      : is_recommended
+      ? 'IN_PROGRESS'
+      : 'AVAILABLE');
+
+  const currentPathStateConfig = (() => {
+    switch (resolvedPathState) {
+      case 'LOCKED':
+        return {
+          badgeText: '🔒 需先掌握前置',
+          badgeClass: 'bg-slate-100 text-slate-600 border-slate-300',
+          buttonText: '需先掌握前置考点',
+          buttonClass: 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70',
+          disabled: true,
+          ariaLabel: '前置考点未满足，暂不可开始微测验',
+        };
+      case 'AVAILABLE':
+        return {
+          badgeText: '🔓 已满足学习条件',
+          badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
+          buttonText: '开始微测验',
+          buttonClass: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs cursor-pointer',
+          disabled: false,
+          ariaLabel: '已满足前置条件，点击开始微测验',
+        };
+      case 'IN_PROGRESS':
+        return {
+          badgeText: '🎯 正在进行',
+          badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 ring-2 ring-indigo-400/30',
+          buttonText: '继续攻坚微测验',
+          buttonClass: 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-sm cursor-pointer ring-2 ring-indigo-400/40',
+          disabled: false,
+          ariaLabel: '当前攻坚任务，点击进入微测验',
+        };
+      case 'COMPLETED':
+        return {
+          badgeText: '✓ 已掌握',
+          badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          buttonText: '复习微测验',
+          buttonClass: 'bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs cursor-pointer',
+          disabled: false,
+          ariaLabel: '已掌握考点，点击进行复习微测验',
+        };
+    }
+  })();
 
   return (
     <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-300">
@@ -411,6 +468,33 @@ export const KnowledgeGraphDetailDrawer: React.FC<KnowledgeGraphDetailDrawerProp
             </div>
           )}
         </div>
+      </div>
+
+      {/* 抽屉底部固定行动区域 (P0-2: 打通图谱查看至微测验闭环) */}
+      <div className="p-4 border-t border-slate-200 bg-slate-50/95 backdrop-blur-xs flex flex-col sm:flex-row items-center gap-2.5 shrink-0 shadow-xs">
+        <div className="w-full sm:w-auto flex-1 flex items-center justify-between sm:justify-start gap-2">
+          <span className="text-[11px] text-slate-500 font-medium">路径状态：</span>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${currentPathStateConfig.badgeClass}`}>
+            {currentPathStateConfig.badgeText}
+          </span>
+        </div>
+        <button
+          type="button"
+          disabled={currentPathStateConfig.disabled}
+          aria-label={currentPathStateConfig.ariaLabel}
+          onClick={() => {
+            if (!currentPathStateConfig.disabled && onStartQuiz) {
+              onStartQuiz(knowledge_id, knowledge_name);
+            }
+          }}
+          className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${currentPathStateConfig.buttonClass}`}
+        >
+          {resolvedPathState === 'LOCKED' && <Lock className="w-3.5 h-3.5" />}
+          {resolvedPathState === 'AVAILABLE' && <PlayCircle className="w-3.5 h-3.5" />}
+          {resolvedPathState === 'IN_PROGRESS' && <Target className="w-3.5 h-3.5" />}
+          {resolvedPathState === 'COMPLETED' && <RotateCcw className="w-3.5 h-3.5" />}
+          <span>{currentPathStateConfig.buttonText}</span>
+        </button>
       </div>
     </div>
   );

@@ -31,6 +31,7 @@ import type {
   KnowledgeGraphResponse,
   KnowledgeGraphNodeData,
   GraphFilterType,
+  PathState,
 } from '../types';
 
 const nodeTypes: NodeTypes = {
@@ -40,12 +41,16 @@ const nodeTypes: NodeTypes = {
 interface KnowledgeGraphProps {
   currentStudentId: string;
   studentName: string;
+  pathStates?: Record<string, PathState>;
+  onStartQuiz?: (knowledgeId: string, knowledgeName: string) => void;
   onJumpToAssistant?: () => void;
 }
 
 export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   currentStudentId,
   studentName,
+  pathStates,
+  onStartQuiz,
   onJumpToAssistant,
 }) => {
   const [graphData, setGraphData] = useState<KnowledgeGraphResponse | null>(null);
@@ -460,8 +465,10 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         studentId={currentStudentId}
         studentName={studentName}
         allNodesMap={allNodesMap}
+        pathState={selectedNodeData ? pathStates?.[selectedNodeData.knowledge_id] : undefined}
         onClose={() => setSelectedNodeId(null)}
         onSelectNode={handleSelectNodeFromDrawer}
+        onStartQuiz={onStartQuiz}
         onJumpToAssistant={onJumpToAssistant}
       />
     </section>

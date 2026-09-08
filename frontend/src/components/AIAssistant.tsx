@@ -15,18 +15,22 @@ import { askAssistant, getAssistantGreeting } from '../api';
 import type {
   ChatMessage,
   AssistantRelatedKnowledgePoint,
+  LearningContext,
 } from '../types';
+import { askLearningCompanion } from './student/aiCompanionService';
 
 interface AIAssistantProps {
   currentStudentId: string;
   studentName: string;
   isOnline: boolean;
+  learningContext?: LearningContext;
 }
 
 export const AIAssistant: React.FC<AIAssistantProps> = ({
   currentStudentId,
   studentName,
   isOnline,
+  learningContext,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState<string>('');
@@ -117,6 +121,34 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setIsLoading(true);
 
     try {
+      // 若存在 learningContext，由伴学管线服务输出经过事实校验与安全兜底的回答
+      if (learningContext) {
+        const sf = learningContext.system_facts;
+        const de = learningContext.derived_explanations;
+        const companionAnswer = await askLearningCompanion(learningContext, text);
+
+        const assistantMsg: ChatMessage = {
+          id: `ai-${Date.now()}`,
+          sender: 'assistant',
+          content: companionAnswer.answer,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          related_knowledge_points: [
+            {
+              knowledge_id: sf.current_knowledge_id,
+              knowledge_name: sf.current_knowledge_name,
+              accuracy: sf.current_mastery_percent,
+              priority: sf.path_priority,
+              reason: de.recommendation_reason,
+              chapter: sf.current_chapter,
+            },
+          ],
+          suggested_actions: [sf.next_action.label, '查看知识图谱全景', '返回今日任务'],
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+        setIsLoading(false);
+        return;
+      }
+
       const response = await askAssistant(currentStudentId, text);
       const assistantMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
@@ -205,6 +237,27 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         </div>
       </div>
 
+      {/* 1.5 Context Grounding Fact Bar */}
+      {learningContext && (
+        <div className="px-5 py-2.5 bg-indigo-50/80 border-b border-indigo-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-slate-700 font-medium">
+            <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-[11px]">
+              事实对齐
+            </span>
+            <span>
+              焦点：<strong>{learningContext.system_facts.current_knowledge_id} · {learningContext.system_facts.current_knowledge_name}</strong>
+            </span>
+            <span className="text-slate-300">|</span>
+            <span>
+              掌握度：<strong>{learningContext.system_facts.current_mastery_percent}%</strong>（目标 {learningContext.system_facts.mastery_target_percent}%）
+            </span>
+          </div>
+          <div className="text-indigo-600 text-[11px] font-semibold">
+            状态：{learningContext.system_facts.current_path_state}
+          </div>
+        </div>
+      )}
+
       {/* 2. Quick Prompts Bar */}
       <div className="px-5 py-3 bg-slate-50 border-b border-slate-200/80 flex items-center gap-2 overflow-x-auto no-scrollbar">
         <span className="text-[11px] font-bold text-slate-400 shrink-0 flex items-center gap-1">
@@ -212,7 +265,15 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           快捷发问：
         </span>
         <div className="flex items-center gap-2">
-          {quickPrompts.map((prompt, idx) => (
+          {(learningContext
+            ? [
+                `为什么推荐我学 ${learningContext.system_facts.current_knowledge_name}？`,
+                '我现在掌握度距离目标还差多少？',
+                '我下一步应该做什么？',
+                ...quickPrompts.filter((p) => !p.includes('接下来应该学什么')),
+              ]
+            : quickPrompts
+          ).map((prompt, idx) => (
             <button
               key={idx}
               onClick={() => handleSendMessage(prompt)}

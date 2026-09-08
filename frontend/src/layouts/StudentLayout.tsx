@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Header } from '../components/Header';
 import { HeroBanner } from '../components/HeroBanner';
 import { StatCards } from '../components/StatCards';
@@ -14,6 +14,10 @@ import { ErrorState } from '../components/ErrorState';
 import { Footer } from '../components/Footer';
 import { BottomSheet } from '../components/common/BottomSheet';
 import { KnowledgePointQuiz } from '../components/student/KnowledgePointQuiz';
+import { CurrentFocusCard } from '../components/student/CurrentFocusCard';
+import { TasksQuickNav } from '../components/student/TasksQuickNav';
+import { resolveCurrentFocusTask } from '../components/student/taskFocusModel';
+import { buildLearningContext } from '../components/student/learningContextModel';
 
 import { useApp } from '../context/useApp';
 import type { StudentListItem, StudentDashboardResponse, PathState } from '../types';
@@ -55,6 +59,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     knowledgeName: string;
   } | null>(null);
 
+  // 学生上下文切换时安全关闭微测验，杜绝上下文污染 (Sprint 3 契约约束)
+  useEffect(() => {
+    setActiveQuiz(null);
+  }, [studentId]);
+
   const handleStartQuiz = useCallback(
     (knowledgeId: string, knowledgeName: string) => {
       setActiveQuiz({ knowledgeId, knowledgeName });
@@ -89,6 +98,25 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     }
   };
 
+  const focusResult = useMemo(
+    () =>
+      resolveCurrentFocusTask(
+        dashboardData?.learning_path?.learning_path || [],
+        pathStates
+      ),
+    [dashboardData, pathStates]
+  );
+
+  const learningContext = useMemo(() => {
+    if (!dashboardData) return undefined;
+    return buildLearningContext({
+      student: dashboardData.profile.student,
+      learningPath: dashboardData.learning_path?.learning_path || [],
+      pathStates,
+      currentFocus: focusResult,
+    });
+  }, [dashboardData, pathStates, focusResult]);
+
   // 4 个核心 Tab 定义（为后续 P0-2 Mobile First 4-Tab 准备好的路由骨架）
   const tabs = [
     { id: 'tasks', label: '今日任务', path: '/student/tasks', icon: CalendarCheck },
@@ -111,7 +139,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       {/* Sub-route Navigation Pill Bar (仅在平板与桌面端展示，移动端由底部 BottomNav 承载) */}
       <div className="hidden md:block bg-white border-b border-slate-200/80 sticky top-18 z-20 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-1 sm:space-x-2 py-2 overflow-x-auto no-scrollbar">
+          <nav aria-label="学生端桌面主导航" className="flex items-center space-x-1 sm:space-x-2 py-2 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = subRoute === tab.id;
@@ -119,6 +147,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <button
                   key={tab.id}
                   type="button"
+                  aria-current={isActive ? 'page' : undefined}
                   onClick={() => navigate(tab.path)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer ${
                     isActive
@@ -131,7 +160,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 </button>
               );
             })}
-          </div>
+          </nav>
         </div>
       </div>
 
@@ -157,58 +186,25 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   recommendationType={dashboardData.learning_path.recommendation_type}
                 />
 
-                {/* 2. Core Academic Statistics Cards */}
-                <StatCards profile={dashboardData.profile.overall_profile} />
-
-                {/* 3. Learning Profile & AI Diagnosis */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                  <LearningProfile profile={dashboardData.profile.overall_profile} />
-                  <AIDiagnosis
-                    diagnosis={dashboardData.report.diagnosis}
-                    profileDiagnosis={dashboardData.profile.diagnosis}
-                  />
-                </div>
-
-                {/* 4. Weak Knowledge Points */}
-                <WeakKnowledgePoints
-                  weakPoints={dashboardData.profile.weak_knowledge_points}
-                  prerequisitePoints={dashboardData.profile.prerequisite_knowledge_points}
+                {/* 2. Today's Learning Mission: Current Focus Task (Sprint 2 Core) */}
+                <CurrentFocusCard
+                  focusResult={focusResult}
                   onStartQuiz={handleStartQuiz}
+                  onViewGraph={() => navigate('/student/graph')}
                 />
 
-                {/* 5. AI Knowledge Graph Workbench */}
-                <KnowledgeGraph
-                  currentStudentId={studentId}
-                  studentName={dashboardData.profile.student.student_name}
-                  pathStates={pathStates}
-                  onStartQuiz={handleStartQuiz}
-                  onJumpToAssistant={handleJumpToAssistant}
-                />
-
-                {/* 6. AI Generated Learning Path (Core Timeline) */}
+                {/* 3. AI Generated Learning Path (Core Timeline) */}
                 <LearningPath
                   learningPath={dashboardData.learning_path.learning_path}
                   recommendationType={dashboardData.learning_path.recommendation_type}
                   studentName={dashboardData.profile.student.student_name}
                   pathStates={pathStates}
+                  focusedKnowledgeId={focusResult.focus?.knowledgeId}
                   onStartQuiz={handleStartQuiz}
                 />
 
-                {/* 7. AI Summary & Daily Plan */}
-                <AISummary
-                  aiSummary={dashboardData.report.ai_summary}
-                  dailyPlan={dashboardData.report.daily_learning_plan}
-                  optimizationSuggestions={dashboardData.report.optimization_suggestions}
-                />
-
-                {/* 8. Interactive AI Learning Assistant */}
-                <div ref={assistantRef}>
-                  <AIAssistant
-                    currentStudentId={studentId}
-                    studentName={dashboardData.profile.student.student_name}
-                    isOnline={isOnline}
-                  />
-                </div>
+                {/* 4. Lightweight Auxiliary Navigation Cards */}
+                <TasksQuickNav onNavigate={(path) => navigate(path)} />
               </>
             )}
 
@@ -249,6 +245,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   prerequisitePoints={dashboardData.profile.prerequisite_knowledge_points}
                   onStartQuiz={handleStartQuiz}
                 />
+                <AISummary
+                  aiSummary={dashboardData.report.ai_summary}
+                  dailyPlan={dashboardData.report.daily_learning_plan}
+                  optimizationSuggestions={dashboardData.report.optimization_suggestions}
+                />
               </div>
             )}
 
@@ -265,6 +266,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                     currentStudentId={studentId}
                     studentName={dashboardData.profile.student.student_name}
                     isOnline={isOnline}
+                    learningContext={learningContext}
                   />
                 </div>
               </div>

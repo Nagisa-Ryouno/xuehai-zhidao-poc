@@ -12,12 +12,15 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import type { LearningPathStep, PathState } from '../types';
+import { resolveStepPathState } from './student/taskFocusModel';
+import { getPathStatePresentation } from './student/pathStatePresentation';
 
 interface LearningPathProps {
   learningPath: LearningPathStep[];
   recommendationType: string;
   studentName: string;
   pathStates?: Record<string, PathState>;
+  focusedKnowledgeId?: string;
   onStartQuiz?: (knowledgeId: string, knowledgeName: string) => void;
 }
 
@@ -26,56 +29,35 @@ export const LearningPath: React.FC<LearningPathProps> = ({
   recommendationType,
   studentName,
   pathStates,
+  focusedKnowledgeId,
   onStartQuiz,
 }) => {
-  // 解析知识点路径状态：优先读取真实状态字典，未命中时依据阶段序号与当前正确率推导
-  const resolveStepPathState = (step: LearningPathStep, index: number): PathState => {
-    if (pathStates && pathStates[step.knowledge_id]) {
-      return pathStates[step.knowledge_id];
-    }
-    if (step.current_accuracy >= 80) return 'COMPLETED';
-    if (index === 0) return 'IN_PROGRESS';
-    return 'AVAILABLE';
+  // 鲁棒性防御：防止 learningPath 或 pathStates 为 null/undefined 时发生运行时崩溃
+  const safeLearningPath = Array.isArray(learningPath) ? learningPath : [];
+  const safePathStates = pathStates ?? {};
+  const safeStudentName = studentName || '你';
+  const safeRecommendationType = recommendationType || '智能自适应推荐';
+
+  const resolveStepState = (step: LearningPathStep, index: number): PathState => {
+    return resolveStepPathState(step, index, safePathStates);
   };
 
   const getPathStateConfig = (state: PathState) => {
+    return getPathStatePresentation(state);
+  };
+
+  // 空间位置语义辅助映射 (明确回答：“我现在在学习路径的什么位置？”)
+  const getSpatialStageLabel = (state: PathState, isFocused: boolean): string => {
+    if (isFocused) return '🎯 今日重点';
     switch (state) {
-      case 'LOCKED':
-        return {
-          badgeText: '🔒 需先掌握前置',
-          badgeClass: 'bg-slate-100 text-slate-600 border-slate-300',
-          buttonText: '需先掌握前置',
-          buttonClass: 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70',
-          disabled: true,
-          ariaLabel: '前置条件未满足，暂未开放学习',
-        };
-      case 'AVAILABLE':
-        return {
-          badgeText: '🔓 已满足学习条件',
-          badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
-          buttonText: '开始微测验',
-          buttonClass: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs cursor-pointer',
-          disabled: false,
-          ariaLabel: '已满足前置学习条件，点击开始微测验',
-        };
-      case 'IN_PROGRESS':
-        return {
-          badgeText: '🎯 正在进行',
-          badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 ring-2 ring-indigo-400/30',
-          buttonText: '继续挑战',
-          buttonClass: 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-sm cursor-pointer ring-2 ring-indigo-400/40',
-          disabled: false,
-          ariaLabel: '当前进行中任务，点击继续挑战微测验',
-        };
       case 'COMPLETED':
-        return {
-          badgeText: '✓ 已掌握',
-          badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          buttonText: '复习微测验',
-          buttonClass: 'bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs cursor-pointer',
-          disabled: false,
-          ariaLabel: '该考点已达标掌握，点击进入复习微测验',
-        };
+        return '✓ 已完成';
+      case 'AVAILABLE':
+        return '🔓 下一步可学习';
+      case 'LOCKED':
+        return '🔒 前置条件未满足';
+      default:
+        return '';
     }
   };
 
@@ -114,7 +96,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
                 AI 为你生成的学习路径
               </h2>
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                {recommendationType}
+                {safeRecommendationType}
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -123,19 +105,19 @@ export const LearningPath: React.FC<LearningPathProps> = ({
           </div>
         </div>
 
-        {learningPath.length > 0 && (
+        {safeLearningPath.length > 0 && (
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 self-start sm:self-auto bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
             <Flame className="w-4 h-4 text-amber-500" />
             <span>规划共推进</span>
             <strong className="text-indigo-600 font-bold">
-              {learningPath.length} 个知识节点
+              {safeLearningPath.length} 个知识节点
             </strong>
           </div>
         )}
       </div>
 
       {/* S004 Special Case: Empty Path with High Mastery */}
-      {learningPath.length === 0 ? (
+      {safeLearningPath.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-emerald-200 bg-gradient-to-b from-emerald-50/40 via-white to-indigo-50/20 p-8 sm:p-10 text-center space-y-6">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Trophy className="w-8 h-8" />
@@ -149,7 +131,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               🎉 当前没有明显薄弱知识点
             </h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              {studentName}同学的基础概念掌握非常扎实，当前无需进行零散的基础概念补差。
+              {safeStudentName}同学的基础概念掌握非常扎实，当前无需进行零散的基础概念补差。
               系统建议进入「<strong className="text-indigo-600 font-bold">综合能力提升阶段</strong>」，聚焦解题速度与高阶迁移突破！
             </p>
           </div>
@@ -208,29 +190,41 @@ export const LearningPath: React.FC<LearningPathProps> = ({
       ) : (
         /* Timeline Roadmap View */
         <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-4 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-indigo-500 before:via-violet-400 before:to-slate-200">
-          {learningPath.map((step, index) => {
+          {safeLearningPath.map((step, index) => {
             const isHighPriority = step.priority === '高';
-            const stepState = resolveStepPathState(step, index);
+            const stepState = resolveStepState(step, index);
             const pathStateConfig = getPathStateConfig(stepState);
+            const isFocused = Boolean(
+              focusedKnowledgeId && step.knowledge_id === focusedKnowledgeId
+            );
+            const spatialLabel = getSpatialStageLabel(stepState, isFocused);
 
             return (
-              <div key={step.stage} className="relative group">
+              <div key={step.knowledge_id || step.stage || index} className="relative group">
                 {/* Step Circle Marker */}
                 <div
                   className={`absolute -left-6 sm:-left-8 top-1.5 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-mono font-bold text-xs shadow-sm transition-transform group-hover:scale-110 ${
-                    isHighPriority
+                    isFocused
+                      ? 'bg-gradient-to-tr from-indigo-600 to-violet-600 text-white ring-4 ring-indigo-200 scale-105'
+                      : isHighPriority
                       ? 'bg-gradient-to-tr from-rose-500 to-indigo-600 text-white ring-4 ring-rose-50'
                       : 'bg-indigo-600 text-white ring-4 ring-indigo-50'
                   }`}
                 >
-                  {String(step.stage).padStart(2, '0')}
+                  {String(step.stage ?? index + 1).padStart(2, '0')}
                 </div>
 
                 {/* Step Card */}
-                <div className="bg-slate-50/70 hover:bg-white rounded-2xl p-5 border border-slate-200/90 hover:border-indigo-300 hover:shadow-md transition-all">
+                <div
+                  className={`rounded-2xl p-4 sm:p-5 border transition-all ${
+                    isFocused
+                      ? 'bg-white ring-2 ring-indigo-500/70 border-indigo-400 shadow-md'
+                      : 'bg-slate-50/70 hover:bg-white border-slate-200/90 hover:border-indigo-300 hover:shadow-md'
+                  }`}
+                >
                   {/* Step Card Header */}
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/50">
                         {step.knowledge_id}
                       </span>
@@ -240,6 +234,24 @@ export const LearningPath: React.FC<LearningPathProps> = ({
                       <span className="text-xs text-slate-400">
                         · {step.chapter}
                       </span>
+                      {isFocused ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-600 text-white shadow-2xs">
+                          <Target className="w-3 h-3" />
+                          <span>🎯 今日重点</span>
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            stepState === 'COMPLETED'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : stepState === 'AVAILABLE'
+                              ? 'bg-sky-50 text-sky-700 border-sky-200'
+                              : 'bg-slate-100 text-slate-600 border-slate-300'
+                          }`}
+                        >
+                          <span>{spatialLabel}</span>
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -262,7 +274,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
                           step.priority
                         )}`}
                       >
-                        优先级：{step.priority} ({step.priority_score.toFixed(1)}分)
+                        优先级：{step.priority} ({(step.priority_score ?? 0).toFixed(1)}分)
                       </span>
                     </div>
                   </div>
@@ -275,12 +287,12 @@ export const LearningPath: React.FC<LearningPathProps> = ({
                       </span>
                       <span
                         className={`text-lg font-black ${
-                          step.current_accuracy < 60
+                          (step.current_accuracy ?? 0) < 60
                             ? 'text-rose-600'
                             : 'text-amber-600'
                         }`}
                       >
-                        {step.current_accuracy.toFixed(1)}%
+                        {(step.current_accuracy ?? 0).toFixed(1)}%
                       </span>
                     </div>
 

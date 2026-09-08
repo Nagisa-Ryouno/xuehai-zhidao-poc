@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { KnowledgeGraphNodeData, AssistantResponse, PathState } from '../types';
 import { askAssistant } from '../api';
+import { getPathStatePresentation } from './student/pathStatePresentation';
 
 interface KnowledgeGraphDetailDrawerProps {
   nodeData: KnowledgeGraphNodeData | null;
@@ -100,46 +101,7 @@ export const KnowledgeGraphDetailDrawer: React.FC<KnowledgeGraphDetailDrawerProp
       ? 'IN_PROGRESS'
       : 'AVAILABLE');
 
-  const currentPathStateConfig = (() => {
-    switch (resolvedPathState) {
-      case 'LOCKED':
-        return {
-          badgeText: '🔒 需先掌握前置',
-          badgeClass: 'bg-slate-100 text-slate-600 border-slate-300',
-          buttonText: '需先掌握前置考点',
-          buttonClass: 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70',
-          disabled: true,
-          ariaLabel: '前置考点未满足，暂不可开始微测验',
-        };
-      case 'AVAILABLE':
-        return {
-          badgeText: '🔓 已满足学习条件',
-          badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
-          buttonText: '开始微测验',
-          buttonClass: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs cursor-pointer',
-          disabled: false,
-          ariaLabel: '已满足前置条件，点击开始微测验',
-        };
-      case 'IN_PROGRESS':
-        return {
-          badgeText: '🎯 正在进行',
-          badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 ring-2 ring-indigo-400/30',
-          buttonText: '继续攻坚微测验',
-          buttonClass: 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-sm cursor-pointer ring-2 ring-indigo-400/40',
-          disabled: false,
-          ariaLabel: '当前攻坚任务，点击进入微测验',
-        };
-      case 'COMPLETED':
-        return {
-          badgeText: '✓ 已掌握',
-          badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          buttonText: '复习微测验',
-          buttonClass: 'bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs cursor-pointer',
-          disabled: false,
-          ariaLabel: '已掌握考点，点击进行复习微测验',
-        };
-    }
-  })();
+  const currentPathStateConfig = getPathStatePresentation(resolvedPathState);
 
   return (
     <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-300">

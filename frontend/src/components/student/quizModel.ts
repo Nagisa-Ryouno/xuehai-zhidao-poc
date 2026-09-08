@@ -349,11 +349,26 @@ export function getUnlockedDownstreamNodes(
   replanning?: DecisionAuditEnvelope | null,
   currentKnowledgeId?: string
 ): string[] {
-  if (!replanning || replanning.canonical_payload.action !== 'UNLOCK_DOWNSTREAM') {
+  if (
+    !replanning ||
+    !replanning.canonical_payload ||
+    replanning.canonical_payload.action !== 'UNLOCK_DOWNSTREAM'
+  ) {
     return [];
   }
   const affected = replanning.canonical_payload.affected_nodes || [];
   const curr = currentKnowledgeId || replanning.canonical_payload.knowledge_id;
   return affected.filter((id) => id !== curr);
 }
+
+export {
+  calculateMasteryTransition,
+  getNextLearningAction,
+} from './taskFocusModel.ts';
+export type {
+  MasteryTransitionResult,
+  MasteryLevel,
+  MasteryTransitionTag,
+  NextLearningAction,
+} from './taskFocusModel.ts';
 

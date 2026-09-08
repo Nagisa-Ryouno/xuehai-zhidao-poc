@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "oxlint",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "quality:gate": "python ../scripts/quality_gate.py",
     "preview": "vite preview"
   },
   "dependencies": {

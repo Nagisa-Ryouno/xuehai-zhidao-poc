@@ -356,3 +356,89 @@ export interface DecisionAuditEnvelope {
   canonical_payload: ReplanningCanonicalPayload;
 }
 
+// ============================================================
+// Phase 3 / Sprint 7: AI Learning Companion Context Boundary
+// ============================================================
+
+export interface NextLearningAction {
+  type: 'CONTINUE_NEXT' | 'RETRY' | 'RETURN_TASKS';
+  knowledgeId?: string;
+  knowledgeName?: string;
+  label: string;
+}
+
+export interface RecentQuizFact {
+  readonly question_id: string;
+  readonly is_correct: boolean;
+  readonly time_spent_ms: number;
+  readonly before_mastery_percent: number;
+  readonly after_mastery_percent: number;
+  readonly delta_percent: number;
+  readonly action: PathAction;
+  readonly reason_code: ReplanningReasonCode;
+  readonly unlocked_nodes: readonly string[];
+}
+
+export interface LearningContextSystemFacts {
+  readonly student_id: string;
+  readonly student_name: string;
+  readonly major: string;
+  readonly grade: string;
+  readonly learning_goal: string;
+
+  readonly current_knowledge_id: string;
+  readonly current_knowledge_name: string;
+  readonly current_chapter: string;
+  readonly current_path_state: PathState;
+
+  readonly current_mastery_percent: number;
+  readonly mastery_target_percent: number;
+  readonly mastery_target_threshold: number;
+  readonly mastery_gap_percent: number;
+  readonly is_mastered: boolean;
+
+  readonly prerequisites_met: boolean;
+  readonly path_priority: string;
+  readonly is_path_completed: boolean;
+
+  readonly recent_quiz?: RecentQuizFact;
+
+  readonly next_action: NextLearningAction;
+}
+
+export interface LearningContextDerivedExplanations {
+  readonly recommendation_reason: string;
+  readonly progression_summary?: string;
+  readonly action_guidance: string;
+}
+
+export interface LearningContext {
+  readonly system_facts: LearningContextSystemFacts;
+  readonly derived_explanations: LearningContextDerivedExplanations;
+}
+
+/**
+ * 预留 AI 标注层：明确与系统事实物理隔离，AI 标注绝不可反向污染系统事实
+ */
+export interface AIAnnotations {
+  readonly suggested_questions?: readonly string[];
+  readonly confidence?: number;
+}
+
+export interface GroundedAIContext extends LearningContext {
+  readonly ai_annotations?: AIAnnotations;
+}
+
+/**
+ * AI 学习伴学最终呈现回答契约 (Grounded Answer)
+ * 严禁包含 next_action, decision, unlock_nodes 等任何学习决策字段
+ */
+export interface GroundedAnswer {
+  readonly answer: string;
+  readonly grounding_status: 'grounded' | 'fallback';
+  readonly validation_reason?: string;
+  readonly referenced_facts?: readonly string[];
+  readonly suggested_explanation?: string;
+}
+
+

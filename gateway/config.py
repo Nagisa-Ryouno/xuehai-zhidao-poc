@@ -15,6 +15,7 @@ class GatewaySettings:
     """服务端独立配置对象，绝不向客户端暴露真实密钥"""
     provider: str = os.getenv("AI_PROVIDER", "mock").strip().lower()
     api_key: Optional[str] = os.getenv("AI_API_KEY", os.getenv("LLM_API_KEY", None))
+    base_url: Optional[str] = os.getenv("AI_BASE_URL", None)
     model: str = os.getenv("AI_MODEL", "mock-companion-v1").strip()
     timeout_ms: int = int(os.getenv("AI_GATEWAY_TIMEOUT_MS", "5000"))
 

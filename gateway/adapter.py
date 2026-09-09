@@ -2,7 +2,7 @@
 """
 gateway.adapter
 学海智导 (Xuehai Zhidao) V2 - Phase 3 / Sprint 7-D
-Stage B: Backend AI Provider Adapter 抽象层与密钥隔离边界
+Stage E: Backend AI Provider Adapter 抽象层与 External LLM Readiness
 
 设计原则：
 1. 依赖倒置：网关上层依赖抽象 AIProviderAdapter，而非具体模型实现
@@ -10,20 +10,37 @@ Stage B: Backend AI Provider Adapter 抽象层与密钥隔离边界
 3. 输出边界：Provider 只能输出 StructuredAIResponse，绝对禁止任何学习决策控制字段
 4. 超时与容灾：内置 5000ms 超时契约与异常隔离熔断
 5. 密钥隔离：服务端专用，禁止透传或暴露 API 密钥
+6. 离线隔离：ExternalLLMProvider 默认装配 DisabledNetworkTransport，严禁真实联网调用
 """
 
 import asyncio
 from abc import ABC, abstractmethod
 import logging
-from typing import Literal, Optional
+from typing import Literal, Optional, Set
 
 from gateway.config import gateway_settings
 from gateway.models import (
     LearningPromptContext,
     StructuredAIResponse,
 )
+from gateway.prompt import build_external_prompt
+from gateway.transport import DisabledNetworkTransport, LLMTransport
 
 logger = logging.getLogger("xuehai.gateway.adapter")
+
+FORBIDDEN_DECISION_FIELDS: Set[str] = {
+    "decision",
+    "unlock_nodes",
+    "state_transition",
+    "mutate_path",
+    "modify_mastery",
+    "set_mastery",
+    "next_state",
+    "learning_path_update",
+    "next_action_command",
+    "change_path",
+    "path_mutation",
+}
 
 
 class ProviderException(Exception):
@@ -33,6 +50,11 @@ class ProviderException(Exception):
 
 class ProviderTimeoutError(ProviderException):
     """Provider 超时异常"""
+    pass
+
+
+class ProviderConfigurationError(ProviderException):
+    """Provider 配置缺失或无效异常 (受控异常，不暴露密钥细节)"""
     pass
 
 
@@ -146,14 +168,16 @@ class MockGatewayProvider(AIProviderAdapter):
         )
 
 
-class FutureExternalLLMProvider(AIProviderAdapter):
+class ExternalLLMProvider(AIProviderAdapter):
     """
-    未来外部真实大模型服务商骨架 (OpenAI / DeepSeek / 通义千问等)
+    外部真实大模型服务商抽象适配器 (Stage E: Ready but Offline)
     
-    架构红线：
-    - 密钥仅从服务端读取 (gateway_settings.api_key)
-    - 绝不向客户端暴露真实连接细节与密钥
-    - Stage B 暂不发起真实网络请求，保持接口隔离
+    架构红线与工作流：
+    1. 严格检查 Provider 配置（未配置 API Key 时抛出受控 ProviderConfigurationError）
+    2. 调用 build_external_prompt 组装纯净的提示词载荷
+    3. 委托底层 transport.send_payload 发送（默认使用 DisabledNetworkTransport 杜绝外网请求）
+    4. 严密执行越权学习决策字段扫描（FORBIDDEN_DECISION_FIELDS 命中立即阻断）
+    5. 最终规范化校验为强类型 StructuredAIResponse
     """
 
     def __init__(
@@ -162,10 +186,13 @@ class FutureExternalLLMProvider(AIProviderAdapter):
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model: Optional[str] = None,
+        transport: Optional[LLMTransport] = None,
     ):
         self._name = name
         self.api_key = api_key or gateway_settings.api_key
+        self.base_url = base_url or gateway_settings.base_url
         self.model = model or gateway_settings.model
+        self.transport: LLMTransport = transport or DisabledNetworkTransport()
 
     @property
     def provider_name(self) -> str:
@@ -175,11 +202,78 @@ class FutureExternalLLMProvider(AIProviderAdapter):
         self,
         prompt_context: LearningPromptContext,
     ) -> StructuredAIResponse:
-        # 未接入外部真实网络时安全降级，防止任何意外真实网络调用
-        raise NotImplementedError(
-            f"External provider '{self._name}' skeleton interface. "
-            "Real network calls are disabled in Stage B."
+        # 1. 严格配置校验 (Configuration Validation)
+        # 缺少有效 API Key 时受控抛出配置异常，杜绝敏感词汇泄露
+        if not self.api_key or not self.api_key.strip():
+            raise ProviderConfigurationError(
+                "External AI provider is not configured: missing API key"
+            )
+
+        # 2. 组装只读外部提示词载荷
+        prompt_payload = build_external_prompt(
+            prompt_context,
+            model=self.model or gateway_settings.model,
         )
+
+        request_dict = {
+            "model": prompt_payload.model,
+            "system_prompt": prompt_payload.system_prompt,
+            "user_prompt": prompt_payload.user_prompt,
+            "system_facts": prompt_context.system_facts.model_dump(),
+            "response_format": prompt_payload.response_format,
+            "temperature": prompt_payload.temperature,
+        }
+
+        # 3. 通过 Transport 抽象层发送（Stage E 默认 DisabledNetworkTransport，离线测试注入 FakeLLMTransport）
+        raw_response = await self.transport.send_payload(
+            request_dict,
+            timeout_ms=gateway_settings.timeout_ms,
+        )
+
+        # 4. 原始响应类型与格式防御
+        if not isinstance(raw_response, dict):
+            raise ProviderException(
+                "Invalid response from external LLM transport: expected JSON object"
+            )
+
+        # 5. 越权学习决策字段防御扫描 (Forbidden Decision Field Detection)
+        for forbidden_key in FORBIDDEN_DECISION_FIELDS:
+            if forbidden_key in raw_response:
+                raise ProviderException(
+                    f"External LLM returned forbidden decision field: {forbidden_key}"
+                )
+
+        # 6. StructuredAIResponse 契约规范化与校验
+        if "answer" not in raw_response or not isinstance(raw_response["answer"], str):
+            raise ProviderException(
+                "Invalid StructuredAIResponse from external LLM: missing required 'answer' string"
+            )
+
+        if "referenced_facts" not in raw_response or not isinstance(
+            raw_response["referenced_facts"], list
+        ):
+            raise ProviderException(
+                "Invalid StructuredAIResponse from external LLM: missing required 'referenced_facts' list"
+            )
+
+        grounding_status = raw_response.get("grounding_status", "grounded")
+        if grounding_status not in ("grounded", "insufficient_context"):
+            grounding_status = "grounded"
+
+        suggested_explanation = raw_response.get("suggested_explanation")
+        if suggested_explanation is not None and not isinstance(suggested_explanation, str):
+            suggested_explanation = str(suggested_explanation)
+
+        return StructuredAIResponse(
+            answer=raw_response["answer"],
+            referenced_facts=[str(f) for f in raw_response["referenced_facts"]],
+            suggested_explanation=suggested_explanation,
+            grounding_status=grounding_status,
+        )
+
+
+# 向后兼容别名，保障已有测试平稳运行
+FutureExternalLLMProvider = ExternalLLMProvider
 
 
 # ============================================================
@@ -200,7 +294,7 @@ def get_provider(provider_type: Optional[str] = None) -> AIProviderAdapter:
     if selected_type in ("mock", "default"):
         return MockGatewayProvider()
     elif selected_type in ("external", "openai", "deepseek"):
-        return FutureExternalLLMProvider(name=selected_type)
+        return ExternalLLMProvider(name=selected_type)
     else:
         logger.warning(f"Unknown provider '{selected_type}', falling back to MockGatewayProvider")
         return MockGatewayProvider()

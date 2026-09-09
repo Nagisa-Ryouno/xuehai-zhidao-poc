@@ -89,6 +89,9 @@ export class AIGatewayProvider implements AIProvider {
 
     // 4. HTTP 状态码校验 (502 / 503 / 504 / 422 等统一映射为受控异常)
     if (!response.ok) {
+      if (response.status === 504) {
+        throw new Error('Gateway timed out (HTTP 504)');
+      }
       let errorDetail = '';
       try {
         const errorJson = await response.json();
@@ -130,8 +133,11 @@ export class AIGatewayProvider implements AIProvider {
       'mutate_path',
       'modify_mastery',
       'set_mastery',
+      'next_state',
+      'learning_path_update',
       'next_action_command',
       'change_path',
+      'path_mutation',
     ];
     for (const key of forbiddenDecisionKeys) {
       if (key in rawObj) {

@@ -155,3 +155,131 @@ class FakeLLMTransport(LLMTransport):
             "suggested_explanation": "根据当前客观学情继续巩固基础练习。",
             "grounding_status": "grounded",
         }
+
+
+class HttpLLMTransport(LLMTransport):
+    """
+    通用 REST / OpenAI-compatible HTTP 网络传输实现 (Stage G3)
+    
+    设计原则：
+    1. Provider-Neutral：兼容 OpenAI, DeepSeek, Anthropic (via proxy), 本地私有等兼容接口
+    2. 密钥安全隔离：Authorization Header 正常传输，但异常信息与日志绝不暴露 API Key
+    3. 状态码精细分类与异常转换：2xx -> JSON, 401/403 -> 鉴权异常, 429 -> 频控异常, 5xx -> 服务端异常, 超时 -> TimeoutError
+    4. 依赖注入支持：支持注入测试 client (如 mock client)，在不进行真实外部网络调用的情况下完成完整测试
+    """
+
+    def __init__(
+        self,
+        base_url: str,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        timeout_ms: int = 5000,
+        client: Optional[Any] = None,
+    ):
+        self.base_url = base_url.rstrip("/") if base_url else ""
+        self.api_key = api_key
+        self.model = model or "deepseek-chat"
+        self.timeout_ms = timeout_ms
+        self._client = client
+
+    def _get_endpoint_url(self) -> str:
+        if self.base_url.endswith("/chat/completions"):
+            return self.base_url
+        return f"{self.base_url}/chat/completions"
+
+    def _build_messages_and_body(self, request_payload: Dict[str, Any]) -> Dict[str, Any]:
+        if "messages" in request_payload:
+            messages = list(request_payload["messages"])
+        else:
+            messages = []
+            if "system_prompt" in request_payload:
+                messages.append({"role": "system", "content": request_payload["system_prompt"]})
+            if "user_prompt" in request_payload:
+                messages.append({"role": "user", "content": request_payload["user_prompt"]})
+
+        body: Dict[str, Any] = {
+            "model": request_payload.get("model", self.model),
+            "messages": messages,
+            "temperature": request_payload.get("temperature", 0.0),
+        }
+        if "response_format" in request_payload:
+            body["response_format"] = request_payload["response_format"]
+
+        return body
+
+    async def send_payload(
+        self,
+        request_payload: Dict[str, Any],
+        timeout_ms: int,
+    ) -> Dict[str, Any]:
+        from gateway.adapter import ProviderException, ProviderTimeoutError
+        from gateway.redaction import redact_sensitive_string
+
+        endpoint_url = self._get_endpoint_url()
+        headers = {"Content-Type": "application/json"}
+        if self.api_key and self.api_key.strip():
+            headers["Authorization"] = f"Bearer {self.api_key.strip()}"
+
+        body = self._build_messages_and_body(request_payload)
+        timeout_sec = (timeout_ms or self.timeout_ms) / 1000.0
+
+        try:
+            if self._client is not None:
+                # 依赖注入的 client（例如测试中的 MagicMock client）
+                if asyncio.iscoroutinefunction(getattr(self._client, "post", None)):
+                    response = await self._client.post(endpoint_url, headers=headers, json=body, timeout=timeout_sec)
+                else:
+                    response = self._client.post(endpoint_url, headers=headers, json=body, timeout=timeout_sec)
+            else:
+                import requests
+
+                def _sync_post():
+                    return requests.post(
+                        endpoint_url,
+                        headers=headers,
+                        json=body,
+                        timeout=timeout_sec,
+                    )
+
+                response = await asyncio.to_thread(_sync_post)
+
+            status_code = getattr(response, "status_code", 200)
+
+            if 200 <= status_code < 300:
+                try:
+                    return response.json()
+                except Exception as je:
+                    raise ProviderException(f"Invalid JSON returned from upstream: {str(je)}")
+
+            if status_code in (401, 403):
+                raise ProviderException(
+                    f"Upstream provider authentication failed (HTTP {status_code})"
+                )
+            elif status_code == 429:
+                raise ProviderException(
+                    f"Upstream provider rate limit reached (HTTP {status_code})"
+                )
+            elif 400 <= status_code < 500:
+                raise ProviderException(
+                    f"Upstream provider client request error (HTTP {status_code})"
+                )
+            else:
+                raise ProviderException(
+                    f"Upstream provider server error (HTTP {status_code})"
+                )
+
+        except (TimeoutError, asyncio.TimeoutError):
+            raise ProviderTimeoutError(
+                f"HTTP request timed out after {timeout_ms}ms"
+            )
+        except ProviderException:
+            raise
+        except Exception as e:
+            err_name = type(e).__name__
+            if "Timeout" in err_name:
+                raise ProviderTimeoutError(
+                    f"HTTP request timed out after {timeout_ms}ms"
+                )
+            safe_msg = redact_sensitive_string(str(e))
+            raise ProviderException(f"Network transport error: {safe_msg}")
+

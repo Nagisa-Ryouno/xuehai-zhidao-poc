@@ -23,6 +23,11 @@ from gateway.evaluation.judge.prompt import (
 )
 from gateway.evaluation.judge.adapter import JudgeAdapter
 from gateway.evaluation.judge.fusion import EvaluationFusionEngine
+from gateway.evaluation.judge.config import (
+    JudgeSettings,
+    get_judge_settings,
+    build_judge_transport,
+)
 
 __all__ = [
     "JudgeDimension",
@@ -39,4 +44,8 @@ __all__ = [
     "build_judge_prompt",
     "JudgeAdapter",
     "EvaluationFusionEngine",
+    "JudgeSettings",
+    "get_judge_settings",
+    "build_judge_transport",
 ]
+

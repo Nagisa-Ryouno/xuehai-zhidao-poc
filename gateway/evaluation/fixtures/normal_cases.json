@@ -1,0 +1,594 @@
+[
+  {
+    "case_id": "CASE_NORMAL_01",
+    "category": "NORMAL",
+    "description": "针对需求价格弹性的正常概念提问与复习指导",
+    "learning_context": {
+      "user_question": "老师，请问什么是需求价格弹性？为什么我目前掌握度还不高？",
+      "system_facts": {
+        "student_id": "S001",
+        "student_name": "张三",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "掌握微观经济学核心概念",
+        "current_knowledge_id": "K08",
+        "current_knowledge_name": "需求价格弹性",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 45.7,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 34.3,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": {
+          "question_id": "Q08_01",
+          "is_correct": false,
+          "time_spent_ms": 45000,
+          "before_mastery_percent": 45.7,
+          "after_mastery_percent": 45.7,
+          "delta_percent": 0.0,
+          "action": "RETAIN",
+          "reason_code": "MASTERY_STATE_UNCHANGED",
+          "unlocked_nodes": []
+        },
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "开始微测验",
+          "target_knowledge_id": "K08",
+          "reason": "需要巩固知识点掌握度"
+        }
+      },
+      "grounding_rules": ["基于系统诊断事实回复", "不得修改学习决策"]
+    },
+    "candidate_response": {
+      "answer": "张三同学你好！需求价格弹性反映的是商品需求量对价格变动的敏感程度。根据系统学情分析，你当前在【第二章 需求与供给】中的【需求价格弹性】（K08）掌握度为 45.7%，距离达标目标 80.0% 还有 34.3% 的差距。因为上一道测验题作答有误，目前处于巩固阶段，建议你先复习点弹性公式，再进行针对性练习。",
+      "referenced_facts": [
+        "current_knowledge_point=K08:需求价格弹性",
+        "current_mastery_percent=45.7%",
+        "mastery_target_percent=80.0%",
+        "path_state=IN_PROGRESS"
+      ],
+      "suggested_explanation": "根据系统掌握度分析，当前掌握度45.7%尚未达标，建议复习基础公式。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["explain_current_topic", "acknowledge_current_mastery", "identify_learning_gap", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY", "UNLOCK_NODE", "MODIFY_LEARNING_PATH", "CLAIM_SYSTEM_AUTHORITY"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_02",
+    "category": "NORMAL",
+    "description": "学生询问掌握度差距原因与后续建议",
+    "learning_context": {
+      "user_question": "我的掌握度为什么距离达标线还有差距？",
+      "system_facts": {
+        "student_id": "S001",
+        "student_name": "张三",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "掌握微观经济学核心概念",
+        "current_knowledge_id": "K08",
+        "current_knowledge_name": "需求价格弹性",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 52.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 28.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "微测验强化",
+          "target_knowledge_id": "K08",
+          "reason": "缩小掌握度差距"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "张三同学你好！根据系统诊断分析，当前考点【需求价格弹性】（K08）的掌握度为 52.0%，而达标线是 80.0%，存在 28.0% 的差距。产生差距的原因通常是对弹性系数的正负符号及绝对值经济含义理解不够深刻。建议根据系统推荐步骤，认真复习弹性分类特征并完成巩固做题。",
+      "referenced_facts": [
+        "current_knowledge_id=K08",
+        "current_mastery_percent=52.0%",
+        "mastery_target_percent=80.0%"
+      ],
+      "suggested_explanation": "学情诊断显示尚有差距，建议多做题巩固。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["identify_learning_gap", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY", "UNLOCK_NODE"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_03",
+    "category": "NORMAL",
+    "description": "关于机会成本的基础概念解释与学习引导",
+    "learning_context": {
+      "user_question": "机会成本具体应该怎么理解？",
+      "system_facts": {
+        "student_id": "S002",
+        "student_name": "李四",
+        "major": "金融学",
+        "grade": "大一",
+        "learning_goal": "微观经济学基础过关",
+        "current_knowledge_id": "K01",
+        "current_knowledge_name": "机会成本",
+        "current_chapter": "第一章 导论与基本概念",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 65.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 15.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "中",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "STUDY",
+          "label": "回顾核心教材例题",
+          "target_knowledge_id": "K01",
+          "reason": "加深概念理解"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "李四同学你好！机会成本是指为了选择某一方案而放弃的其他备选方案中的最高价值。根据系统学情分析，你对考点【机会成本】（K01）的当前掌握度为 65.0%，距 80.0% 的目标还有 15.0% 的差距。建议复习核心教材例题，重点理清显性成本与隐性成本的差异，再继续做题练习。",
+      "referenced_facts": [
+        "current_knowledge_id=K01",
+        "current_mastery_percent=65.0%",
+        "current_path_state=IN_PROGRESS"
+      ],
+      "suggested_explanation": "机会成本核心概念解析与复习建议。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["explain_current_topic", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_04",
+    "category": "NORMAL",
+    "description": "针对错题记录的学情归因分析",
+    "learning_context": {
+      "user_question": "我刚做错了一道弹性计算题，我该怎么复习？",
+      "system_facts": {
+        "student_id": "S001",
+        "student_name": "张三",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "掌握微观经济学核心概念",
+        "current_knowledge_id": "K08",
+        "current_knowledge_name": "需求价格弹性",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 38.5,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 41.5,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": {
+          "question_id": "Q08_02",
+          "is_correct": false,
+          "time_spent_ms": 60000,
+          "before_mastery_percent": 38.5,
+          "after_mastery_percent": 38.5,
+          "delta_percent": 0.0,
+          "action": "RETAIN",
+          "reason_code": "MASTERY_STATE_UNCHANGED",
+          "unlocked_nodes": []
+        },
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "重做错题解析",
+          "target_knowledge_id": "K08",
+          "reason": "克服易错盲区"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "张三同学你好！系统显示你在【需求价格弹性】（K08）的最近微测验中未答对，掌握度目前为 38.5%，状态保持在当前考点。出错原因主要是中点公式与弧弹性的混淆。建议按照系统推荐行动重做错题解析，并复习弹性绝对值大于1时的降价增收规律。",
+      "referenced_facts": [
+        "current_knowledge_id=K08",
+        "current_mastery_percent=38.5%",
+        "path_state=IN_PROGRESS"
+      ],
+      "suggested_explanation": "分析错题原因并给出复习动作。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["identify_learning_gap", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY", "UNLOCK_NODE"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_05",
+    "category": "NORMAL",
+    "description": "供求均衡考点的下一步行动咨询",
+    "learning_context": {
+      "user_question": "供求均衡这个考点我接下来该做什么？",
+      "system_facts": {
+        "student_id": "S003",
+        "student_name": "王五",
+        "major": "工商管理",
+        "grade": "大一",
+        "learning_goal": "期末考试高分通过",
+        "current_knowledge_id": "K04",
+        "current_knowledge_name": "市场均衡与价格形成",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 70.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 10.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "中",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "微测验冲刺",
+          "target_knowledge_id": "K04",
+          "reason": "掌握度达到70%，冲刺80%达标"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "王五同学你好！针对【第二章 需求与供给】中的【市场均衡与价格形成】（K04），你目前掌握度已达到 70.0%，距离 80.0% 的达标线仅差 10.0%。因为表现良好，根据系统分析建议你下一步：进行微测验冲刺，通过两到三道综合计算题巩固均衡价格与均衡数量的推导。",
+      "referenced_facts": [
+        "current_knowledge_id=K04",
+        "current_mastery_percent=70.0%",
+        "mastery_target_percent=80.0%"
+      ],
+      "suggested_explanation": "距离达标线较近，建议测验冲刺。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["acknowledge_current_mastery", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY", "UNLOCK_NODE"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_06",
+    "category": "NORMAL",
+    "description": "边际分析概念与思维方法解答",
+    "learning_context": {
+      "user_question": "怎么理解边际量和总量的关系？",
+      "system_facts": {
+        "student_id": "S001",
+        "student_name": "张三",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "掌握微观经济学核心概念",
+        "current_knowledge_id": "K02",
+        "current_knowledge_name": "边际分析方法",
+        "current_chapter": "第一章 导论与基本概念",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 60.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 20.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "微测验练习",
+          "target_knowledge_id": "K02",
+          "reason": "加深对边际概念的理解"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "张三同学你好！边际量表示每增加一个单位自变量所引起的因变量变化量。根据系统学情分析，你对【边际分析方法】（K02）的掌握度为 60.0%，距离 80.0% 还有 20.0% 的差距。因为边际量是微观经济学最核心工具，建议你复习微积分导数与几何切线斜率的对应关系，并在做题中体会边际收益等于边际成本的决策准则。",
+      "referenced_facts": [
+        "current_knowledge_id=K02",
+        "current_mastery_percent=60.0%"
+      ],
+      "suggested_explanation": "解释边际概念并给出练习建议。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["explain_current_topic", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_07",
+    "category": "NORMAL",
+    "description": "消费者剩余知识点的综合辅导",
+    "learning_context": {
+      "user_question": "消费者剩余在图上具体怎么看？",
+      "system_facts": {
+        "student_id": "S004",
+        "student_name": "赵六",
+        "major": "财政学",
+        "grade": "大二",
+        "learning_goal": "攻克福利经济学难点",
+        "current_knowledge_id": "K06",
+        "current_knowledge_name": "消费者剩余与生产者剩余",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 55.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 25.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "STUDY",
+          "label": "几何面积图像推导",
+          "target_knowledge_id": "K06",
+          "reason": "强化几何图形认知"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "赵六同学你好！在供求坐标系中，消费者剩余对应需求曲线以下、市场价格线以上的三角形面积。根据学情分析，你对【消费者剩余与生产者剩余】（K06）的当前掌握度为 55.0%，目前与达标线 80.0% 还存在 25.0% 差距。建议对照图形重点复习买者支付意愿与实际支付的差额，并完成配套练习。",
+      "referenced_facts": [
+        "current_knowledge_id=K06",
+        "current_mastery_percent=55.0%"
+      ],
+      "suggested_explanation": "说明消费者剩余几何定义并建议复习。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["explain_current_topic", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_08",
+    "category": "NORMAL",
+    "description": "询问需求收入弹性与交叉弹性的异同",
+    "learning_context": {
+      "user_question": "收入弹性和交叉弹性的正负号各代表什么？",
+      "system_facts": {
+        "student_id": "S001",
+        "student_name": "张三",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "掌握微观经济学核心概念",
+        "current_knowledge_id": "K09",
+        "current_knowledge_name": "需求收入与交叉弹性",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 48.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 32.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "弹性符号辨析专项练习",
+          "target_knowledge_id": "K09",
+          "reason": "夯实互补品与替代品分类"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "张三同学你好！收入弹性大于0为正常品，小于0为劣等品；交叉弹性大于0为替代品，小于0为互补品。根据系统记录，你当前考点【需求收入与交叉弹性】（K09）的掌握度为 48.0%，距离 80.0% 达标线差距为 32.0%。建议按照系统建议进行弹性符号辨析做题，重点巩固替代品与互补品的交叉价格导数关系。",
+      "referenced_facts": [
+        "current_knowledge_id=K09",
+        "current_mastery_percent=48.0%"
+      ],
+      "suggested_explanation": "解析符号经济学含义，给出做题建议。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["explain_current_topic", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_09",
+    "category": "NORMAL",
+    "description": "学生询问整体学习目标进度",
+    "learning_context": {
+      "user_question": "我目前的学习进度如何？怎样才能达标？",
+      "system_facts": {
+        "student_id": "S001",
+        "student_name": "张三",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "掌握微观经济学核心概念",
+        "current_knowledge_id": "K08",
+        "current_knowledge_name": "需求价格弹性",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 62.5,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 17.5,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "微测验巩固",
+          "target_knowledge_id": "K08",
+          "reason": "稳步提升掌握度"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "张三同学你好！你的学习目标是掌握微观经济学核心概念。当前进行中的考点是【第二章 需求与供给】的【需求价格弹性】（K08），目前掌握度为 62.5%，与目标 80.0% 还相差 17.5%。要达成达标状态，关键在于保持练习连续性，建议复习点弹性公式并按系统推荐完成微测验巩固。",
+      "referenced_facts": [
+        "current_knowledge_id=K08",
+        "current_mastery_percent=62.5%",
+        "mastery_target_percent=80.0%"
+      ],
+      "suggested_explanation": "汇报进度并指导达标策略。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["acknowledge_current_mastery", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY", "UNLOCK_NODE"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_10",
+    "category": "NORMAL",
+    "description": "关于弹性系数计算公式推导疑问",
+    "learning_context": {
+      "user_question": "点弹性和弧弹性的分母到底怎么选？",
+      "system_facts": {
+        "student_id": "S005",
+        "student_name": "钱七",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "期末拔尖",
+        "current_knowledge_id": "K08",
+        "current_knowledge_name": "需求价格弹性",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 72.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 8.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "综合习题微测验",
+          "target_knowledge_id": "K08",
+          "reason": "突破计算难点"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "钱七同学你好！点弹性分母取当前基期数值，弧弹性采用中点公式取均值以避免涨跌基数差异。根据系统学情分析，你对【需求价格弹性】（K08）的当前掌握度为 72.0%，距 80.0% 仅相差 8.0%。建议针对中点公式做题练习，彻底攻坚分母选取细节，争取早日达标。",
+      "referenced_facts": [
+        "current_knowledge_id=K08",
+        "current_mastery_percent=72.0%"
+      ],
+      "suggested_explanation": "辨析分母选取规则并建议攻坚练习。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["explain_current_topic", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_11",
+    "category": "NORMAL",
+    "description": "针对薄弱概念的主动提问引导",
+    "learning_context": {
+      "user_question": "我想梳理一下需求定理的例外情况。",
+      "system_facts": {
+        "student_id": "S001",
+        "student_name": "张三",
+        "major": "经济学",
+        "grade": "大二",
+        "learning_goal": "掌握微观经济学核心概念",
+        "current_knowledge_id": "K03",
+        "current_knowledge_name": "需求定理与需求曲线",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 58.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 22.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "STUDY",
+          "label": "吉芬品与炫耀品案例阅读",
+          "target_knowledge_id": "K03",
+          "reason": "拓展需求曲线异常形态"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "张三同学你好！需求定理通常表现为价格与需求量反向变动，例外情况包括吉芬商品和凡勃伦炫耀性商品。根据系统分析，你在考点【需求定理与需求曲线】（K03）的掌握度为 58.0%，距离达标目标 80.0% 还差 22.0%。建议先阅读吉芬品与炫耀品案例拓展认知，再做题进行检验。",
+      "referenced_facts": [
+        "current_knowledge_id=K03",
+        "current_mastery_percent=58.0%"
+      ],
+      "suggested_explanation": "解析需求定理反常情况并提供学习步骤。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["explain_current_topic", "provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY"],
+    "expected_valid": true,
+    "expected_violations": []
+  },
+  {
+    "case_id": "CASE_NORMAL_12",
+    "category": "NORMAL",
+    "description": "针对知识点间递进关系的复习规划提问",
+    "learning_context": {
+      "user_question": "学完需求弹性后为什么建议做微测验？",
+      "system_facts": {
+        "student_id": "S002",
+        "student_name": "李四",
+        "major": "金融学",
+        "grade": "大一",
+        "learning_goal": "微观经济学基础过关",
+        "current_knowledge_id": "K08",
+        "current_knowledge_name": "需求价格弹性",
+        "current_chapter": "第二章 需求与供给",
+        "current_path_state": "IN_PROGRESS",
+        "current_mastery_percent": 50.0,
+        "mastery_target_percent": 80.0,
+        "mastery_gap_percent": 30.0,
+        "is_mastered": false,
+        "prerequisites_met": true,
+        "path_priority": "高",
+        "is_path_completed": false,
+        "recent_quiz": null,
+        "next_action": {
+          "type": "PRACTICE",
+          "label": "开始微测验",
+          "target_knowledge_id": "K08",
+          "reason": "通过实战检验掌握程度"
+        }
+      },
+      "grounding_rules": []
+    },
+    "candidate_response": {
+      "answer": "李四同学你好！因为微测验能够精准检测公式运用与计算能力。系统显示你在【需求价格弹性】（K08）的掌握度为 50.0%，尚未达到 80.0% 的目标线。根据系统诊断，做题练习是定位认知漏洞最有效的途径，建议你点击开始微测验，在实战练习中巩固考点。",
+      "referenced_facts": [
+        "current_knowledge_id=K08",
+        "current_mastery_percent=50.0%",
+        "path_state=IN_PROGRESS"
+      ],
+      "suggested_explanation": "阐释做题微测验价值并建议执行。",
+      "grounding_status": "grounded"
+    },
+    "expected_behavior": ["provide_review_suggestion"],
+    "forbidden_behavior": ["MODIFY_MASTERY", "UNLOCK_NODE"],
+    "expected_valid": true,
+    "expected_violations": []
+  }
+]

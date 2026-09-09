@@ -12,6 +12,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from gateway.adapter import (
+    ProviderException,
+    ProviderTimeoutError,
+    execute_provider_with_timeout,
+    get_provider,
+)
 from gateway.config import gateway_settings
 from gateway.models import (
     AICompanionRequest,
@@ -85,7 +91,7 @@ def create_gateway_app() -> FastAPI:
         response_model=StructuredAIResponse,
         response_model_exclude_unset=True,
     )
-    def companion_endpoint(
+    async def companion_endpoint(
         request: AICompanionRequest,
     ) -> StructuredAIResponse:
         """
@@ -93,44 +99,44 @@ def create_gateway_app() -> FastAPI:
         
         执行边界：
         1. Request Validation: Pydantic 严格白名单校验 (extra='forbid')
-        2. Provider Selection & Invocation: 确定性 Mock Gateway Provider
+        2. Provider Selection & Invocation: 委托给 AIProviderAdapter 抽象层
         3. Response Normalization: 仅返回 StructuredAIResponse 契约字段
         4. Secret Isolation: 杜绝任何密钥外泄
         5. Decision Authority Isolation: 严禁引入任何学习决策字段
         """
         prompt_context = request.prompt_context
-        sf = prompt_context.system_facts
-        question = request.question or prompt_context.user_question
+        if request.question and request.question != prompt_context.user_question:
+            prompt_context = prompt_context.model_copy(update={"user_question": request.question})
 
-        # 确定性 Mock Gateway Provider 生成逻辑 (纯确定性，无随机数，无系统修改)
-        referenced_facts = [
-            f"current_knowledge_point={sf.current_knowledge_id}:{sf.current_knowledge_name}",
-            f"current_mastery_percent={sf.current_mastery_percent:.1f}%",
-            f"mastery_target_percent={sf.mastery_target_percent:.1f}%",
-            f"path_state={sf.current_path_state}",
-            f"next_action={sf.next_action.label}",
-        ]
-
-        answer = (
-            f"同学你好！你当前正在学习【{sf.current_chapter}】中的【{sf.current_knowledge_name}】"
-            f"（编号 {sf.current_knowledge_id}）。当前掌握度为 {sf.current_mastery_percent:.1f}%，"
-            f"距离达标目标 {sf.mastery_target_percent:.1f}% 还差 {sf.mastery_gap_percent:.1f}%。"
-            f"当前路径状态为 {sf.current_path_state}。"
-            f"针对你的提问「{question}」，根据系统诊断事实，建议你下一步：{sf.next_action.label}"
-            f"（{sf.next_action.reason}）。继续加油！"
-        )
-
-        suggested_explanation = (
-            f"知识点 {sf.current_knowledge_id} 当前路径状态为 {sf.current_path_state}，"
-            f"建议行动为 {sf.next_action.label}。"
-        )
-
-        return StructuredAIResponse(
-            answer=answer,
-            referenced_facts=referenced_facts,
-            suggested_explanation=suggested_explanation,
-            grounding_status="grounded",
-        )
+        provider = get_provider()
+        try:
+            return await execute_provider_with_timeout(
+                provider,
+                prompt_context,
+                timeout_ms=gateway_settings.timeout_ms,
+            )
+        except ProviderTimeoutError as e:
+            logger.warning(f"Gateway timeout: {e}")
+            return JSONResponse(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                content={
+                    "error": "GATEWAY_TIMEOUT",
+                    "detail": "AI 伴学服务响应超时，请稍后重试。",
+                    "grounding_status": "insufficient_context",
+                    "answer": "抱歉，伴学服务响应超时，请稍后重试。",
+                },
+            )
+        except ProviderException as e:
+            logger.error(f"Gateway provider error: {e}")
+            return JSONResponse(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                content={
+                    "error": "BAD_GATEWAY",
+                    "detail": "AI 服务商暂时不可用，已安全拦截。",
+                    "grounding_status": "insufficient_context",
+                    "answer": "抱歉，伴学服务商暂时不可用，请稍后重试。",
+                },
+            )
 
     return application
 

@@ -22,7 +22,8 @@
 
 import type { LearningContext, GroundedAnswer } from '../../types.ts';
 import type { AIProvider } from './aiProvider.ts';
-import { MockAIProvider } from './mockAIProvider.ts';
+import type { StructuredAIResponse } from './aiResponseModel.ts';
+import { AIGatewayProvider } from './aiGatewayProvider.ts';
 import { buildLearningPromptContext } from './learningPromptModel.ts';
 import {
   validateAIResponse,
@@ -36,8 +37,16 @@ export interface AskCompanionOptions {
 
 const DEFAULT_TIMEOUT_MS = 5000;
 
-// 全局默认使用确定性本地 MockAIProvider
-const defaultProvider = new MockAIProvider();
+// 全局默认使用 Backend Secure AI Gateway Provider
+let defaultProvider: AIProvider = new AIGatewayProvider();
+
+export function getDefaultAIProvider(): AIProvider {
+  return defaultProvider;
+}
+
+export function setDefaultAIProvider(provider: AIProvider): void {
+  defaultProvider = provider;
+}
 
 /**
  * 辅助超时包装函数
@@ -94,7 +103,7 @@ export async function askLearningCompanion(
   const promptContext = buildLearningPromptContext(context, question);
 
   // 3. 调用 AIProvider 生成结构化响应，具备全链路故障捕获与超时防御
-  let rawResponse;
+  let rawResponse: StructuredAIResponse;
   try {
     rawResponse = await executeWithTimeout(
       provider.generate(promptContext),

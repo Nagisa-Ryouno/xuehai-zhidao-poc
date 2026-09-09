@@ -21,8 +21,9 @@ from gateway.evaluation.judge.prompt import (
     build_evaluation_context,
     build_judge_prompt,
 )
-from gateway.evaluation.judge.adapter import JudgeAdapter
+from gateway.evaluation.judge.adapter import CircuitBreaker, CircuitState, JudgeAdapter
 from gateway.evaluation.judge.fusion import EvaluationFusionEngine
+from gateway.evaluation.judge.real import RealLLMJudge, JUDGE_PROMPT_VERSION
 from gateway.evaluation.judge.config import (
     JudgeSettings,
     get_judge_settings,
@@ -40,12 +41,17 @@ __all__ = [
     "FinalEvaluationResult",
     "LLMJudge",
     "FakeLLMJudge",
+    "RealLLMJudge",
+    "JUDGE_PROMPT_VERSION",
     "build_evaluation_context",
     "build_judge_prompt",
+    "CircuitState",
+    "CircuitBreaker",
     "JudgeAdapter",
     "EvaluationFusionEngine",
     "JudgeSettings",
     "get_judge_settings",
     "build_judge_transport",
 ]
+
 

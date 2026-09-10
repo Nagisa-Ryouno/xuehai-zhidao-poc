@@ -153,7 +153,10 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   );
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50/25 to-violet-50/20 border-2 border-indigo-200/90 p-5 sm:p-7 shadow-sm transition-all hover:shadow-md">
+    <div
+      data-testid="current-focus-card"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50/25 to-violet-50/20 border-2 border-indigo-200/90 p-5 sm:p-7 shadow-sm transition-all hover:shadow-md"
+    >
       {/* 顶部标签行 */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
@@ -284,7 +287,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
       <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100">
         <div className="text-xs text-slate-500 flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>完成该考点微测验，可触发贝叶斯知识追踪与路径自适应重规划</span>
+          <span>完成该考点微测验，即可实时更新掌握度并自适应规划后续学习路线</span>
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">

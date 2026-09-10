@@ -159,3 +159,6 @@ class TeacherStudentDetailResponse(BaseModel):
     knowledge_point_masteries: List[KnowledgeMasteryItem]
     wrong_answers: List[WrongAnswerItem]
     recent_events: List[ProgressHistoryEvent]
+    summary: Optional[TeacherStudentSummary] = None
+    progress: Optional[StudentProgressResponse] = None
+    current_route: Optional[List[Dict[str, Any]]] = None

@@ -16,28 +16,62 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
   onClose,
   onEnterStudentView,
 }) => {
-  const [detail, setDetail] = useState<TeacherStudentDetailResponse | null>(null);
+  const [detail, setDetail] = useState<TeacherStudentDetailResponse | any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'kps' | 'wrongs' | 'timeline'>('kps');
+  const [error, setError] = useState<string | null>(null);
+
+  const loadDetail = () => {
+    if (!studentId) return;
+    setIsLoading(true);
+    setError(null);
+    getTeacherStudentDetail(studentId)
+      .then((res) => {
+        setDetail(res);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : '获取该生学情档案失败');
+      })
+      .finally(() => setIsLoading(false));
+  };
 
   useEffect(() => {
     if (isOpen && studentId) {
-      setIsLoading(true);
-      getTeacherStudentDetail(studentId)
-        .then((res) => setDetail(res))
-        .catch((err) => console.error('Failed to load student detail for teacher:', err))
-        .finally(() => setIsLoading(false));
+      loadDetail();
     } else {
       setDetail(null);
+      setError(null);
     }
   }, [isOpen, studentId]);
 
   if (!isOpen || !studentId) return null;
 
-  const summary = detail?.summary;
-  const progress = detail?.progress;
-  const wrongs = detail?.wrong_answers?.wrong_answers || [];
-  const timeline = detail?.progress?.history_timeline || [];
+  // 防御性统一读取（兼容平铺与嵌套模型）
+  const studentName = detail?.student_name ?? detail?.summary?.student_name ?? studentId;
+  const major = detail?.major ?? detail?.summary?.major ?? '经济学';
+  const grade = detail?.grade ?? detail?.summary?.grade ?? '大二';
+  const learningGoal = detail?.learning_goal ?? detail?.summary?.learning_goal ?? '微观经济学核心概念掌握';
+  const overallMastery = detail?.overall_mastery ?? detail?.summary?.overall_mastery ?? 0;
+  const accuracy = detail?.accuracy ?? detail?.summary?.accuracy ?? 0;
+  const riskLevel = detail?.risk_level ?? detail?.summary?.risk_level ?? 'HEALTHY';
+
+  const kps: any[] = detail?.knowledge_point_masteries || detail?.progress?.knowledge_points || [];
+  const masteredCount =
+    detail?.summary?.mastered_count ??
+    detail?.progress?.mastered_count ??
+    kps.filter((k: any) => k.status === 'MASTERED').length;
+  const weakCount =
+    detail?.summary?.weak_count ??
+    detail?.progress?.weak_count ??
+    kps.filter((k: any) => k.status === 'NEEDS_REINFORCEMENT' || (k.mastery !== undefined && k.mastery < 0.60)).length;
+
+  const rawWrongs = detail?.wrong_answers;
+  const wrongs: any[] = Array.isArray(rawWrongs)
+    ? rawWrongs
+    : (rawWrongs as any)?.wrong_answers || [];
+
+  const rawTimeline = detail?.recent_events || detail?.progress?.history_timeline;
+  const timeline: any[] = Array.isArray(rawTimeline) ? rawTimeline : [];
 
   return (
     <div
@@ -54,28 +88,26 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-bold text-white">
-                  {summary?.student_name || studentId} · 学情全维档案
+                  {studentName} · 学情全维档案
                 </h3>
-                {summary && (
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      summary.risk_level === 'HEALTHY'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-                        : summary.risk_level === 'ATTENTION'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-400/30'
-                        : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
-                    }`}
-                  >
-                    {summary.risk_level === 'HEALTHY'
-                      ? '学情健康'
-                      : summary.risk_level === 'ATTENTION'
-                      ? '重点关注'
-                      : '平稳推进'}
-                  </span>
-                )}
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    riskLevel === 'HEALTHY'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                      : riskLevel === 'ATTENTION'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-400/30'
+                      : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
+                  }`}
+                >
+                  {riskLevel === 'HEALTHY'
+                    ? '学情健康'
+                    : riskLevel === 'ATTENTION'
+                    ? '重点关注'
+                    : '平稳推进'}
+                </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                {summary?.major} · {summary?.grade} · 学习目标: {summary?.learning_goal}
+                {major} · {grade} · 学习目标: {learningGoal}
               </p>
             </div>
           </div>
@@ -96,6 +128,17 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
               <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-xs text-slate-500 font-medium">正在调阅该生学情档案...</p>
             </div>
+          ) : error ? (
+            <div className="py-20 text-center space-y-4">
+              <div className="text-rose-500 text-sm font-semibold">{error}</div>
+              <button
+                type="button"
+                onClick={loadDetail}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+              >
+                重试调阅
+              </button>
+            </div>
           ) : detail ? (
             <>
               {/* Summary Metric Stats */}
@@ -103,14 +146,14 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
                 <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100">
                   <div className="text-[11px] font-semibold text-indigo-900">综合掌握度</div>
                   <div className="text-2xl font-black text-indigo-700 font-mono mt-1">
-                    {(summary ? summary.overall_mastery * 100 : 0).toFixed(1)}%
+                    {(overallMastery * 100).toFixed(1)}%
                   </div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-100">
                   <div className="text-[11px] font-semibold text-emerald-900">达标考点数</div>
                   <div className="text-2xl font-black text-emerald-700 font-mono mt-1">
-                    {summary?.mastered_count || 0}{' '}
+                    {masteredCount}{' '}
                     <span className="text-xs text-emerald-600 font-normal">/ 30</span>
                   </div>
                 </div>
@@ -118,7 +161,7 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
                 <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-100">
                   <div className="text-[11px] font-semibold text-rose-900">薄弱考点数</div>
                   <div className="text-2xl font-black text-rose-700 font-mono mt-1">
-                    {summary?.weak_count || 0}{' '}
+                    {weakCount}{' '}
                     <span className="text-xs text-rose-600 font-normal">个</span>
                   </div>
                 </div>
@@ -126,7 +169,7 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
                 <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-100">
                   <div className="text-[11px] font-semibold text-blue-900">答题正确率</div>
                   <div className="text-2xl font-black text-blue-700 font-mono mt-1">
-                    {(summary?.accuracy || 0).toFixed(1)}%
+                    {accuracy.toFixed(1)}%
                   </div>
                 </div>
               </div>
@@ -172,10 +215,10 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
               </div>
 
               {/* Tab Content 1: Knowledge Points */}
-              {activeTab === 'kps' && progress && (
+              {activeTab === 'kps' && (
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-96 overflow-y-auto pr-1">
-                    {progress.knowledge_points.map((kp) => (
+                    {kps.map((kp: any) => (
                       <div
                         key={kp.knowledge_id}
                         className="p-3 rounded-xl border border-slate-200 bg-white space-y-1.5 text-xs"
@@ -305,7 +348,7 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
         {/* Modal Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
           <span className="text-xs text-slate-400 font-mono">
-            {detail?.progress?.knowledge_points.length || 30} 考点覆盖 · 真实学情投影
+            {kps.length || 30} 考点覆盖 · 真实学情投影
           </span>
 
           <div className="flex items-center gap-3">

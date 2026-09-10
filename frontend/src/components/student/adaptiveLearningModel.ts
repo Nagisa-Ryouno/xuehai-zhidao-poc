@@ -121,7 +121,7 @@ export function getRecommendationExplanation(params: {
   }
 
   // 事实 3: 学习路径规划位置与章节归属
-  factors.push(`属于当前推荐学习主线（第 ${step.stage} 阶段 · ${step.chapter}）`);
+  factors.push(`属于当前推荐学习主线（第 ${step.stage ?? 1} 阶段 · ${step.chapter}）`);
 
   // 事实 4: 优先级与阶段目标
   if (step.priority) {

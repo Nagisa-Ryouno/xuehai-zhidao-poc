@@ -593,6 +593,33 @@ class AnalyticsService:
         elif prog.overall_mastery < 0.70:
             risk = "NORMAL"
 
+        focus_node = None
+        focus_name = None
+        steps_list = []
+        if dynamic_route and dynamic_route.get("steps"):
+            steps_list = dynamic_route.get("steps")
+            if len(steps_list) > 0:
+                focus_node = steps_list[0].get("knowledge_id")
+                focus_name = steps_list[0].get("knowledge_name")
+
+        summary = TeacherStudentSummary(
+            student_id=student_id,
+            student_name=prog.student_name,
+            major=stu_info.get("major", "经济学"),
+            grade=stu_info.get("grade", "大二"),
+            learning_goal=stu_info.get("learning_goal", "微观经济学核心概念掌握"),
+            overall_mastery=prog.overall_mastery,
+            mastered_count=prog.mastered_count,
+            developing_count=prog.developing_count,
+            weak_count=prog.weak_count,
+            total_attempts=prog.total_practice_count,
+            total_wrong_count=prog.total_practice_count - prog.total_correct_count,
+            accuracy=prog.overall_accuracy,
+            risk_level=risk,
+            current_focus_node=focus_node,
+            current_focus_name=focus_name,
+        )
+
         return TeacherStudentDetailResponse(
             student_id=student_id,
             student_name=prog.student_name,
@@ -609,6 +636,9 @@ class AnalyticsService:
             knowledge_point_masteries=prog.knowledge_point_masteries,
             wrong_answers=wrongs.wrong_answers if wrongs else [],
             recent_events=prog.history_timeline[:15],
+            summary=summary,
+            progress=prog,
+            current_route=steps_list,
         )
 
 

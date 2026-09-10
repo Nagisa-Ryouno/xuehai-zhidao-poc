@@ -108,17 +108,22 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   const fetchAnalyticsData = useCallback(async () => {
     setIsAnalyticsLoading(true);
+    const reqStudentId = studentId;
     try {
       const [pData, wData] = await Promise.all([
         getStudentProgress(studentId),
         getStudentWrongAnswers(studentId),
       ]);
-      setProgressData(pData);
-      setWrongAnswerData(wData);
+      if (reqStudentId === studentId) {
+        setProgressData(pData);
+        setWrongAnswerData(wData);
+      }
     } catch (err) {
       console.error('Failed to fetch analytics data:', err);
     } finally {
-      setIsAnalyticsLoading(false);
+      if (reqStudentId === studentId) {
+        setIsAnalyticsLoading(false);
+      }
     }
   }, [studentId]);
 
@@ -127,10 +132,13 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     fetchAnalyticsData();
   }, [fetchDynamicRoute, fetchAnalyticsData]);
 
-  // 学生上下文切换时安全关闭微测验与速览卡片，杜绝上下文污染 (Sprint 3 契约约束)
+  // 学生上下文切换时安全关闭微测验与速览卡片，立即清空旧生状态，杜绝上下文污染 (Sprint 3 契约约束)
   useEffect(() => {
     setActiveQuiz(null);
     setActiveConceptCard(null);
+    setProgressData(null);
+    setWrongAnswerData(null);
+    setDynamicRoute(null);
   }, [studentId]);
 
   const handleStartQuiz = useCallback(

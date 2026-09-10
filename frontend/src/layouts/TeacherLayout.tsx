@@ -30,17 +30,20 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   const { studentId, switchRole } = useApp();
   const [overview, setOverview] = useState<TeacherOverviewResponse | null>(null);
   const [isLoadingOverview, setIsLoadingOverview] = useState<boolean>(false);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [riskFilter, setRiskFilter] = useState<'ALL' | 'HEALTHY' | 'NORMAL' | 'ATTENTION'>('ALL');
   const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<string | null>(null);
 
   const fetchOverview = useCallback(async () => {
     setIsLoadingOverview(true);
+    setOverviewError(null);
     try {
       const data = await getTeacherOverview();
       setOverview(data);
     } catch (err) {
       console.error('Failed to fetch teacher overview:', err);
+      setOverviewError(err instanceof Error ? err.message : '获取教师学情驾驶舱数据失败');
     } finally {
       setIsLoadingOverview(false);
     }
@@ -53,10 +56,10 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   const currentStudent = students.find((s) => s.student_id === studentId);
 
   const kpis = overview?.class_kpis || {
-    total_students: students.length || 5,
-    active_students: 5,
-    class_avg_mastery: 0.62,
-    at_risk_students_count: 1,
+    total_students: overview?.students?.length || students.length || 0,
+    active_students: 0,
+    class_avg_mastery: 0,
+    at_risk_students_count: 0,
   };
 
   const weakPoints = overview?.weak_knowledge_points || [];
@@ -134,6 +137,24 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
             </div>
           </div>
         </div>
+
+        {/* 异常错误展示与重试卡片 */}
+        {overviewError && (
+          <div className="bg-white rounded-3xl p-8 border border-rose-200 text-center space-y-4 shadow-sm" data-testid="teacher-error-state">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">学情看板加载异常</h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">{overviewError}</p>
+            <button
+              type="button"
+              onClick={fetchOverview}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+            >
+              重新加载看板
+            </button>
+          </div>
+        )}
 
         {/* 4 大核心班级全景统计 KPI 卡片 */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="teacher-kpi-cards">

@@ -639,14 +639,45 @@ def create_gateway_app() -> FastAPI:
                 if state == PathState.IN_PROGRESS:
                     curr = kid
                     break
+
+            route = default_dynamic_path_generator.generate_route(
+                student_id=student_id,
+                goal=st.get("learning_goal", "微观经济学核心概念掌握与考点突破"),
+            )
+            learning_path_steps = [
+                {
+                    "stage": s.rank,
+                    "knowledge_id": s.knowledge_id,
+                    "knowledge_name": s.knowledge_name,
+                    "chapter": s.chapter,
+                    "current_accuracy": round(s.mastery * 100, 1),
+                    "priority": "高" if s.role == "CURRENT" else "中",
+                    "priority_score": round(s.score * 100, 1),
+                    "source": "动态自适应推荐",
+                    "learning_goal": f"掌握{s.knowledge_name}",
+                    "reason": s.explanation,
+                }
+                for s in route.steps
+            ]
+
             return {
                 "student_id": student_id,
                 "profile": p,
                 "learning_path": {
+                    "student": st,
+                    "profile_summary": {
+                        "total_knowledge_points": 30,
+                        "mastered_count": 0,
+                        "weak_count": len(route.steps),
+                        "overall_accuracy": 0.0,
+                    },
+                    "recommendation_type": "dynamic_adaptive",
+                    "learning_path": learning_path_steps,
+                    "optimization_suggestion": ["完成前置考点突破以解锁后续进阶内容"],
                     "student_id": student_id,
                     "target_goal": st["learning_goal"],
                     "current_focus_node": curr,
-                    "recommended_sequence": list(path_states.keys()),
+                    "recommended_sequence": [s.knowledge_id for s in route.steps],
                     "path_states": {k: v.value for k, v in path_states.items()},
                 },
                 "report": {
@@ -658,6 +689,18 @@ def create_gateway_app() -> FastAPI:
                 },
             }
         raise HTTPException(status_code=404, detail=f"找不到学生：{student_id}")
+
+    @application.get("/api/students/{student_id}/knowledge-graph")
+    def get_student_knowledge_graph_endpoint(student_id: str) -> Dict[str, Any]:
+        """获取指定学生的微观经济学知识图谱拓扑与学情联动数据（支持预设与 Demo 学生）"""
+        base_graph = knowledge_graph_service.get_student_knowledge_graph(student_id)
+        if not base_graph and student_id in DEMO_STUDENTS:
+            base_graph = knowledge_graph_service.get_student_knowledge_graph("S001")
+            if base_graph:
+                base_graph["student"] = {"student_id": student_id}
+        if not base_graph:
+            raise HTTPException(status_code=404, detail=f"找不到学生知识图谱：{student_id}")
+        return base_graph
 
     @application.get("/api/students/{student_id}/path-states")
     def get_student_path_states_endpoint(student_id: str) -> Dict[str, Any]:

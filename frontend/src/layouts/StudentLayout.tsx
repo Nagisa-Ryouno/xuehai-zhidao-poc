@@ -24,6 +24,10 @@ import type { StudentListItem, StudentDashboardResponse, PathState } from '../ty
 import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
 import { MobileContainer } from '../components/student/MobileContainer';
+import { ConceptCardModal } from '../components/student/ConceptCardModal';
+import { StudentInitModal } from '../components/student/StudentInitModal';
+import { getConceptCardById, type ConceptCardData } from '../components/student/conceptCardData';
+import { initStudent, type StudentInitRequest } from '../api';
 
 interface StudentLayoutProps {
   students: StudentListItem[];
@@ -59,9 +63,16 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     knowledgeName: string;
   } | null>(null);
 
-  // 学生上下文切换时安全关闭微测验，杜绝上下文污染 (Sprint 3 契约约束)
+  // 考点精要速览微卡片状态 (先学后测)
+  const [activeConceptCard, setActiveConceptCard] = useState<ConceptCardData | null>(null);
+
+  // 学习目标设定与新学生模态框状态
+  const [isInitModalOpen, setIsInitModalOpen] = useState<boolean>(false);
+
+  // 学生上下文切换时安全关闭微测验与速览卡片，杜绝上下文污染 (Sprint 3 契约约束)
   useEffect(() => {
     setActiveQuiz(null);
+    setActiveConceptCard(null);
   }, [studentId]);
 
   const handleStartQuiz = useCallback(
@@ -69,6 +80,37 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       setActiveQuiz({ knowledgeId, knowledgeName });
     },
     []
+  );
+
+  const handleViewConceptCard = useCallback(
+    (knowledgeId: string, _knowledgeName: string) => {
+      const card = getConceptCardById(knowledgeId);
+      if (card) {
+        setActiveConceptCard(card);
+      }
+    },
+    []
+  );
+
+  const handleCloseConceptCard = useCallback(() => {
+    setActiveConceptCard(null);
+  }, []);
+
+  const handleInitStudentSubmit = useCallback(
+    async (data: StudentInitRequest) => {
+      try {
+        const res = await initStudent(data);
+        if (res && res.student_id) {
+          onSelectStudent(res.student_id);
+          if (onRefresh) {
+            await onRefresh();
+          }
+        }
+      } catch (err) {
+        console.error('Failed to init student:', err);
+      }
+    },
+    [onSelectStudent, onRefresh]
   );
 
   const handleCloseQuiz = useCallback(() => {
@@ -134,6 +176,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         onSelectStudent={onSelectStudent}
         isOnline={isOnline}
         isLoading={isLoading || isSwitching}
+        onOpenInitModal={() => setIsInitModalOpen(true)}
       />
 
       {/* Sub-route Navigation Pill Bar (仅在平板与桌面端展示，移动端由底部 BottomNav 承载) */}
@@ -190,6 +233,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <CurrentFocusCard
                   focusResult={focusResult}
                   onStartQuiz={handleStartQuiz}
+                  onViewConceptCard={handleViewConceptCard}
                   onViewGraph={() => navigate('/student/graph')}
                 />
 
@@ -300,6 +344,22 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
           />
         )}
       </BottomSheet>
+
+      {/* 考点精要速览微卡片模态框 (先学后测) */}
+      <ConceptCardModal
+        isOpen={!!activeConceptCard}
+        card={activeConceptCard}
+        onClose={handleCloseConceptCard}
+        onStartQuiz={handleStartQuiz}
+      />
+
+      {/* 学习目标与新学生初始化模态框 */}
+      <StudentInitModal
+        isOpen={isInitModalOpen}
+        onClose={() => setIsInitModalOpen(false)}
+        onSubmit={handleInitStudentSubmit}
+        onSelectPresetStudent={onSelectStudent}
+      />
 
       {/* Mobile Bottom Navigation (仅在移动端展示) */}
       <BottomNav />

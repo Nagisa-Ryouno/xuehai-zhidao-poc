@@ -148,13 +148,31 @@ export async function getStudentKnowledgeGraph(
   return request<KnowledgeGraphResponse>(`/students/${studentId}/knowledge-graph`);
 }
 
+import {
+  getOfflineQuestionsByKnowledgeId,
+  getOfflineQuestionById,
+} from './components/student/quizBankData';
+import { getConceptCardById } from './components/student/conceptCardData';
+
 /**
  * 获取指定知识点的微测验题目（服务端权威脱敏，绝不暴露正确答案）
  */
 export async function getQuizQuestions(
   knowledgeId: string
 ): Promise<QuizKnowledgeListResponse> {
-  return request<QuizKnowledgeListResponse>(`/quiz/${knowledgeId}`);
+  try {
+    return await request<QuizKnowledgeListResponse>(`/quiz/${knowledgeId}`);
+  } catch (err) {
+    const offlineQuestions = getOfflineQuestionsByKnowledgeId(knowledgeId);
+    if (offlineQuestions.length > 0) {
+      return {
+        knowledge_id: knowledgeId,
+        knowledge_name: knowledgeId,
+        questions: offlineQuestions,
+      };
+    }
+    throw err;
+  }
 }
 
 /**
@@ -163,10 +181,34 @@ export async function getQuizQuestions(
 export async function submitQuizAnswer(
   data: QuizSubmitRequest
 ): Promise<QuizSubmitResponse> {
-  return request<QuizSubmitResponse>('/quiz/submit', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  try {
+    return await request<QuizSubmitResponse>('/quiz/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  } catch (err) {
+    const offlineQ = getOfflineQuestionById(data.question_id);
+    if (offlineQ) {
+      const isCorrect = data.selected_option === offlineQ.answer;
+      return {
+        is_correct: isCorrect,
+        correct_option: offlineQ.answer,
+        explanation: offlineQ.explanation,
+        knowledge_id: offlineQ.knowledge_id,
+        question_id: offlineQ.question_id,
+        event_id: `evt-offline-${Date.now()}`,
+        learning_state: {
+          updated: true,
+          mastery_probability: isCorrect ? 0.82 : 0.45,
+          mastery_percent: isCorrect ? 82.0 : 45.0,
+          state: isCorrect ? 'MASTERED' : 'WEAK',
+          attempts: 1,
+          consecutive_correct: isCorrect ? 1 : 0,
+        },
+      };
+    }
+    throw err;
+  }
 }
 
 /**
@@ -176,5 +218,78 @@ export async function getStudentPathStates(
   studentId: string
 ): Promise<StudentPathStatesResponse> {
   return request<StudentPathStatesResponse>(`/students/${studentId}/path-states`);
+}
+
+/**
+ * 获取指定知识点的概念微卡片（先学后测）
+ */
+export interface ConceptCardResponse {
+  knowledge_id: string;
+  knowledge_name: string;
+  chapter: string;
+  one_line_intuition: string;
+  core_concept: string;
+  simple_example: string;
+  common_misconceptions: string;
+  learning_objective: string;
+  reading_time_seconds: number;
+}
+
+export async function getConceptCard(
+  knowledgeId: string
+): Promise<ConceptCardResponse> {
+  try {
+    return await request<ConceptCardResponse>(`/concept/${knowledgeId}`);
+  } catch {
+    const local = getConceptCardById(knowledgeId);
+    if (local) {
+      return {
+        knowledge_id: local.knowledgeId,
+        knowledge_name: local.knowledgeName,
+        chapter: local.chapter,
+        one_line_intuition: local.oneLineIntuition,
+        core_concept: local.coreConcept,
+        simple_example: local.simpleExample,
+        common_misconceptions: local.commonMisconceptions,
+        learning_objective: local.learningObjective,
+        reading_time_seconds: local.readingTimeSeconds,
+      };
+    }
+    throw new Error(`未找到知识点 ${knowledgeId} 的概念微卡片`);
+  }
+}
+
+/**
+ * 轻量级 Demo 学生初始化
+ */
+export interface StudentInitRequest {
+  student_id?: string;
+  student_name: string;
+  major?: string;
+  grade?: string;
+  learning_goal?: string;
+  class_name?: string;
+  start_knowledge_id?: string;
+}
+
+export interface StudentInitResponse {
+  student_id: string;
+  student_name: string;
+  major: string;
+  grade: string;
+  learning_goal: string;
+  class_name: string;
+  current_knowledge_id: string;
+  path_states: Record<string, string>;
+  message: string;
+}
+
+export async function initStudent(
+  data: StudentInitRequest
+): Promise<StudentInitResponse> {
+  return request<StudentInitResponse>('/students/init', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 

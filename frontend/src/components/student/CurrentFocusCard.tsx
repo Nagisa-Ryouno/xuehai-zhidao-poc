@@ -10,6 +10,7 @@ import {
   HelpCircle,
   ChevronDown,
   ChevronUp,
+  BookOpen,
 } from 'lucide-react';
 import type { CurrentFocusResult } from './taskFocusModel.ts';
 import { getPathStatePresentation } from './pathStatePresentation.ts';
@@ -21,12 +22,14 @@ import {
 interface CurrentFocusCardProps {
   focusResult: CurrentFocusResult;
   onStartQuiz: (knowledgeId: string, knowledgeName: string) => void;
+  onViewConceptCard?: (knowledgeId: string, knowledgeName: string) => void;
   onViewGraph?: () => void;
 }
 
 export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   focusResult,
   onStartQuiz,
+  onViewConceptCard,
   onViewGraph,
 }) => {
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
@@ -276,17 +279,30 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
           <span>完成该考点微测验，可触发贝叶斯知识追踪与路径自适应重规划</span>
         </div>
 
-        <button
-          type="button"
-          disabled={presentation.disabled}
-          onClick={() => onStartQuiz(focus.knowledgeId, focus.knowledgeName)}
-          aria-label={presentation.ariaLabel}
-          className={`w-full sm:w-auto py-3.5 px-6 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-all min-h-[44px] ${presentation.buttonClass}`}
-        >
-          <PlayCircle className="w-4 h-4" />
-          <span>{focus.actionLabel || presentation.buttonText}</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          {onViewConceptCard && (
+            <button
+              type="button"
+              onClick={() => onViewConceptCard(focus.knowledgeId, focus.knowledgeName)}
+              className="flex-1 sm:flex-none py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-indigo-200 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 transition-all cursor-pointer min-h-[44px]"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-600" />
+              <span>📖 考点精要速览 (先学)</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            disabled={presentation.disabled}
+            onClick={() => onStartQuiz(focus.knowledgeId, focus.knowledgeName)}
+            aria-label={presentation.ariaLabel}
+            className={`flex-1 sm:flex-none py-3.5 px-6 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-all min-h-[44px] ${presentation.buttonClass}`}
+          >
+            <PlayCircle className="w-4 h-4" />
+            <span>{focus.actionLabel || presentation.buttonText}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

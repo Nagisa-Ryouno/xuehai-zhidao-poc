@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, Sparkles, User, ChevronDown } from 'lucide-react';
+import { GraduationCap, Sparkles, User, ChevronDown, Plus } from 'lucide-react';
 import type { StudentListItem } from '../types';
 import { RoleSwitcher } from './RoleSwitcher';
 
@@ -9,6 +9,7 @@ interface HeaderProps {
   onSelectStudent: (studentId: string) => void;
   isOnline: boolean;
   isLoading: boolean;
+  onOpenInitModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectStudent,
   isOnline,
   isLoading,
+  onOpenInitModal,
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
@@ -72,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Student Selector Dropdown */}
-          <div className="relative flex items-center">
+          <div className="relative flex items-center gap-2">
             <div className="relative flex items-center bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl px-3 py-1.5 border border-slate-200 transition-all cursor-pointer shadow-xs">
               <User className="w-4 h-4 text-indigo-600 mr-2 shrink-0" />
               <select
@@ -90,6 +92,18 @@ export const Header: React.FC<HeaderProps> = ({
               </select>
               <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2 pointer-events-none" />
             </div>
+
+            {onOpenInitModal && (
+              <button
+                type="button"
+                onClick={onOpenInitModal}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200/80 transition-all cursor-pointer shadow-2xs shrink-0"
+                title="设定个性化学习目标或新建演示学生"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">设定目标 / 新学生</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

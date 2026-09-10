@@ -20,15 +20,31 @@ import { resolveCurrentFocusTask } from '../components/student/taskFocusModel';
 import { buildLearningContext } from '../components/student/learningContextModel';
 
 import { useApp } from '../context/useApp';
-import type { StudentListItem, StudentDashboardResponse, PathState, DynamicLearningRoute } from '../types';
+import type {
+  StudentListItem,
+  StudentDashboardResponse,
+  PathState,
+  DynamicLearningRoute,
+  StudentProgressResponse,
+  WrongAnswerReviewResponse,
+} from '../types';
 import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
 import { MobileContainer } from '../components/student/MobileContainer';
 import { ConceptCardModal } from '../components/student/ConceptCardModal';
 import { StudentInitModal } from '../components/student/StudentInitModal';
 import { PretestModal } from '../components/student/PretestModal';
+import { ProgressOverview } from '../components/student/ProgressOverview';
+import { WrongAnswerReview } from '../components/student/WrongAnswerReview';
 import { getConceptCardById, type ConceptCardData } from '../components/student/conceptCardData';
-import { initStudent, getDynamicPath, type StudentInitRequest } from '../api';
+import {
+  initStudent,
+  getDynamicPath,
+  getStudentProgress,
+  getStudentWrongAnswers,
+  recordLearningEvent,
+  type StudentInitRequest,
+} from '../api';
 
 interface StudentLayoutProps {
   students: StudentListItem[];
@@ -74,6 +90,12 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   const [isPretestModalOpen, setIsPretestModalOpen] = useState<boolean>(false);
   const [dynamicRoute, setDynamicRoute] = useState<DynamicLearningRoute | null>(null);
 
+  // 学情成效沉淀与错题复盘状态 (Sprint 8-C)
+  const [profileSubTab, setProfileSubTab] = useState<'progress' | 'wrong_answers' | 'radar'>('progress');
+  const [progressData, setProgressData] = useState<StudentProgressResponse | null>(null);
+  const [wrongAnswerData, setWrongAnswerData] = useState<WrongAnswerReviewResponse | null>(null);
+  const [isAnalyticsLoading, setIsAnalyticsLoading] = useState<boolean>(false);
+
   const fetchDynamicRoute = useCallback(async () => {
     try {
       const goal = dashboardData?.profile?.student?.learning_goal;
@@ -84,9 +106,26 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     }
   }, [studentId, dashboardData]);
 
+  const fetchAnalyticsData = useCallback(async () => {
+    setIsAnalyticsLoading(true);
+    try {
+      const [pData, wData] = await Promise.all([
+        getStudentProgress(studentId),
+        getStudentWrongAnswers(studentId),
+      ]);
+      setProgressData(pData);
+      setWrongAnswerData(wData);
+    } catch (err) {
+      console.error('Failed to fetch analytics data:', err);
+    } finally {
+      setIsAnalyticsLoading(false);
+    }
+  }, [studentId]);
+
   useEffect(() => {
     fetchDynamicRoute();
-  }, [fetchDynamicRoute]);
+    fetchAnalyticsData();
+  }, [fetchDynamicRoute, fetchAnalyticsData]);
 
   // 学生上下文切换时安全关闭微测验与速览卡片，杜绝上下文污染 (Sprint 3 契约约束)
   useEffect(() => {
@@ -106,14 +145,22 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       const card = getConceptCardById(knowledgeId);
       if (card) {
         setActiveConceptCard(card);
+        // 上报微卡阅读真实事件 (Sprint 8-C)
+        recordLearningEvent({
+          student_id: studentId,
+          event_type: 'CONCEPT_VIEW',
+          knowledge_id: knowledgeId,
+          payload: { knowledge_name: card.knowledgeName, chapter: card.chapter },
+        }).catch((err) => console.warn('Failed to record CONCEPT_VIEW event:', err));
       }
     },
-    []
+    [studentId]
   );
 
   const handleCloseConceptCard = useCallback(() => {
     setActiveConceptCard(null);
-  }, []);
+    fetchAnalyticsData();
+  }, [fetchAnalyticsData]);
 
   const handleInitStudentSubmit = useCallback(
     async (data: StudentInitRequest) => {
@@ -135,10 +182,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   const handleCloseQuiz = useCallback(() => {
     setActiveQuiz(null);
     fetchDynamicRoute();
+    fetchAnalyticsData();
     if (onRefresh) {
       onRefresh();
     }
-  }, [onRefresh, fetchDynamicRoute]);
+  }, [onRefresh, fetchDynamicRoute, fetchAnalyticsData]);
 
   const handleNextKnowledgePoint = useCallback(
     (nextKnowledgeId: string, nextKnowledgeName: string) => {
@@ -147,11 +195,12 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         knowledgeName: nextKnowledgeName,
       });
       fetchDynamicRoute();
+      fetchAnalyticsData();
       if (onRefresh) {
         onRefresh();
       }
     },
-    [onRefresh, fetchDynamicRoute]
+    [onRefresh, fetchDynamicRoute, fetchAnalyticsData]
   );
 
   const handleJumpToAssistant = () => {
@@ -272,7 +321,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 />
 
                 {/* 4. Lightweight Auxiliary Navigation Cards */}
-                <TasksQuickNav onNavigate={(path) => navigate(path)} />
+                <TasksQuickNav
+                  onNavigate={(path) => navigate(path)}
+                  wrongCount={wrongAnswerData?.total_wrong || 0}
+                  onSelectProfileTab={(tab) => setProfileSubTab(tab)}
+                />
               </>
             )}
 
@@ -301,24 +354,89 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   student={dashboardData.profile.student}
                   recommendationType={dashboardData.learning_path.recommendation_type}
                 />
-                <StatCards profile={dashboardData.profile.overall_profile} />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                  <LearningProfile profile={dashboardData.profile.overall_profile} />
-                  <AIDiagnosis
-                    diagnosis={dashboardData.report.diagnosis}
-                    profileDiagnosis={dashboardData.profile.diagnosis}
-                  />
+
+                {/* Profile Sub-view Navigation Pill Bar */}
+                <div className="flex items-center gap-2 p-1.5 bg-slate-200/70 rounded-2xl w-fit max-w-full overflow-x-auto no-scrollbar">
+                  <button
+                    type="button"
+                    onClick={() => setProfileSubTab('progress')}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                      profileSubTab === 'progress'
+                        ? 'bg-white text-indigo-700 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <span>📊 30考点掌握度全览</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProfileSubTab('wrong_answers')}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                      profileSubTab === 'wrong_answers'
+                        ? 'bg-white text-rose-700 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <span>📕 错题复盘本</span>
+                    {wrongAnswerData && wrongAnswerData.total_wrong > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-rose-100 text-rose-700">
+                        {wrongAnswerData.total_wrong}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProfileSubTab('radar')}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                      profileSubTab === 'radar'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <span>🧭 综合能力画像</span>
+                  </button>
                 </div>
-                <WeakKnowledgePoints
-                  weakPoints={dashboardData.profile.weak_knowledge_points}
-                  prerequisitePoints={dashboardData.profile.prerequisite_knowledge_points}
-                  onStartQuiz={handleStartQuiz}
-                />
-                <AISummary
-                  aiSummary={dashboardData.report.ai_summary}
-                  dailyPlan={dashboardData.report.daily_learning_plan}
-                  optimizationSuggestions={dashboardData.report.optimization_suggestions}
-                />
+
+                {profileSubTab === 'progress' && (
+                  <ProgressOverview
+                    progressData={progressData}
+                    isLoading={isAnalyticsLoading}
+                    onViewConceptCard={handleViewConceptCard}
+                    onStartQuiz={handleStartQuiz}
+                  />
+                )}
+
+                {profileSubTab === 'wrong_answers' && (
+                  <WrongAnswerReview
+                    wrongAnswerData={wrongAnswerData}
+                    isLoading={isAnalyticsLoading}
+                    onViewConceptCard={handleViewConceptCard}
+                    onStartQuiz={handleStartQuiz}
+                  />
+                )}
+
+                {profileSubTab === 'radar' && (
+                  <div className="space-y-6">
+                    <StatCards profile={dashboardData.profile.overall_profile} />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                      <LearningProfile profile={dashboardData.profile.overall_profile} />
+                      <AIDiagnosis
+                        diagnosis={dashboardData.report.diagnosis}
+                        profileDiagnosis={dashboardData.profile.diagnosis}
+                      />
+                    </div>
+                    <WeakKnowledgePoints
+                      weakPoints={dashboardData.profile.weak_knowledge_points}
+                      prerequisitePoints={dashboardData.profile.prerequisite_knowledge_points}
+                      onStartQuiz={handleStartQuiz}
+                    />
+                    <AISummary
+                      aiSummary={dashboardData.report.ai_summary}
+                      dailyPlan={dashboardData.report.daily_learning_plan}
+                      optimizationSuggestions={dashboardData.report.optimization_suggestions}
+                    />
+                  </div>
+                )}
               </div>
             )}
 

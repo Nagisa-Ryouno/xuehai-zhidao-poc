@@ -90,6 +90,14 @@ from gateway.learning.graph import (
     apply_route_overlay_to_graph,
     get_route_graph_overlay,
 )
+from gateway.learning.analytics import (
+    ProgressHistoryEvent,
+    StudentProgressResponse,
+    WrongAnswerReviewResponse,
+    TeacherOverviewResponse,
+    TeacherStudentDetailResponse,
+    default_analytics_service,
+)
 
 logger = logging.getLogger("xuehai.gateway")
 
@@ -789,6 +797,50 @@ def create_gateway_app() -> FastAPI:
             raise HTTPException(status_code=404, detail=f"无法获取学生知识图谱：{student_id}")
         route = get_dynamic_path_endpoint(student_id, goal)
         return apply_route_overlay_to_graph(base_graph, route)
+
+    # -------------------------------------------------------------------------
+    # Sprint 8-C: 学习成效沉淀、掌握度历史、错题复盘与教师学习分析 API
+    # -------------------------------------------------------------------------
+    default_analytics_service.set_demo_students(DEMO_STUDENTS)
+
+    @application.get("/api/students/{student_id}/progress", response_model=StudentProgressResponse)
+    def get_student_progress_endpoint(student_id: str) -> StudentProgressResponse:
+        """获取指定学生的客观学习成效历史、答题趋势与 30 考点掌握全景 (Sprint 8-C)"""
+        prog = default_analytics_service.get_student_progress(student_id)
+        if not prog:
+            raise HTTPException(status_code=404, detail=f"找不到学生学情进展：{student_id}")
+        return prog
+
+    @application.get("/api/students/{student_id}/wrong-answers", response_model=WrongAnswerReviewResponse)
+    def get_student_wrong_answers_endpoint(student_id: str) -> WrongAnswerReviewResponse:
+        """获取指定学生的全部真实错题复盘列表（按掌握度与错误频次自适应排序）(Sprint 8-C)"""
+        res = default_analytics_service.get_student_wrong_answers(student_id)
+        if res is None:
+            raise HTTPException(status_code=404, detail=f"找不到学生错题记录：{student_id}")
+        return res
+
+    @application.post("/api/learning/events")
+    def record_learning_event_endpoint(event_in: LearningEventCreate) -> Dict[str, Any]:
+        """轻量记录非测验类学习行为事件（如 CONCEPT_VIEW 概念微卡浏览）(Sprint 8-C)"""
+        stored = default_event_repository.record_event(event_in)
+        return {
+            "status": "recorded",
+            "event_id": stored.event_id,
+            "server_timestamp": stored.server_timestamp,
+        }
+
+    @application.get("/api/teacher/overview", response_model=TeacherOverviewResponse)
+    def get_teacher_overview_endpoint() -> TeacherOverviewResponse:
+        """获取教师端只读班级宏观学情分析看板数据 (Sprint 8-C)"""
+        return default_analytics_service.get_teacher_overview()
+
+    @application.get("/api/teacher/students/{student_id}", response_model=TeacherStudentDetailResponse)
+    def get_teacher_student_detail_endpoint(student_id: str) -> TeacherStudentDetailResponse:
+        """获取教师端只读单名学生深度学情分析详情 (Sprint 8-C)"""
+        detail = default_analytics_service.get_teacher_student_detail(student_id)
+        if not detail:
+            raise HTTPException(status_code=404, detail=f"找不到学生教师端分析数据：{student_id}")
+        return detail
 
     # 挂载核心业务应用为子路由兜底
     application.mount("/", app_main)

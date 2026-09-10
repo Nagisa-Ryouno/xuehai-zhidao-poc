@@ -522,4 +522,124 @@ export interface DynamicLearningRoute {
   generated_at: string;
 }
 
+/**
+ * Sprint 8-C: 学习成效沉淀与教师分析类型契约
+ */
+
+export interface MasteryTrendPoint {
+  timestamp: string;
+  overall_mastery: number;
+  event_type: string;
+  knowledge_id?: string;
+}
+
+export interface KnowledgePointMasteryItem {
+  knowledge_id: string;
+  knowledge_name: string;
+  chapter: string;
+  mastery: number;
+  status: 'MASTERED' | 'DEVELOPING' | 'NEEDS_REINFORCEMENT' | 'UNSTUDIED';
+  attempts: number;
+  accuracy: number;
+}
+
+export interface LearningHistoryItem {
+  event_id: string;
+  event_type: string;
+  timestamp: string;
+  knowledge_id?: string;
+  knowledge_name?: string;
+  is_correct?: boolean;
+  details?: string;
+}
+
+export interface StudentProgressResponse {
+  student_id: string;
+  overall_mastery: number;
+  mastery_level: string;
+  total_practice_count: number;
+  total_correct_count: number;
+  overall_accuracy: number;
+  mastered_count: number;
+  developing_count: number;
+  weak_count: number;
+  unstudied_count: number;
+  mastery_trend: MasteryTrendPoint[];
+  knowledge_points: KnowledgePointMasteryItem[];
+  history_timeline: LearningHistoryItem[];
+}
+
+export interface WrongAnswerItem {
+  question_id: string;
+  knowledge_id: string;
+  knowledge_name: string;
+  chapter: string;
+  question_prompt: string;
+  options: Record<string, string>;
+  student_answer: string;
+  correct_answer: string;
+  explanation: string;
+  current_mastery: number;
+  current_path_state: string;
+  mistake_count: number;
+  last_error_time: string;
+  review_priority: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface WrongAnswerReviewResponse {
+  student_id: string;
+  total_wrong: number;
+  wrong_answers: WrongAnswerItem[];
+}
+
+export interface TeacherClassKPIs {
+  total_students: number;
+  active_students: number;
+  class_avg_mastery: number;
+  at_risk_students_count: number;
+}
+
+export interface TeacherWeakKnowledgePoint {
+  knowledge_id: string;
+  knowledge_name: string;
+  chapter: string;
+  avg_mastery: number;
+  error_rate: number;
+  weak_student_count: number;
+  urgency: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface TeacherStudentSummary {
+  student_id: string;
+  student_name: string;
+  major: string;
+  grade: string;
+  learning_goal: string;
+  overall_mastery: number;
+  mastered_count: number;
+  developing_count: number;
+  weak_count: number;
+  total_attempts: number;
+  total_wrong_count: number;
+  accuracy: number;
+  last_active_time?: string;
+  risk_level: 'HEALTHY' | 'NORMAL' | 'ATTENTION';
+  current_focus_node?: string;
+  current_focus_name?: string;
+}
+
+export interface TeacherOverviewResponse {
+  class_kpis: TeacherClassKPIs;
+  weak_knowledge_points: TeacherWeakKnowledgePoint[];
+  students: TeacherStudentSummary[];
+}
+
+export interface TeacherStudentDetailResponse {
+  summary: TeacherStudentSummary;
+  progress: StudentProgressResponse;
+  wrong_answers: WrongAnswerReviewResponse;
+  current_route: RouteStep[];
+}
+
+
 

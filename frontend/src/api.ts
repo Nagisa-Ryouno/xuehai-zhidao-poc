@@ -21,6 +21,10 @@ import type {
   PretestSession,
   DiagnosticResult,
   DynamicLearningRoute,
+  StudentProgressResponse,
+  WrongAnswerReviewResponse,
+  TeacherOverviewResponse,
+  TeacherStudentDetailResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -360,4 +364,64 @@ export async function getDynamicKnowledgeGraph(
   const query = goal ? `?goal=${encodeURIComponent(goal)}` : '';
   return request<any>(`/students/${studentId}/knowledge-graph/dynamic${query}`);
 }
+
+/**
+ * Sprint 8-C: 获取学生掌握度成效总览与考点分布
+ */
+export async function getStudentProgress(
+  studentId: string
+): Promise<StudentProgressResponse> {
+  return request<StudentProgressResponse>(`/students/${studentId}/progress`);
+}
+
+/**
+ * Sprint 8-C: 获取学生错题复盘本
+ */
+export async function getStudentWrongAnswers(
+  studentId: string
+): Promise<WrongAnswerReviewResponse> {
+  return request<WrongAnswerReviewResponse>(`/students/${studentId}/wrong-answers`);
+}
+
+/**
+ * Sprint 8-C: 上报学习行为事件 (如概念微卡阅读)
+ */
+export async function recordLearningEvent(event: {
+  student_id: string;
+  event_type: string;
+  knowledge_id?: string;
+  payload?: Record<string, any>;
+  event_id?: string;
+  client_timestamp?: string;
+}): Promise<{ status: string; event_id: string }> {
+  const body = {
+    event_id: event.event_id || `evt-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    student_id: event.student_id,
+    knowledge_id: event.knowledge_id || 'K01',
+    event_type: event.event_type,
+    payload: event.payload || {},
+    client_timestamp: event.client_timestamp || new Date().toISOString(),
+  };
+  return request<{ status: string; event_id: string }>('/learning/events', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * Sprint 8-C: 获取教师端班级宏观学情看板数据
+ */
+export async function getTeacherOverview(): Promise<TeacherOverviewResponse> {
+  return request<TeacherOverviewResponse>('/teacher/overview');
+}
+
+/**
+ * Sprint 8-C: 获取教师端指定学生的学情下钻画像
+ */
+export async function getTeacherStudentDetail(
+  studentId: string
+): Promise<TeacherStudentDetailResponse> {
+  return request<TeacherStudentDetailResponse>(`/teacher/students/${studentId}`);
+}
+
 

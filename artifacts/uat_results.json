@@ -7,9 +7,33 @@
     {
       "type": "debug",
       "text": "[vite] connected."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
     }
   ],
-  "console_errors": [],
+  "console_errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
   "page_errors": [],
   "failed_requests": [],
   "api_responses": [
@@ -24,27 +48,12 @@
       "method": "GET"
     },
     {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "method": "GET"
-    },
-    {
       "url": "http://127.0.0.1:5173/api/health",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "url": "http://127.0.0.1:5173/api/students",
       "status": 200,
       "method": "GET"
     },
@@ -60,6 +69,21 @@
     },
     {
       "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
       "status": 200,
       "method": "GET"
     },
@@ -79,27 +103,7 @@
       "method": "GET"
     },
     {
-      "url": "http://127.0.0.1:5173/api/health",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "method": "GET"
-    },
-    {
       "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/path-states",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/dashboard",
       "status": 200,
       "method": "GET"
     },
@@ -124,7 +128,7 @@
       "method": "POST"
     },
     {
-      "url": "http://127.0.0.1:5173/api/diagnostic/pretest/pretest-UAT-8B-001-ab342d5d/submit",
+      "url": "http://127.0.0.1:5173/api/diagnostic/pretest/pretest-UAT-8B-001-e7cc4fe2/submit",
       "status": 200,
       "method": "POST"
     },
@@ -209,12 +213,12 @@
       "method": "GET"
     },
     {
-      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/dashboard",
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E6%A2%B3%E7%90%86",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E6%A2%B3%E7%90%86",
+      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/dashboard",
       "status": 200,
       "method": "GET"
     },
@@ -227,6 +231,181 @@
       "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001",
       "status": 200,
       "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/diagnostic/pretest",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/diagnostic/pretest",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/quiz/K01",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/quiz/K01",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/path-states",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E6%A2%B3%E7%90%86",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/dashboard",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E6%A2%B3%E7%90%86",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/path-states",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/dashboard",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E6%A2%B3%E7%90%86",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E6%A2%B3%E7%90%86",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/path-states",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/UAT-8B-001/dashboard",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/UAT-8B-001?goal=%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E6%A2%B3%E7%90%86",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/UNKNOWN_STUDENT_9999/dashboard",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/diagnostic/pretest/invalid-sess-id-xyz/submit",
+      "status": 404,
+      "method": "POST"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/quiz/UNKNOWN_K99",
+      "status": 404,
+      "method": "GET"
     }
   ],
   "scenarios": {
@@ -238,7 +417,13 @@
     "F": "PASS",
     "G": "PASS",
     "H": "PASS",
-    "I": "PASS"
+    "I": "PASS",
+    "J": "PASS",
+    "K": "PASS",
+    "L": "PASS",
+    "M": "PASS",
+    "N": "PASS",
+    "O": "PASS"
   },
   "route_evolution": {
     "T0": [
@@ -267,7 +452,7 @@
         "role": "CURRENT",
         "id": "K01",
         "name": "稀缺性与经济学基本问题",
-        "mastery": 0.5765
+        "mastery": 0.656
       },
       {
         "rank": 2,
@@ -290,7 +475,7 @@
         "role": "CURRENT",
         "id": "K01",
         "name": "稀缺性与经济学基本问题",
-        "mastery": 0.2309
+        "mastery": 0.2732
       },
       {
         "rank": 2,
@@ -319,6 +504,7 @@
     "pretest_leak": {
       "has_leak": false,
       "leak_details": []
-    }
+    },
+    "client_storage_secure": true
   }
 }

@@ -62,11 +62,9 @@ const AppContent: React.FC = () => {
         setErrorMessage('无法加载学情数据，请确认后端 API 服务是否正常启动。');
       }
     } finally {
-      if (reqId === requestIdRef.current) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
-  }, [studentId, selectStudent]);
+  }, [selectStudent]);
 
   useEffect(() => {
     initData();
@@ -124,9 +122,8 @@ const AppContent: React.FC = () => {
         setErrorMessage('切换学生数据失败，请重试。');
       }
     } finally {
-      if (activeStudentRef.current === targetStudentId && reqId === requestIdRef.current) {
-        setIsSwitching(false);
-      }
+      setIsSwitching(false);
+      setIsLoading(false);
     }
   };
 

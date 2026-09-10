@@ -18,6 +18,9 @@ import type {
   QuizSubmitRequest,
   QuizSubmitResponse,
   StudentPathStatesResponse,
+  PretestSession,
+  DiagnosticResult,
+  DynamicLearningRoute,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -291,5 +294,70 @@ export async function initStudent(
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+/**
+ * Sprint 8-B: 创建 3 题极速前测会话
+ */
+export async function createPretestSession(
+  studentId: string,
+  goal?: string
+): Promise<PretestSession> {
+  return request<PretestSession>('/diagnostic/pretest', {
+    method: 'POST',
+    body: JSON.stringify({
+      student_id: studentId,
+      goal: goal || '微观经济学核心概念掌握与考点突破',
+    }),
+  });
+}
+
+/**
+ * Sprint 8-B: 提交前测作答并获取学情诊断及首条动态航线
+ */
+export async function submitPretest(
+  sessionId: string,
+  answers: Record<string, string>
+): Promise<{ diagnostic: DiagnosticResult; dynamic_route: DynamicLearningRoute }> {
+  return request<{ diagnostic: DiagnosticResult; dynamic_route: DynamicLearningRoute }>(
+    `/diagnostic/pretest/${sessionId}/submit`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ answers }),
+    }
+  );
+}
+
+/**
+ * Sprint 8-B: 获取指定学生的 Top-3 动态自适应学习路线
+ */
+export async function getDynamicPath(
+  studentId: string,
+  goal?: string
+): Promise<DynamicLearningRoute> {
+  const query = goal ? `?goal=${encodeURIComponent(goal)}` : '';
+  return request<DynamicLearningRoute>(`/path/dynamic/${studentId}${query}`);
+}
+
+/**
+ * Sprint 8-B: 获取动态路径可解释性详情
+ */
+export async function getDynamicPathExplanation(
+  studentId: string,
+  goal?: string
+): Promise<any> {
+  const query = goal ? `?goal=${encodeURIComponent(goal)}` : '';
+  return request<any>(`/path/dynamic/${studentId}/explanation${query}`);
+}
+
+/**
+ * Sprint 8-B: 获取叠加了航线高亮的知识图谱数据
+ */
+export async function getDynamicKnowledgeGraph(
+  studentId: string,
+  goal?: string
+): Promise<any> {
+  const query = goal ? `?goal=${encodeURIComponent(goal)}` : '';
+  return request<any>(`/students/${studentId}/knowledge-graph/dynamic${query}`);
 }
 

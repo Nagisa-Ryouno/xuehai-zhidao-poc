@@ -441,4 +441,85 @@ export interface GroundedAnswer {
   readonly suggested_explanation?: string;
 }
 
+/**
+ * Sprint 8-B: 极速前测与学情诊断类型契约
+ */
+export interface DiagnosticOption {
+  key: string;
+  text: string;
+}
+
+export interface DiagnosticQuestionPublic {
+  question_id: string;
+  knowledge_id: string;
+  knowledge_name: string;
+  stem: string;
+  options: DiagnosticOption[];
+  difficulty: number;
+}
+
+export interface PretestSession {
+  session_id: string;
+  student_id: string;
+  goal: string;
+  questions: DiagnosticQuestionPublic[];
+  created_at: string;
+  completed: boolean;
+}
+
+export interface KnowledgeDiagnostic {
+  knowledge_id: string;
+  knowledge_name: string;
+  question_id: string;
+  user_answer: string;
+  is_correct: boolean;
+  estimated_mastery: number;
+  status: string;
+  feedback: string;
+}
+
+export interface DiagnosticResult {
+  session_id: string;
+  student_id: string;
+  goal: string;
+  total_questions: number;
+  correct_count: number;
+  accuracy: number;
+  overall_level: string;
+  overall_level_label: string;
+  knowledge_diagnostics: KnowledgeDiagnostic[];
+  weaknesses: string[];
+  strengths: string[];
+  summary_text: string;
+  recommended_focus_id?: string;
+  completed_at: string;
+}
+
+/**
+ * Sprint 8-B: 动态学习航线类型契约
+ */
+export interface RouteStep {
+  knowledge_id: string;
+  knowledge_name: string;
+  chapter: string;
+  rank: number;
+  role: 'CURRENT' | 'NEXT' | 'UPCOMING';
+  score: number;
+  reason_codes: string[];
+  explanation: string;
+  mastery: number;
+  path_state: string;
+  prerequisites: string[];
+}
+
+export interface DynamicLearningRoute {
+  student_id: string;
+  goal: string;
+  route_length: number;
+  steps: RouteStep[];
+  is_fallback: boolean;
+  fallback_reason?: string;
+  generated_at: string;
+}
+
 

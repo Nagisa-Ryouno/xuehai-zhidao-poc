@@ -32,6 +32,7 @@ import type {
   KnowledgeGraphNodeData,
   GraphFilterType,
   PathState,
+  DynamicLearningRoute,
 } from '../types';
 
 const nodeTypes: NodeTypes = {
@@ -42,6 +43,7 @@ interface KnowledgeGraphProps {
   currentStudentId: string;
   studentName: string;
   pathStates?: Record<string, PathState>;
+  activeRoute?: DynamicLearningRoute | null;
   onStartQuiz?: (knowledgeId: string, knowledgeName: string) => void;
   onJumpToAssistant?: () => void;
 }
@@ -50,6 +52,7 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   currentStudentId,
   studentName,
   pathStates,
+  activeRoute,
   onStartQuiz,
   onJumpToAssistant,
 }) => {
@@ -132,6 +135,20 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
       const isFilteredOut = !matchesFilter || (!matchesSearch && query.length > 0);
       const isSearched = query.length > 0 && matchesSearch;
 
+      const routeStepMap: Record<string, { role: string; rank: number; badge: string }> = {};
+      if (activeRoute?.steps) {
+        for (const s of activeRoute.steps) {
+          routeStepMap[s.knowledge_id] = {
+            role: s.role,
+            rank: s.rank,
+            badge: `第${s.rank}站·${s.role === 'CURRENT' ? '当前焦点' : s.role === 'NEXT' ? '下一站' : '进阶延伸'}`,
+          };
+        }
+      }
+
+      const routeInfo = routeStepMap[n.id];
+      const isOnRoute = Boolean(routeInfo);
+
       return {
         id: n.id,
         type: 'knowledgeNode',
@@ -141,6 +158,10 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
           ...d,
           isFilteredOut,
           isSearched,
+          is_on_route: isOnRoute,
+          route_role: routeInfo?.role,
+          route_rank: routeInfo?.rank,
+          route_badge: routeInfo?.badge,
         },
       };
     });
@@ -181,9 +202,40 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
       };
     });
 
+    // 格式化动态自适应航线时序流动边
+    const routeEdges: Edge[] = [];
+    if (activeRoute?.steps) {
+      for (let i = 0; i < activeRoute.steps.length - 1; i++) {
+        const s1 = activeRoute.steps[i];
+        const s2 = activeRoute.steps[i + 1];
+        routeEdges.push({
+          id: `route-flow-${s1.knowledge_id}-${s2.knowledge_id}`,
+          source: s1.knowledge_id,
+          target: s2.knowledge_id,
+          type: 'smoothstep',
+          animated: true,
+          style: {
+            stroke: '#10b981',
+            strokeWidth: 3,
+            strokeDasharray: '6,4',
+          },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: '#10b981',
+            width: 16,
+            height: 16,
+          },
+          data: {
+            is_active_route: true,
+            label: `第${s1.rank}站 → 第${s2.rank}站`,
+          },
+        });
+      }
+    }
+
     setNodes(formattedNodes);
-    setEdges(formattedEdges);
-  }, [graphData, activeFilter, searchQuery, selectedNodeId, setNodes, setEdges]);
+    setEdges([...formattedEdges, ...routeEdges]);
+  }, [graphData, activeFilter, searchQuery, selectedNodeId, activeRoute, setNodes, setEdges]);
 
   // 点击节点事件
   const onNodeClick = useCallback(

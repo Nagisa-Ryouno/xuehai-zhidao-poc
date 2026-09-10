@@ -20,9 +20,16 @@ export const KnowledgeGraphNode: React.FC<NodeProps> = memo(({ data, selected })
     downstream_count,
     isFilteredOut,
     isSearched,
+    is_on_route,
+    route_role,
+    route_rank,
   } = nodeData as KnowledgeGraphNodeData & {
     isFilteredOut?: boolean;
     isSearched?: boolean;
+    is_on_route?: boolean;
+    route_role?: string;
+    route_rank?: number;
+    route_badge?: string;
   };
 
   // 状态颜色与徽章设计
@@ -67,7 +74,15 @@ export const KnowledgeGraphNode: React.FC<NodeProps> = memo(({ data, selected })
       className={`relative w-64 rounded-xl border-2 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer select-none ${bgColor} ${borderColor} ${
         selected ? 'ring-4 ring-indigo-500/30 border-indigo-600 scale-[1.03] shadow-lg' : ''
       } ${
-        isSpecialHighlight ? 'ring-2 ring-indigo-400 shadow-indigo-100 shadow-md' : ''
+        is_on_route && route_role === 'CURRENT'
+          ? 'ring-4 ring-emerald-500/60 border-emerald-500 scale-[1.03] shadow-emerald-100 shadow-xl'
+          : is_on_route && route_role === 'NEXT'
+          ? 'ring-3 ring-amber-400/50 border-amber-400 shadow-amber-100 shadow-md'
+          : is_on_route && route_role === 'UPCOMING'
+          ? 'ring-2 ring-purple-400/40 border-purple-400'
+          : isSpecialHighlight
+          ? 'ring-2 ring-indigo-400 shadow-indigo-100 shadow-md'
+          : ''
       } ${
         isSearched ? 'ring-4 ring-amber-400 border-amber-500 scale-[1.04]' : ''
       } ${
@@ -100,6 +115,24 @@ export const KnowledgeGraphNode: React.FC<NodeProps> = memo(({ data, selected })
 
       {/* 动态徽章行 */}
       <div className="px-3.5 pb-2.5 flex flex-wrap items-center gap-1.5">
+        {/* 动态航线专属徽章 */}
+        {is_on_route && (
+          <span
+            className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-xs ${
+              route_role === 'CURRENT'
+                ? 'bg-emerald-600 text-white animate-pulse'
+                : route_role === 'NEXT'
+                ? 'bg-amber-500 text-white'
+                : 'bg-purple-600 text-white'
+            }`}
+          >
+            <span>
+              第 {route_rank} 站 ·{' '}
+              {route_role === 'CURRENT' ? '当前焦点' : route_role === 'NEXT' ? '紧接学习' : '进阶延伸'}
+            </span>
+          </span>
+        )}
+
         {/* 正确率或未学状态 */}
         <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border font-medium ${badgeColor}`}>
           <BadgeIcon className="w-3 h-3" />
@@ -107,7 +140,7 @@ export const KnowledgeGraphNode: React.FC<NodeProps> = memo(({ data, selected })
         </span>
 
         {/* 学习路径 Stage 徽章 */}
-        {is_recommended && path_stage !== null && (
+        {!is_on_route && is_recommended && path_stage !== null && (
           <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-indigo-600 text-white font-semibold shadow-xs">
             <Sparkles className="w-3 h-3 text-amber-300" />
             <span>Stage {path_stage}</span>

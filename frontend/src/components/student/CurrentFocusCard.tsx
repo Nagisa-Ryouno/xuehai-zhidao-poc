@@ -18,9 +18,11 @@ import {
   getRecommendationExplanation,
   MASTERY_TARGET_PERCENT,
 } from './adaptiveLearningModel.ts';
+import type { DynamicLearningRoute } from '../../types';
 
 interface CurrentFocusCardProps {
   focusResult: CurrentFocusResult;
+  dynamicRoute?: DynamicLearningRoute | null;
   onStartQuiz: (knowledgeId: string, knowledgeName: string) => void;
   onViewConceptCard?: (knowledgeId: string, knowledgeName: string) => void;
   onViewGraph?: () => void;
@@ -28,6 +30,7 @@ interface CurrentFocusCardProps {
 
 export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   focusResult,
+  dynamicRoute,
   onStartQuiz,
   onViewConceptCard,
   onViewGraph,
@@ -162,6 +165,11 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
           </span>
           <span className="text-xs text-slate-400">|</span>
           <span className="text-xs font-medium text-slate-500">{focus.chapter}</span>
+          {dynamicRoute && dynamicRoute.steps.length > 0 && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <span>🧭 动态自适应航线 (第 1 站 / 共 {dynamicRoute.route_length} 站)</span>
+            </span>
+          )}
         </div>
         <div>{stateBadge}</div>
       </div>

@@ -20,14 +20,15 @@ import { resolveCurrentFocusTask } from '../components/student/taskFocusModel';
 import { buildLearningContext } from '../components/student/learningContextModel';
 
 import { useApp } from '../context/useApp';
-import type { StudentListItem, StudentDashboardResponse, PathState } from '../types';
+import type { StudentListItem, StudentDashboardResponse, PathState, DynamicLearningRoute } from '../types';
 import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
 import { MobileContainer } from '../components/student/MobileContainer';
 import { ConceptCardModal } from '../components/student/ConceptCardModal';
 import { StudentInitModal } from '../components/student/StudentInitModal';
+import { PretestModal } from '../components/student/PretestModal';
 import { getConceptCardById, type ConceptCardData } from '../components/student/conceptCardData';
-import { initStudent, type StudentInitRequest } from '../api';
+import { initStudent, getDynamicPath, type StudentInitRequest } from '../api';
 
 interface StudentLayoutProps {
   students: StudentListItem[];
@@ -68,6 +69,24 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   // 学习目标设定与新学生模态框状态
   const [isInitModalOpen, setIsInitModalOpen] = useState<boolean>(false);
+
+  // 3题极速前测与自适应动态航线状态 (Sprint 8-B)
+  const [isPretestModalOpen, setIsPretestModalOpen] = useState<boolean>(false);
+  const [dynamicRoute, setDynamicRoute] = useState<DynamicLearningRoute | null>(null);
+
+  const fetchDynamicRoute = useCallback(async () => {
+    try {
+      const goal = dashboardData?.profile?.student?.learning_goal;
+      const route = await getDynamicPath(studentId, goal);
+      setDynamicRoute(route);
+    } catch {
+      setDynamicRoute(null);
+    }
+  }, [studentId, dashboardData]);
+
+  useEffect(() => {
+    fetchDynamicRoute();
+  }, [fetchDynamicRoute]);
 
   // 学生上下文切换时安全关闭微测验与速览卡片，杜绝上下文污染 (Sprint 3 契约约束)
   useEffect(() => {
@@ -115,10 +134,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   const handleCloseQuiz = useCallback(() => {
     setActiveQuiz(null);
+    fetchDynamicRoute();
     if (onRefresh) {
       onRefresh();
     }
-  }, [onRefresh]);
+  }, [onRefresh, fetchDynamicRoute]);
 
   const handleNextKnowledgePoint = useCallback(
     (nextKnowledgeId: string, nextKnowledgeName: string) => {
@@ -126,11 +146,12 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         knowledgeId: nextKnowledgeId,
         knowledgeName: nextKnowledgeName,
       });
+      fetchDynamicRoute();
       if (onRefresh) {
         onRefresh();
       }
     },
-    [onRefresh]
+    [onRefresh, fetchDynamicRoute]
   );
 
   const handleJumpToAssistant = () => {
@@ -170,6 +191,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-100 selection:text-indigo-800">
       {/* Top Header */}
+      {/* Top Header */}
       <Header
         students={students}
         currentStudentId={studentId}
@@ -177,6 +199,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         isOnline={isOnline}
         isLoading={isLoading || isSwitching}
         onOpenInitModal={() => setIsInitModalOpen(true)}
+        onOpenPretestModal={() => setIsPretestModalOpen(true)}
       />
 
       {/* Sub-route Navigation Pill Bar (仅在平板与桌面端展示，移动端由底部 BottomNav 承载) */}
@@ -232,6 +255,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 {/* 2. Today's Learning Mission: Current Focus Task (Sprint 2 Core) */}
                 <CurrentFocusCard
                   focusResult={focusResult}
+                  dynamicRoute={dynamicRoute}
                   onStartQuiz={handleStartQuiz}
                   onViewConceptCard={handleViewConceptCard}
                   onViewGraph={() => navigate('/student/graph')}
@@ -264,6 +288,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   currentStudentId={studentId}
                   studentName={dashboardData.profile.student.student_name}
                   pathStates={pathStates}
+                  activeRoute={dynamicRoute}
                   onStartQuiz={handleStartQuiz}
                   onJumpToAssistant={handleJumpToAssistant}
                 />
@@ -359,6 +384,20 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         onClose={() => setIsInitModalOpen(false)}
         onSubmit={handleInitStudentSubmit}
         onSelectPresetStudent={onSelectStudent}
+      />
+
+      {/* 3题极速前测与自适应学情诊断模态框 */}
+      <PretestModal
+        isOpen={isPretestModalOpen}
+        onClose={() => setIsPretestModalOpen(false)}
+        studentId={studentId}
+        learningGoal={dashboardData?.profile?.student?.learning_goal}
+        onRouteGenerated={(route) => {
+          setDynamicRoute(route);
+        }}
+        onSelectFocus={(kid) => {
+          handleViewConceptCard(kid, kid);
+        }}
       />
 
       {/* Mobile Bottom Navigation (仅在移动端展示) */}

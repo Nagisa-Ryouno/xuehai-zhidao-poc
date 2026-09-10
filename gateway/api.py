@@ -74,6 +74,22 @@ from gateway.models import (
     StructuredAIResponse,
 )
 from gateway.redaction import sanitize_exception_message
+from gateway.learning.diagnostic import (
+    DiagnosticResult,
+    PretestSession,
+    PretestSubmitRequest,
+    create_pretest_session,
+    evaluate_pretest,
+    get_pretest_session,
+)
+from gateway.learning.path_generation import (
+    DynamicLearningRoute,
+    default_dynamic_path_generator,
+)
+from gateway.learning.graph import (
+    apply_route_overlay_to_graph,
+    get_route_graph_overlay,
+)
 
 logger = logging.getLogger("xuehai.gateway")
 
@@ -116,6 +132,16 @@ class StudentInitResponse(BaseModel):
     current_knowledge_id: str
     path_states: Dict[str, str]
     message: str
+
+
+class PretestCreateRequest(BaseModel):
+    student_id: str = Field(..., description="学生ID")
+    goal: Optional[str] = Field(default="微观经济学核心概念掌握与考点突破", description="学习目标")
+
+
+class PretestSubmitResponse(BaseModel):
+    diagnostic: DiagnosticResult = Field(..., description="综合学情诊断报告")
+    dynamic_route: DynamicLearningRoute = Field(..., description="诊断后即时生成的动态学习路线")
 
 
 # 动态初始化的 Demo 学生档案注册表（内存态，支持测试与体验会话）
@@ -645,6 +671,81 @@ def create_gateway_app() -> FastAPI:
             "student_id": student_id,
             "states": {k: v.value for k, v in states.items()},
         }
+
+    # ============================================================
+    # Sprint 8-B: 极速前测、学情诊断与自适应动态路径端点
+    # ============================================================
+
+    @application.post("/api/diagnostic/pretest", response_model=PretestSession)
+    def create_pretest_endpoint(req: PretestCreateRequest) -> PretestSession:
+        """创建 3 题极速前测会话（脱敏，剔除答案与解析）"""
+        return create_pretest_session(
+            student_id=req.student_id,
+            goal=req.goal or "微观经济学核心概念掌握与考点突破",
+        )
+
+    @application.post("/api/diagnostic/pretest/{session_id}/submit", response_model=PretestSubmitResponse)
+    def submit_pretest_endpoint(session_id: str, req: PretestSubmitRequest) -> PretestSubmitResponse:
+        """提交前测作答，评估学情并即时生成首条自适应动态攻坚路线"""
+        session = get_pretest_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail=f"前测会话不存在或已过期：{session_id}")
+        diagnostic_res = evaluate_pretest(session_id, req.answers)
+        dynamic_route = default_dynamic_path_generator.generate_route(
+            student_id=diagnostic_res.student_id,
+            goal=diagnostic_res.goal,
+        )
+        return PretestSubmitResponse(
+            diagnostic=diagnostic_res,
+            dynamic_route=dynamic_route,
+        )
+
+    @application.get("/api/path/dynamic/{student_id}", response_model=DynamicLearningRoute)
+    def get_dynamic_path_endpoint(student_id: str, goal: Optional[str] = None) -> DynamicLearningRoute:
+        """获取指定学生的 Top-3 动态自适应学习路线"""
+        actual_goal = goal
+        if not actual_goal:
+            from app.services.student_service import student_service
+            p = student_service.get_student_profile(student_id)
+            if p and p.get("student", {}).get("learning_goal"):
+                actual_goal = p["student"]["learning_goal"]
+            elif student_id in DEMO_STUDENTS:
+                actual_goal = DEMO_STUDENTS[student_id]["student"]["learning_goal"]
+            else:
+                actual_goal = "微观经济学核心概念掌握与考点突破"
+
+        return default_dynamic_path_generator.generate_route(
+            student_id=student_id,
+            goal=actual_goal,
+        )
+
+    @application.get("/api/path/dynamic/{student_id}/explanation")
+    def get_dynamic_path_explanation_endpoint(student_id: str, goal: Optional[str] = None) -> Dict[str, Any]:
+        """获取动态路径的结构化推荐理由与证据说明"""
+        route = get_dynamic_path_endpoint(student_id, goal)
+        overlay = get_route_graph_overlay(student_id, route)
+        return {
+            "student_id": student_id,
+            "goal": route.goal,
+            "route_length": route.route_length,
+            "is_fallback": route.is_fallback,
+            "fallback_reason": route.fallback_reason,
+            "steps": [s.model_dump() for s in route.steps],
+            "overlay": overlay,
+        }
+
+    @application.get("/api/students/{student_id}/knowledge-graph/dynamic")
+    def get_student_dynamic_knowledge_graph_endpoint(student_id: str, goal: Optional[str] = None) -> Dict[str, Any]:
+        """获取叠加了动态航线高亮与流动动画的知识图谱数据"""
+        base_graph = knowledge_graph_service.get_student_knowledge_graph(student_id)
+        if not base_graph and student_id in DEMO_STUDENTS:
+            base_graph = knowledge_graph_service.get_student_knowledge_graph("S001")
+            if base_graph:
+                base_graph["student"] = {"student_id": student_id}
+        if not base_graph:
+            raise HTTPException(status_code=404, detail=f"无法获取学生知识图谱：{student_id}")
+        route = get_dynamic_path_endpoint(student_id, goal)
+        return apply_route_overlay_to_graph(base_graph, route)
 
     # 挂载核心业务应用为子路由兜底
     application.mount("/", app_main)

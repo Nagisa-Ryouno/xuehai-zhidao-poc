@@ -8,6 +8,7 @@ import {
   Sparkles,
   HelpCircle,
   Calendar,
+  Bot,
 } from 'lucide-react';
 import type { StudentProgressResponse } from '../../types';
 
@@ -16,6 +17,7 @@ interface ProgressOverviewProps {
   isLoading: boolean;
   onViewConceptCard?: (knowledgeId: string, knowledgeName: string) => void;
   onStartQuiz?: (knowledgeId: string, knowledgeName: string) => void;
+  onAskAISummary?: () => void;
 }
 
 type FilterTab = 'ALL' | 'MASTERED' | 'DEVELOPING' | 'NEEDS_REINFORCEMENT' | 'UNSTUDIED';
@@ -25,6 +27,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
   isLoading,
   onViewConceptCard,
   onStartQuiz,
+  onAskAISummary,
 }) => {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -100,14 +103,26 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-semibold">
               <Award className="w-3.5 h-3.5" />
-              BKT 概率图谱 · 认知成效沉淀
+              认知掌握图谱 · 学习成效沉淀
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
               全图谱 30 考点掌握度总览
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-              基于知识追踪模型 (BKT) 动态量化认知潜能。统一标准：掌握度 ≥ 80% 判定为达标已掌握。
+              基于认知掌握自适应追踪模型动态量化认知表现。统一标准：掌握度 ≥ 80% 判定为达标已掌握。
             </p>
+            {onAskAISummary && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={onAskAISummary}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm transition-all cursor-pointer shadow-xs"
+                >
+                  <Bot className="w-4 h-4 text-purple-300" />
+                  <span>🤖 总结我的学习情况</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 核心总体掌握度大卡 */}

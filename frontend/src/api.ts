@@ -25,6 +25,9 @@ import type {
   WrongAnswerReviewResponse,
   TeacherOverviewResponse,
   TeacherStudentDetailResponse,
+  CompanionStudyRequest,
+  CompanionStudyResponse,
+  CompanionSession,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -423,5 +426,39 @@ export async function getTeacherStudentDetail(
 ): Promise<TeacherStudentDetailResponse> {
   return request<TeacherStudentDetailResponse>(`/teacher/students/${studentId}`);
 }
+
+/**
+ * Sprint 9-A: 发起学生 AI 伴学辅导请求
+ */
+export async function postCompanionStudy(
+  req: CompanionStudyRequest
+): Promise<CompanionStudyResponse> {
+  return request<CompanionStudyResponse>('/ai/companion', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}
+
+/**
+ * Sprint 9-A: 重置指定学生的伴学对话上下文
+ */
+export async function resetCompanionSession(
+  studentId: string
+): Promise<{ status: string; student_id: string }> {
+  return request<{ status: string; student_id: string }>('/ai/companion/reset', {
+    method: 'POST',
+    body: JSON.stringify({ student_id: studentId }),
+  });
+}
+
+/**
+ * Sprint 9-A: 查询指定伴学会话状态与对话记录
+ */
+export async function getCompanionSession(
+  sessionId: string
+): Promise<CompanionSession> {
+  return request<CompanionSession>(`/ai/companion/sessions/${sessionId}`);
+}
+
 
 

@@ -16,7 +16,7 @@ import logging
 import time
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -98,6 +98,12 @@ from gateway.learning.analytics import (
     TeacherStudentDetailResponse,
     default_analytics_service,
 )
+from gateway.learning.companion import (
+    CompanionStudyRequest,
+    CompanionStudyResponse,
+    CompanionSession,
+    default_companion_service,
+)
 
 logger = logging.getLogger("xuehai.gateway")
 
@@ -150,6 +156,10 @@ class PretestCreateRequest(BaseModel):
 class PretestSubmitResponse(BaseModel):
     diagnostic: DiagnosticResult = Field(..., description="综合学情诊断报告")
     dynamic_route: DynamicLearningRoute = Field(..., description="诊断后即时生成的动态学习路线")
+
+
+class CompanionResetRequest(BaseModel):
+    student_id: str = Field(..., description="学生唯一标识")
 
 
 # 动态初始化的 Demo 学生档案注册表（内存态，支持测试与体验会话）
@@ -238,13 +248,13 @@ def create_gateway_app() -> FastAPI:
 
     @application.post(
         "/api/ai/companion",
-        response_model=StructuredAIResponse,
+        response_model=Union[CompanionStudyResponse, StructuredAIResponse],
         response_model_exclude_unset=True,
     )
     async def companion_endpoint(
-        request: AICompanionRequest,
+        request: Union[CompanionStudyRequest, AICompanionRequest],
         response: Response,
-    ) -> StructuredAIResponse:
+    ) -> Union[CompanionStudyResponse, StructuredAIResponse]:
         """
         AI 伴学主入口端点
         
@@ -253,12 +263,29 @@ def create_gateway_app() -> FastAPI:
         2. Latency & Observability: 旁路收集耗时与状态事件，Fail-safe 熔断保护
         3. Request Validation: Pydantic 严格白名单校验 (extra='forbid')
         4. Provider Selection & Invocation: 委托给 AIProviderAdapter 抽象层
-        5. Response Normalization: 仅返回 StructuredAIResponse 契约字段
+        5. Response Normalization: 仅返回契约字段
         6. Secret & Authority Isolation: 密钥绝不暴露，决策权绝对隔离
         """
         request_id = generate_request_id()
         response.headers["X-Request-ID"] = request_id
         start_perf = time.perf_counter()
+
+        # Phase 5 / Sprint 9-A: AI 学习伙伴双层架构分发
+        if isinstance(request, CompanionStudyRequest):
+            try:
+                study_res = await default_companion_service.handle_companion_request(request)
+                return study_res
+            except ValueError as ve:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=str(ve),
+                )
+            except Exception as e:
+                logger.error(f"Companion service error [{request_id}]: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="伴学服务内部异常，请稍后重试",
+                )
 
         prompt_context = request.prompt_context
         if request.question and request.question != prompt_context.user_question:
@@ -401,6 +428,25 @@ def create_gateway_app() -> FastAPI:
     # ============================================================
     # Phase 4 / Sprint 8-A: Product Learning Loop MVP 端点
     # ============================================================
+    # Sprint 9-A: AI 伴学会话管理端点
+    # ============================================================
+
+    @application.post("/api/ai/companion/reset")
+    def reset_companion_session_endpoint(req: CompanionResetRequest) -> Dict[str, Any]:
+        """重置指定学生的伴学对话上下文 (Sprint 9-A)"""
+        default_companion_service.reset_student_session(req.student_id)
+        return {"status": "reset", "student_id": req.student_id}
+
+    @application.get("/api/ai/companion/sessions/{session_id}", response_model=CompanionSession)
+    def get_companion_session_endpoint(session_id: str) -> CompanionSession:
+        """获取指定伴学会话记录 (Sprint 9-A)"""
+        sess = default_companion_service.get_session(session_id)
+        if not sess:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"未找到伴学会话：{session_id}",
+            )
+        return sess
 
     @application.get("/api/concept/{knowledge_id}")
     def get_concept_card_endpoint(knowledge_id: str) -> Dict[str, Any]:

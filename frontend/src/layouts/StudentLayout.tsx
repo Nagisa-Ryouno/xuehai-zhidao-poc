@@ -27,6 +27,7 @@ import type {
   DynamicLearningRoute,
   StudentProgressResponse,
   WrongAnswerReviewResponse,
+  CompanionMode,
 } from '../types';
 import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
@@ -96,6 +97,14 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   const [wrongAnswerData, setWrongAnswerData] = useState<WrongAnswerReviewResponse | null>(null);
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState<boolean>(false);
 
+  // AI 伴学上下文直通状态 (Sprint 9-A)
+  const [activeCompanionContext, setActiveCompanionContext] = useState<{
+    mode?: CompanionMode;
+    knowledgeId?: string;
+    questionId?: string;
+    message?: string;
+  } | null>(null);
+
   const fetchDynamicRoute = useCallback(async () => {
     try {
       const goal = dashboardData?.profile?.student?.learning_goal;
@@ -139,6 +148,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     setProgressData(null);
     setWrongAnswerData(null);
     setDynamicRoute(null);
+    setActiveCompanionContext(null);
   }, [studentId]);
 
   const handleStartQuiz = useCallback(
@@ -212,11 +222,28 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   );
 
   const handleJumpToAssistant = () => {
+    setActiveCompanionContext(null);
     navigate('/student/assistant');
     if (assistantRef.current) {
       assistantRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const handleJumpToAssistantWithContext = useCallback(
+    (ctx: {
+      mode?: CompanionMode;
+      knowledgeId?: string;
+      questionId?: string;
+      message?: string;
+    }) => {
+      setActiveCompanionContext(ctx);
+      navigate('/student/assistant');
+      if (assistantRef.current) {
+        assistantRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
+    [navigate]
+  );
 
   const focusResult = useMemo(
     () =>
@@ -315,6 +342,13 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   dynamicRoute={dynamicRoute}
                   onStartQuiz={handleStartQuiz}
                   onViewConceptCard={handleViewConceptCard}
+                  onAskAI={(kid, kname) =>
+                    handleJumpToAssistantWithContext({
+                      mode: 'concept_explain',
+                      knowledgeId: kid,
+                      message: `请老师精讲考点【${kid} ${kname}】`,
+                    })
+                  }
                   onViewGraph={() => navigate('/student/graph')}
                 />
 
@@ -411,6 +445,12 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                     isLoading={isAnalyticsLoading}
                     onViewConceptCard={handleViewConceptCard}
                     onStartQuiz={handleStartQuiz}
+                    onAskAISummary={() =>
+                      handleJumpToAssistantWithContext({
+                        mode: 'learning_summary',
+                        message: '请老师为我生成当前的阶段学习成效全景总结',
+                      })
+                    }
                   />
                 )}
 
@@ -420,6 +460,14 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                     isLoading={isAnalyticsLoading}
                     onViewConceptCard={handleViewConceptCard}
                     onStartQuiz={handleStartQuiz}
+                    onAskAI={(qid, kid) =>
+                      handleJumpToAssistantWithContext({
+                        mode: 'wrong_answer_review',
+                        questionId: qid,
+                        knowledgeId: kid,
+                        message: `请老师帮我详细剖析错题【${qid}】`,
+                      })
+                    }
                   />
                 )}
 
@@ -462,6 +510,14 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                     studentName={dashboardData.profile.student.student_name}
                     isOnline={isOnline}
                     learningContext={learningContext}
+                    initialContext={activeCompanionContext}
+                    onNavigateToQuiz={(kid) => {
+                      const kpName =
+                        dashboardData.profile.weak_knowledge_points.find(
+                          (w) => w.knowledge_id === kid
+                        )?.knowledge_name || kid;
+                      handleStartQuiz(kid, kpName);
+                    }}
                   />
                 </div>
               </div>

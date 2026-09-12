@@ -641,5 +641,70 @@ export interface TeacherStudentDetailResponse {
   current_route: RouteStep[];
 }
 
+// ============================================================
+// Phase 5 / Sprint 9-A: AI 学习伙伴 (Companion) 契约类型
+// ============================================================
+
+export type CompanionMode =
+  | 'concept_explain'
+  | 'wrong_answer_review'
+  | 'conversation'
+  | 'learning_summary';
+
+export interface CompanionSafetyMetadata {
+  allow_production_decision: boolean;
+  sanitized: boolean;
+  offline_mode: boolean;
+  context_source: string;
+  redactions_applied: string[];
+}
+
+export interface CompanionContextMetadata {
+  student_id: string;
+  knowledge_id?: string;
+  knowledge_name?: string;
+  chapter?: string;
+  mastery?: number;
+  mastery_status?: string;
+  prerequisites: string[];
+  question_id?: string;
+  learning_goal?: string;
+}
+
+export interface CompanionStudyRequest {
+  student_id: string;
+  mode: CompanionMode;
+  knowledge_id?: string;
+  question_id?: string;
+  message?: string;
+  session_id?: string;
+}
+
+export interface CompanionStudyResponse {
+  session_id: string;
+  mode: CompanionMode;
+  answer: string;
+  context: CompanionContextMetadata;
+  safety: CompanionSafetyMetadata;
+  suggested_actions: string[];
+  provider: string;
+  referenced_facts: string[];
+}
+
+export interface CompanionChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export interface CompanionSession {
+  session_id: string;
+  student_id: string;
+  messages: CompanionChatMessage[];
+  last_knowledge_id?: string;
+  created_at: string;
+}
+
+
 
 

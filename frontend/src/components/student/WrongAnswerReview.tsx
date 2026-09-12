@@ -8,6 +8,7 @@ import {
   XCircle,
   Clock,
   Filter,
+  Bot,
 } from 'lucide-react';
 import type { WrongAnswerReviewResponse } from '../../types';
 
@@ -16,6 +17,7 @@ interface WrongAnswerReviewProps {
   isLoading: boolean;
   onViewConceptCard: (knowledgeId: string, knowledgeName: string) => void;
   onStartQuiz: (knowledgeId: string, knowledgeName: string) => void;
+  onAskAI?: (questionId: string, knowledgeId: string) => void;
 }
 
 type PriorityFilter = 'ALL' | 'HIGH' | 'MEDIUM' | 'LOW';
@@ -25,6 +27,7 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
   isLoading,
   onViewConceptCard,
   onStartQuiz,
+  onAskAI,
 }) => {
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('ALL');
 
@@ -252,6 +255,18 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {/* AI 错题剖析行动 */}
+                      {onAskAI && (
+                        <button
+                          type="button"
+                          onClick={() => onAskAI(item.question_id, item.knowledge_id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/80 transition-colors cursor-pointer"
+                        >
+                          <Bot className="w-3.5 h-3.5 text-purple-600" />
+                          🤖 AI 帮我分析
+                        </button>
+                      )}
+
                       {/* 关键行动 1: 重新学习 (ConceptCard) */}
                       <button
                         type="button"

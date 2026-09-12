@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
+  Bot,
 } from 'lucide-react';
 import type { CurrentFocusResult } from './taskFocusModel.ts';
 import { getPathStatePresentation } from './pathStatePresentation.ts';
@@ -25,6 +26,7 @@ interface CurrentFocusCardProps {
   dynamicRoute?: DynamicLearningRoute | null;
   onStartQuiz: (knowledgeId: string, knowledgeName: string) => void;
   onViewConceptCard?: (knowledgeId: string, knowledgeName: string) => void;
+  onAskAI?: (knowledgeId: string, knowledgeName: string) => void;
   onViewGraph?: () => void;
 }
 
@@ -33,6 +35,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   dynamicRoute,
   onStartQuiz,
   onViewConceptCard,
+  onAskAI,
   onViewGraph,
 }) => {
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
@@ -299,6 +302,17 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
             >
               <BookOpen className="w-4 h-4 text-indigo-600" />
               <span>📖 考点精要速览 (先学)</span>
+            </button>
+          )}
+
+          {onAskAI && (
+            <button
+              type="button"
+              onClick={() => onAskAI(focus.knowledgeId, focus.knowledgeName)}
+              className="flex-1 sm:flex-none py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-purple-200 bg-purple-50/80 text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all cursor-pointer min-h-[44px]"
+            >
+              <Bot className="w-4 h-4 text-purple-600" />
+              <span>🤖 问问 AI</span>
             </button>
           )}
 

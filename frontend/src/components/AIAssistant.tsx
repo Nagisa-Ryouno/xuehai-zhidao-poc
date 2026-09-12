@@ -9,10 +9,21 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronUp,
+  CheckCircle2,
+  Compass,
+  ArrowRight,
+  BookOpen,
+  Target,
+  TrendingUp,
+  RotateCw,
+  Lightbulb,
 } from 'lucide-react';
 import {
   postCompanionStudy,
   resetCompanionSession,
+  getQuickCheck,
+  submitQuickCheck,
+  recordLearningEvent,
 } from '../api';
 import type {
   CompanionMode,
@@ -20,6 +31,10 @@ import type {
   CompanionStudyResponse,
   CompanionContextMetadata,
   LearningContext,
+  CompanionSuggestedAction,
+  QuickCheckQuestion,
+  QuickCheckResponse,
+  LearningActionResultResponse,
 } from '../types';
 
 interface AIAssistantProps {
@@ -33,8 +48,12 @@ interface AIAssistantProps {
     questionId?: string;
     message?: string;
   } | null;
+  latestActionResult?: LearningActionResultResponse | null;
   onNavigateToKnowledge?: (knowledgeId: string) => void;
   onNavigateToQuiz?: (knowledgeId: string) => void;
+  onNavigateToConcept?: (knowledgeId: string) => void;
+  onNavigateToProgress?: () => void;
+  onNavigateToWrongAnswers?: () => void;
 }
 
 interface DisplayMessage {
@@ -45,6 +64,9 @@ interface DisplayMessage {
   mode?: CompanionMode;
   context?: CompanionContextMetadata;
   suggested_actions?: string[];
+  guided_actions?: CompanionSuggestedAction[];
+  quick_check?: QuickCheckQuestion;
+  action_result?: LearningActionResultResponse;
   referenced_facts?: string[];
 }
 
@@ -83,7 +105,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   studentName,
   isOnline,
   initialContext,
+  latestActionResult,
+  onNavigateToKnowledge,
   onNavigateToQuiz,
+  onNavigateToConcept,
+  onNavigateToProgress,
+  onNavigateToWrongAnswers,
 }) => {
   const [activeMode, setActiveMode] = useState<CompanionMode>(
     initialContext?.mode || 'concept_explain'
@@ -103,6 +130,10 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const [activeContextMeta, setActiveContextMeta] = useState<CompanionContextMetadata | null>(null);
   const [showFactsMap, setShowFactsMap] = useState<Record<string, boolean>>({});
 
+  // Quick Check 交互状态
+  const [quickCheckAnswers, setQuickCheckAnswers] = useState<Record<string, QuickCheckResponse>>({});
+  const [submittingQcId, setSubmittingQcId] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -113,6 +144,21 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
+
+  // 监听外部学习行动完成 (如 Quiz 完成、微卡完成)
+  useEffect(() => {
+    if (latestActionResult) {
+      const reflectionMsg: DisplayMessage = {
+        id: `reflection-${Date.now()}`,
+        role: 'assistant',
+        content: latestActionResult.reflection_text,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        action_result: latestActionResult,
+        guided_actions: latestActionResult.next_actions,
+      };
+      setMessages((prev) => [...prev, reflectionMsg]);
+    }
+  }, [latestActionResult]);
 
   // 发起伴学请求核心流程
   const executeCompanionRequest = useCallback(
@@ -164,13 +210,15 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         }
 
         const assistantDisplayMsg: DisplayMessage = {
-          id: `ai-${Date.now()}`,
+          id: `ai-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           role: 'assistant',
           content: res.answer,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           mode: res.mode,
           context: res.context,
           suggested_actions: res.suggested_actions,
+          guided_actions: res.guided_actions,
+          quick_check: res.quick_check,
           referenced_facts: res.referenced_facts,
         };
 
@@ -187,7 +235,6 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   // 初始化或切换学生时：彻底隔离状态，清空历史，并加载首发精讲
   useEffect(() => {
-    // 取消可能正在进行的请求
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -196,6 +243,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setSessionId(null);
     setErrorMsg(null);
     setActiveContextMeta(null);
+    setQuickCheckAnswers({});
 
     const initialMode = initialContext?.mode || 'concept_explain';
     const initialKid = initialContext?.knowledgeId || 'K01';
@@ -218,7 +266,24 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         abortControllerRef.current.abort();
       }
     };
-  }, [currentStudentId]); // 仅当学生切换时触发完整重置
+  }, [currentStudentId]);
+
+  // 监听外部学习行动结果（微测验提交/概念微卡学习），即时生成导师反思与闭环反馈
+  useEffect(() => {
+    if (!latestActionResult) return;
+    const reflText = latestActionResult.reflection_text || latestActionResult.reflection || '';
+    const newMsg: DisplayMessage = {
+      id: `act-res-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      role: 'assistant',
+      content: reflText,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      mode: activeMode,
+      action_result: latestActionResult,
+      guided_actions: latestActionResult.next_actions || latestActionResult.guided_actions,
+    };
+    setMessages((prev) => [...prev, newMsg]);
+    setTimeout(scrollToBottom, 100);
+  }, [latestActionResult]);
 
   // 模式切换
   const handleModeChange = (newMode: CompanionMode) => {
@@ -235,13 +300,108 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     executeCompanionRequest(activeMode, text);
   };
 
-  // 点击建议行动
-  const handleActionClick = (actionText: string) => {
+  // 点击确定性引导行动 (Sprint 9-B 核心闭环)
+  const handleGuidedActionClick = (action: CompanionSuggestedAction) => {
+    // 异步记录引导行动点击辅助事件 (零生产副作用)
+    recordLearningEvent({
+      student_id: currentStudentId,
+      event_type: 'AI_ACTION_CLICK',
+      knowledge_id: action.target_knowledge_id || activeKnowledgeId,
+      payload: {
+        action_id: action.action_id,
+        action_type: action.action_type,
+        route_destination: action.route_destination,
+      },
+    }).catch(() => {});
+
+    switch (action.action_type) {
+      case 'READ_CONCEPT':
+        if (onNavigateToConcept) {
+          onNavigateToConcept(action.target_knowledge_id || activeKnowledgeId);
+        } else if (onNavigateToKnowledge) {
+          onNavigateToKnowledge(action.target_knowledge_id || activeKnowledgeId);
+        }
+        break;
+      case 'TARGETED_PRACTICE':
+        if (onNavigateToQuiz) {
+          onNavigateToQuiz(action.target_knowledge_id || activeKnowledgeId);
+        }
+        break;
+      case 'VIEW_PROGRESS':
+        if (onNavigateToProgress) {
+          onNavigateToProgress();
+        }
+        break;
+      case 'REVIEW_WRONG_ANSWERS':
+        if (onNavigateToWrongAnswers) {
+          onNavigateToWrongAnswers();
+        }
+        break;
+      case 'CONTINUE_DISCUSSION':
+      default:
+        executeCompanionRequest('conversation', action.description || action.title);
+        break;
+    }
+  };
+
+  // 兼容老版本的简单行动点击
+  const handleLegacyActionClick = (actionText: string) => {
     if (actionText.includes('微测验') && onNavigateToQuiz && activeKnowledgeId) {
       onNavigateToQuiz(activeKnowledgeId);
       return;
     }
+    if (actionText.includes('微卡') && onNavigateToConcept && activeKnowledgeId) {
+      onNavigateToConcept(activeKnowledgeId);
+      return;
+    }
     executeCompanionRequest('conversation', `请导师深入指导：${actionText}`);
+  };
+
+  // 提交微理解测验 (Quick Check)
+  const handleSelectQuickCheckOption = async (
+    question: QuickCheckQuestion,
+    selectedOptionId: string
+  ) => {
+    if (submittingQcId || quickCheckAnswers[question.question_id]) return;
+    setSubmittingQcId(question.question_id);
+    try {
+      const res = await submitQuickCheck({
+        student_id: currentStudentId,
+        knowledge_id: question.knowledge_id,
+        question_id: question.question_id,
+        selected_option: selectedOptionId,
+      });
+      setQuickCheckAnswers((prev) => ({
+        ...prev,
+        [question.question_id]: res,
+      }));
+    } catch (err) {
+      console.error('Quick check submit failed:', err);
+    } finally {
+      setSubmittingQcId(null);
+    }
+  };
+
+  // 手工调出微理解自测题
+  const handleTriggerQuickCheck = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const qc = await getQuickCheck(activeKnowledgeId);
+      const qcMsg: DisplayMessage = {
+        id: `qc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        role: 'assistant',
+        content: `针对「${activeContextMeta?.knowledge_name || activeKnowledgeId}」，导师为你准备了一道微理解自测题（本测验为纯理解自测，零生产副作用，不写入正式档案与成绩）：`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        mode: 'concept_explain',
+        quick_check: qc,
+      };
+      setMessages((prev) => [...prev, qcMsg]);
+    } catch {
+      setErrorMsg('获取微理解检测题失败，请检查网络后重试');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 重置当前会话
@@ -252,6 +412,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       setMessages([]);
       setSessionId(null);
       setErrorMsg(null);
+      setQuickCheckAnswers({});
       executeCompanionRequest(activeMode, '老师好，我们重新开始讨论。');
     } catch {
       setMessages([]);
@@ -266,7 +427,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const isOverLimit = inputMessage.length > 2000;
 
   return (
-    <div className="flex flex-col h-[750px] bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden shadow-sm" data-testid="ai-companion-assistant">
+    <div className="flex flex-col h-[780px] bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden shadow-sm" data-testid="ai-companion-assistant">
       {/* 顶部状态与安全隔离声明栏 */}
       <div className="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -297,8 +458,20 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           </div>
         </div>
 
-        {/* 安全边界标签与重置按钮 */}
+        {/* 顶部快捷操作与状态标签 */}
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleTriggerQuickCheck}
+            disabled={isLoading}
+            className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer disabled:opacity-50"
+            title="调出当前知识点的即时微理解自测题"
+            data-testid="trigger-quick-check-btn"
+          >
+            <Lightbulb className="w-3.5 h-3.5 text-indigo-600" />
+            <span>考点微检验</span>
+          </button>
+
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
             <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`} />
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -350,6 +523,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           const isFactsOpen = showFactsMap[msg.id];
+          const qc = msg.quick_check;
+          const qcResult = qc ? quickCheckAnswers[qc.question_id] : undefined;
+          const actResult = msg.action_result;
 
           return (
             <div
@@ -368,7 +544,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
               </div>
 
               {/* 消息体 */}
-              <div className={`max-w-[85%] space-y-2.5 ${isUser ? 'items-end' : 'items-start'}`}>
+              <div className={`max-w-[88%] space-y-3 ${isUser ? 'items-end' : 'items-start'}`}>
+                {/* 主气泡 */}
                 <div
                   className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                     isUser
@@ -380,6 +557,48 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                   <div className="whitespace-pre-wrap font-sans">
                     {msg.content}
                   </div>
+
+                  {/* 学习行动反思卡片 (Sprint 9-B 闭环结果) */}
+                  {actResult && (
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50/70 to-slate-50 border border-indigo-200/80 space-y-3 mt-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Target className="w-4 h-4 text-indigo-600" />
+                          <span className="font-bold text-slate-800 text-xs">
+                            学情状态：{actResult.knowledge_name} ({actResult.knowledge_id})
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+                          {actResult.mastery_state_text}
+                        </span>
+                      </div>
+
+                      {/* 掌握度变化指示条 */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-slate-600">
+                          <span>行动前掌握度：{(actResult.before_mastery * 100).toFixed(1)}%</span>
+                          <span>行动后掌握度：<strong className="text-indigo-700">{(actResult.after_mastery * 100).toFixed(1)}%</strong></span>
+                        </div>
+                        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, Math.max(0, actResult.after_mastery * 100))}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400">
+                          <span>
+                            净变化：
+                            <span className={actResult.mastery_delta >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'}>
+                              {actResult.mastery_delta >= 0 ? `+${(actResult.mastery_delta * 100).toFixed(1)}%` : `${(actResult.mastery_delta * 100).toFixed(1)}%`}
+                            </span>
+                          </span>
+                          {actResult.consecutive_incorrect > 0 && (
+                            <span className="text-amber-600">连续未达标: {actResult.consecutive_incorrect} 次</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* 导师引用的权威事实依据折叠抽屉 */}
                   {!isUser && msg.referenced_facts && msg.referenced_facts.length > 0 && (
@@ -412,15 +631,144 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                   )}
                 </div>
 
-                {/* 导师建议的下一步动作标签 */}
-                {!isUser && msg.suggested_actions && msg.suggested_actions.length > 0 && (
+                {/* 交互式微理解测验小部件 (Sprint 9-B Quick Check) */}
+                {qc && (
+                  <div className="p-4 rounded-2xl bg-white border border-purple-200 shadow-xs space-y-3" data-testid="quick-check-widget">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900">
+                        <Lightbulb className="w-4 h-4 text-purple-600" />
+                        <span>考点微理解快速自测</span>
+                      </div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/60">
+                        零生产副作用 · 纯理解自检
+                      </span>
+                    </div>
+
+                    <p className="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed">
+                      {qc.stem}
+                    </p>
+
+                    {/* 选项组 */}
+                    <div className="space-y-2">
+                      {qc.options.map((opt) => {
+                        const isAnswered = !!qcResult;
+                        const isCorrectOpt = qcResult && opt.id === qcResult.correct_option;
+
+                        let optBtnStyle = 'bg-slate-50 hover:bg-purple-50/50 border-slate-200 text-slate-700';
+                        if (isAnswered) {
+                          if (isCorrectOpt) {
+                            optBtnStyle = 'bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold';
+                          } else {
+                            optBtnStyle = 'bg-slate-50 border-slate-200 text-slate-400 opacity-80';
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            disabled={isAnswered || submittingQcId === qc.question_id}
+                            onClick={() => handleSelectQuickCheckOption(qc, opt.id)}
+                            className={`w-full text-left p-3 rounded-xl border text-xs sm:text-sm flex items-start gap-2.5 transition-all cursor-pointer disabled:cursor-default ${optBtnStyle}`}
+                          >
+                            <span className="w-5 h-5 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                              {opt.id}
+                            </span>
+                            <span className="flex-1">{opt.text}</span>
+                            {isAnswered && isCorrectOpt && (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* 作答反馈结果抽屉 */}
+                    {qcResult && (
+                      <div className={`p-3.5 rounded-xl border space-y-2 text-xs leading-relaxed ${
+                        qcResult.is_correct
+                          ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+                          : 'bg-amber-50/80 border-amber-200 text-amber-900'
+                      }`}>
+                        <div className="flex items-center gap-1.5 font-bold">
+                          {qcResult.is_correct ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              <span>回答正确！直观理解非常扎实。</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="w-4 h-4 text-amber-600" />
+                              <span>回答有误，正确答案是 {qcResult.correct_option}。</span>
+                            </>
+                          )}
+                        </div>
+                        <p className="text-slate-700">{qcResult.explanation}</p>
+                        <div className="pt-1 border-t border-slate-200/50 flex items-center gap-1.5 text-indigo-900 font-medium">
+                          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>核心要点：{qcResult.key_takeaway}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 导师建议行动组 (Sprint 9-B 结构化引导动作) */}
+                {!isUser && msg.guided_actions && msg.guided_actions.length > 0 && (
+                  <div className="space-y-1.5 pt-1" data-testid="companion-guided-actions">
+                    <div className="text-[11px] text-slate-500 font-semibold flex items-center gap-1">
+                      <Compass className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>导师建议的下一步确定性行动：</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {msg.guided_actions.map((act) => {
+                        let IconComponent = Target;
+                        if (act.action_type === 'READ_CONCEPT') IconComponent = BookOpen;
+                        if (act.action_type === 'TARGETED_PRACTICE') IconComponent = Target;
+                        if (act.action_type === 'VIEW_PROGRESS') IconComponent = TrendingUp;
+                        if (act.action_type === 'REVIEW_WRONG_ANSWERS') IconComponent = RotateCw;
+
+                        return (
+                          <button
+                            key={act.action_id}
+                            type="button"
+                            onClick={() => handleGuidedActionClick(act)}
+                            className="p-3 rounded-xl bg-white hover:bg-indigo-50/50 border border-slate-200 hover:border-indigo-300 text-left transition-all cursor-pointer shadow-2xs group flex flex-col justify-between"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 group-hover:text-indigo-700">
+                                <IconComponent className="w-4 h-4 text-indigo-600 shrink-0" />
+                                <span>{act.title}</span>
+                              </div>
+                              {act.badge && (
+                                <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
+                                  {act.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                              {act.description}
+                            </p>
+                            <div className="mt-2 text-[10px] font-bold text-indigo-600 flex items-center gap-1">
+                              <span>立即前往</span>
+                              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 兼容旧版简单建议行动 */}
+                {!isUser && (!msg.guided_actions || msg.guided_actions.length === 0) && msg.suggested_actions && msg.suggested_actions.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     <span className="text-[11px] text-slate-400 font-medium">建议行动：</span>
                     {msg.suggested_actions.map((action, idx) => (
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => handleActionClick(action)}
+                        onClick={() => handleLegacyActionClick(action)}
                         className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors cursor-pointer"
                       >
                         {action}

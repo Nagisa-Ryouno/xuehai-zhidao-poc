@@ -23,6 +23,8 @@ from gateway.learning.companion.context import (
     CompanionContextBuilder,
     default_companion_context_builder,
 )
+from gateway.learning.companion.events import record_companion_event
+from gateway.learning.companion.guided_actions import DeterministicActionBuilder
 from gateway.learning.companion.models import (
     CompanionChatMessage,
     CompanionContextMetadata,
@@ -31,6 +33,11 @@ from gateway.learning.companion.models import (
     CompanionSession,
     CompanionStudyRequest,
     CompanionStudyResponse,
+    CompanionSuggestedAction,
+    LearningActionResultRequest,
+    LearningActionResultResponse,
+    QuickCheckQuestion,
+    QuickCheckResponse,
 )
 from gateway.learning.companion.prompt import (
     build_system_prompt,
@@ -40,6 +47,8 @@ from gateway.learning.companion.prompt import (
     format_wrong_answer_review_offline,
     is_potential_injection,
 )
+from gateway.learning.companion.quick_check import default_quick_check_service
+from gateway.learning.companion.reflection import default_action_reflection_service
 
 logger = logging.getLogger("xuehai.companion")
 
@@ -52,6 +61,9 @@ class CompanionService:
         context_builder: Optional[CompanionContextBuilder] = None,
     ):
         self.context_builder = context_builder or default_companion_context_builder
+        self.action_builder = DeterministicActionBuilder()
+        self.quick_check_service = default_quick_check_service
+        self.reflection_service = default_action_reflection_service
         # 内存态会话管理，以 session_id 为主键
         self._sessions: Dict[str, CompanionSession] = {}
         # 学生最新活跃会话映射：student_id -> session_id
@@ -205,6 +217,36 @@ class CompanionService:
         if len(session.messages) > 10:
             session.messages = session.messages[-10:]
 
+        # 构建确定性 Guided Actions
+        wrong_resp = default_analytics_service.get_student_wrong_answers(student_id)
+        has_unresolved_wrong = False
+        if wrong_resp:
+            has_unresolved_wrong = any(
+                w.knowledge_id == meta.knowledge_id for w in wrong_resp.wrong_answers
+            )
+
+        guided_actions = self.action_builder.build_actions(
+            student_id=student_id,
+            knowledge_id=meta.knowledge_id or "K01",
+            mastery=meta.mastery,
+            has_unresolved_wrong=has_unresolved_wrong,
+            question_id=meta.question_id,
+            knowledge_name=meta.knowledge_name,
+        )
+
+        # 概念精讲模式下自动挂接轻量快速思维检查
+        quick_check = None
+        if mode == CompanionMode.CONCEPT_EXPLAIN and meta.knowledge_id:
+            quick_check = self.quick_check_service.get_quick_check(meta.knowledge_id)
+
+        learning_state = {
+            "knowledge_id": meta.knowledge_id,
+            "knowledge_name": meta.knowledge_name,
+            "mastery": meta.mastery,
+            "status": meta.mastery_status,
+            "is_mastered": (meta.mastery is not None and meta.mastery >= 0.80),
+        }
+
         safety = CompanionSafetyMetadata(
             allow_production_decision=False,
             sanitized=True,
@@ -220,8 +262,66 @@ class CompanionService:
             context=meta,
             safety=safety,
             suggested_actions=suggested_actions,
+            guided_actions=guided_actions,
+            learning_state=learning_state,
+            quick_check=quick_check,
             provider="offline",
             referenced_facts=referenced,
+        )
+
+    def get_quick_check(self, knowledge_id: str) -> Optional[QuickCheckQuestion]:
+        """获取指定考点的快速思维检查试题"""
+        return self.quick_check_service.get_quick_check(knowledge_id)
+
+    def evaluate_quick_check(
+        self, student_id: str, check_id: str, knowledge_id: str, selected_option: str
+    ) -> QuickCheckResponse:
+        """评估学生快速思维检查，记录辅导日志，绝不更新 BKT"""
+        res = self.quick_check_service.evaluate_quick_check(
+            student_id, check_id, knowledge_id, selected_option
+        )
+        try:
+            record_companion_event(
+                "AI_QUICK_CHECK",
+                student_id,
+                knowledge_id,
+                {
+                    "check_id": check_id,
+                    "selected": selected_option,
+                    "is_correct": res.is_correct,
+                },
+            )
+        except Exception as e:
+            logger.warning(f"Failed to record AI_QUICK_CHECK: {e}")
+        return res
+
+    def reflect_action_result(
+        self, request: LearningActionResultRequest
+    ) -> LearningActionResultResponse:
+        """反思学生完成的真实学习行动结果"""
+        return self.reflection_service.reflect_action_result(request)
+
+    def get_student_guided_actions(
+        self, student_id: str, knowledge_id: Optional[str] = None
+    ) -> List[CompanionSuggestedAction]:
+        """按需获取学生当前考点的确定性 Guided Actions"""
+        kid = knowledge_id or "K01"
+        progress = default_analytics_service.get_student_progress(student_id)
+        mastery = None
+        if progress:
+            for kp in progress.knowledge_point_masteries:
+                if kp.knowledge_id == kid:
+                    mastery = float(kp.mastery)
+                    break
+        wrong_resp = default_analytics_service.get_student_wrong_answers(student_id)
+        has_wrong = False
+        if wrong_resp:
+            has_wrong = any(w.knowledge_id == kid for w in wrong_resp.wrong_answers)
+        return self.action_builder.build_actions(
+            student_id=student_id,
+            knowledge_id=kid,
+            mastery=mastery,
+            has_unresolved_wrong=has_wrong,
         )
 
 

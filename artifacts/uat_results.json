@@ -1,15 +1,7 @@
 {
-  "sprint": "Sprint 9-A",
-  "timestamp": "2026-09-12T09:13:06Z",
+  "sprint": "Sprint 9-B",
+  "timestamp": "2026-09-12T09:53:52Z",
   "console_messages": [
-    {
-      "type": "debug",
-      "text": "[vite] connecting..."
-    },
-    {
-      "type": "debug",
-      "text": "[vite] connected."
-    },
     {
       "type": "debug",
       "text": "[vite] connecting..."
@@ -50,6 +42,16 @@
       "ok": true
     },
     {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "ok": true
+    },
+    {
       "url": "http://127.0.0.1:5173/api/students/S001/progress",
       "status": 200,
       "ok": true
@@ -60,22 +62,12 @@
       "ok": true
     },
     {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "ok": true
-    },
-    {
       "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
       "status": 200,
       "ok": true
     },
     {
       "url": "http://127.0.0.1:5173/api/students/S001/progress",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
       "status": 200,
       "ok": true
     },
@@ -135,37 +127,32 @@
       "ok": true
     },
     {
-      "url": "http://127.0.0.1:5173/api/health",
+      "url": "http://127.0.0.1:5173/api/ai/companion/quick-check/K01",
       "status": 200,
       "ok": true
     },
     {
-      "url": "http://127.0.0.1:5173/api/students",
+      "url": "http://127.0.0.1:5173/api/ai/companion/quick-check",
       "status": 200,
       "ok": true
     },
     {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "url": "http://127.0.0.1:5173/api/learning/events",
       "status": 200,
       "ok": true
     },
     {
-      "url": "http://127.0.0.1:5173/api/health",
+      "url": "http://127.0.0.1:5173/api/quiz/K01",
       "status": 200,
       "ok": true
     },
     {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "url": "http://127.0.0.1:5173/api/quiz/K01",
       "status": 200,
       "ok": true
     },
     {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "url": "http://127.0.0.1:5173/api/quiz/submit",
       "status": 200,
       "ok": true
     },
@@ -175,12 +162,122 @@
       "ok": true
     },
     {
+      "url": "http://127.0.0.1:5173/api/ai/companion/action-result",
+      "status": 200,
+      "ok": true
+    },
+    {
       "url": "http://127.0.0.1:5173/api/students/S001/path-states",
       "status": 200,
       "ok": true
     },
     {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
       "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/ai/companion/action-result",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/ai/companion",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
       "status": 200,
       "ok": true
     },
@@ -196,6 +293,101 @@
     },
     {
       "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/ai/companion",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/ai/companion",
       "status": 200,
       "ok": true
     },
@@ -216,241 +408,6 @@
     },
     {
       "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/health",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/health",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/health",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/health",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/progress",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion/reset",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/ai/companion",
       "status": 200,
       "ok": true
     },
@@ -480,17 +437,17 @@
       "ok": true
     },
     {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S002?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "ok": true
+    },
+    {
       "url": "http://127.0.0.1:5173/api/students/S002/progress",
       "status": 200,
       "ok": true
     },
     {
       "url": "http://127.0.0.1:5173/api/students/S002/wrong-answers",
-      "status": 200,
-      "ok": true
-    },
-    {
-      "url": "http://127.0.0.1:5173/api/path/dynamic/S002?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
       "status": 200,
       "ok": true
     },
@@ -502,17 +459,17 @@
   ],
   "scenarios": {
     "Scenario A_AssistantLanding": "PASS",
-    "Scenario B_ConceptExplain": "PASS",
-    "Scenario C_ReferencedFactsExpanded": "PASS",
-    "Scenario D_AskAIFromFocusCard": "PASS",
-    "Scenario E_WrongAnswerReviewMode": "PASS",
-    "Scenario F_AskAIFromWrongAnswerCard": "PASS",
-    "Scenario G_LearningSummaryMode": "PASS",
-    "Scenario H_AskAISummaryButton": "PASS",
-    "Scenario I_MultiTurnConversation": "PASS",
-    "Scenario J_ActionChipTriggered": "PASS",
-    "Scenario K_CharacterLimitDefense": "PASS",
-    "Scenario L_StudentSwitchIsolation": "PASS"
+    "Scenario B_ConceptExplainActions": "PASS",
+    "Scenario C_QuickCheckRendered": "PASS",
+    "Scenario D_QuickCheckFeedback": "PASS",
+    "Scenario E_TargetedPracticeQuizModal": "PASS",
+    "Scenario F_QuizSubmittedBKTUpdated": "PASS",
+    "Scenario G_ActionResultReflectionBanner": "PASS",
+    "Scenario H_ConceptCardModal": "PASS",
+    "Scenario I_ConceptReflectionFeedback": "PASS",
+    "Scenario J_WrongAnswersNavigation": "PASS",
+    "Scenario K_StudentSwitchIsolation": "PASS",
+    "Scenario L_SafetyOfflineInvariants": "PASS"
   },
   "security_invariants": {
     "allow_production_decision_is_false": true,

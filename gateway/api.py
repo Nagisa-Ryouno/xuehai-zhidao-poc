@@ -102,6 +102,14 @@ from gateway.learning.companion import (
     CompanionStudyRequest,
     CompanionStudyResponse,
     CompanionSession,
+    CompanionSuggestedAction,
+    QuickCheckOption,
+    QuickCheckQuestion,
+    QuickCheckSubmitRequest,
+    QuickCheckResponse,
+    LearningActionResultRequest,
+    LearningActionResultResponse,
+    record_companion_event,
     default_companion_service,
 )
 
@@ -447,6 +455,49 @@ def create_gateway_app() -> FastAPI:
                 detail=f"未找到伴学会话：{session_id}",
             )
         return sess
+
+    # ============================================================
+    # Sprint 9-B: AI Guided Learning & Learning Reflection 端点
+    # ============================================================
+
+    @application.get("/api/ai/companion/quick-check/{knowledge_id}", response_model=QuickCheckQuestion)
+    def get_quick_check_endpoint(knowledge_id: str) -> QuickCheckQuestion:
+        """获取指定考点的轻量快速思维检查题目（零BKT副作用，非正式测验）(Sprint 9-B)"""
+        q = default_companion_service.get_quick_check(knowledge_id)
+        if not q:
+            raise HTTPException(status_code=404, detail=f"未找到考点快速思维检查：{knowledge_id}")
+        return q
+
+    @application.post("/api/ai/companion/quick-check", response_model=QuickCheckResponse)
+    def submit_quick_check_endpoint(req: QuickCheckSubmitRequest) -> QuickCheckResponse:
+        """提交快速思维检查作答，即时获取启发式解析与正式测验验证指引 (Sprint 9-B)"""
+        return default_companion_service.evaluate_quick_check(
+            student_id=req.student_id,
+            check_id=req.check_id,
+            knowledge_id=req.knowledge_id,
+            selected_option=req.selected_option,
+        )
+
+    @application.post("/api/ai/companion/action-result", response_model=LearningActionResultResponse)
+    def post_learning_action_result_endpoint(req: LearningActionResultRequest) -> LearningActionResultResponse:
+        """完成学习行动后向伴学导师上报，AI重新读取真实掌握度并给出复盘与下一步Guided Actions (Sprint 9-B)"""
+        return default_companion_service.reflect_action_result(req)
+
+    @application.get("/api/ai/companion/actions/{student_id}")
+    def get_student_companion_actions_endpoint(
+        student_id: str, knowledge_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """获取指定学生当前考点的确定性 Guided Actions 列表 (Sprint 9-B)"""
+        from app.services.student_service import student_service
+        profile = student_service.get_student_profile(student_id)
+        if not profile and student_id not in DEMO_STUDENTS:
+            raise HTTPException(status_code=404, detail=f"找不到学生：{student_id}")
+        actions = default_companion_service.get_student_guided_actions(student_id, knowledge_id)
+        return {
+            "student_id": student_id,
+            "knowledge_id": knowledge_id,
+            "actions": [a.model_dump() for a in actions],
+        }
 
     @application.get("/api/concept/{knowledge_id}")
     def get_concept_card_endpoint(knowledge_id: str) -> Dict[str, Any]:
@@ -865,15 +916,45 @@ def create_gateway_app() -> FastAPI:
             raise HTTPException(status_code=404, detail=f"找不到学生错题记录：{student_id}")
         return res
 
+    class EventPayloadInput(BaseModel):
+        event_id: Optional[str] = None
+        student_id: str = Field(..., min_length=1)
+        knowledge_id: str = Field(default="K01", min_length=1)
+        event_type: str = Field(..., min_length=1)
+        payload: Dict[str, Any] = Field(default_factory=dict)
+        client_timestamp: Optional[str] = None
+
     @application.post("/api/learning/events")
-    def record_learning_event_endpoint(event_in: LearningEventCreate) -> Dict[str, Any]:
-        """轻量记录非测验类学习行为事件（如 CONCEPT_VIEW 概念微卡浏览）(Sprint 8-C)"""
-        stored = default_event_repository.record_event(event_in)
-        return {
-            "status": "recorded",
-            "event_id": stored.event_id,
-            "server_timestamp": stored.server_timestamp,
-        }
+    def record_learning_event_endpoint(event_in: EventPayloadInput) -> Dict[str, Any]:
+        """轻量记录学习行为与辅学行为日志（如 CONCEPT_VIEW、AI_ACTION_CLICK 等）(Sprint 8-C / 9-B)"""
+        if event_in.event_type in {"AI_ACTION_VIEW", "AI_ACTION_CLICK", "AI_GUIDED_SESSION", "AI_QUICK_CHECK"}:
+            stored = record_companion_event(
+                event_type=event_in.event_type,
+                student_id=event_in.student_id,
+                knowledge_id=event_in.knowledge_id,
+                payload=event_in.payload,
+                client_timestamp=event_in.client_timestamp,
+            )
+            return {
+                "status": "recorded",
+                "event_id": stored["event_id"],
+                "server_timestamp": stored["server_timestamp"],
+            }
+        else:
+            evt_create = LearningEventCreate(
+                event_id=event_in.event_id or f"evt-{uuid.uuid4().hex[:12]}",
+                student_id=event_in.student_id,
+                knowledge_id=event_in.knowledge_id,
+                event_type=event_in.event_type,
+                payload=event_in.payload,
+                client_timestamp=event_in.client_timestamp or datetime.now(timezone.utc).isoformat(),
+            )
+            stored_domain = default_event_repository.record_event(evt_create)
+            return {
+                "status": "recorded",
+                "event_id": stored_domain.event_id,
+                "server_timestamp": stored_domain.server_timestamp,
+            }
 
     @application.get("/api/teacher/overview", response_model=TeacherOverviewResponse)
     def get_teacher_overview_endpoint() -> TeacherOverviewResponse:

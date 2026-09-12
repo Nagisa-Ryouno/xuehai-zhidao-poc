@@ -101,8 +101,199 @@ class CompanionStudyResponse(BaseModel):
     context: CompanionContextMetadata = Field(..., description="本次辅导绑定的客观上下文")
     safety: CompanionSafetyMetadata = Field(default_factory=CompanionSafetyMetadata, description="安全与权限元数据")
     suggested_actions: List[str] = Field(default_factory=list, description="建议的下一步学习行动（仅供参考，不修改正式路线）")
+    guided_actions: List["CompanionSuggestedAction"] = Field(default_factory=list, description="确定性结构化学习行动列表")
+    learning_state: Optional[Dict[str, Any]] = Field(default=None, description="当前客观掌握度状态快照")
+    quick_check: Optional["QuickCheckQuestion"] = Field(default=None, description="内嵌的轻量快速思维检查题目")
     provider: str = Field(default="offline", description="实际响应提供商（offline / mock / real）")
     referenced_facts: List[str] = Field(default_factory=list, description="本次回答所引用的客观系统事实列表")
+
+
+class ActionType(str, Enum):
+    """确定性学习行动白名单类型"""
+    REVIEW_CONCEPT = "review_concept"
+    RETRY_QUIZ = "retry_quiz"
+    CONTINUE_CONVERSATION = "continue_conversation"
+    VIEW_PROGRESS = "view_progress"
+    REVIEW_WRONG_ANSWERS = "review_wrong_answers"
+
+    # 别名兼容
+    READ_CONCEPT = "READ_CONCEPT"
+    TARGETED_PRACTICE = "TARGETED_PRACTICE"
+    CONTINUE_DISCUSSION = "CONTINUE_DISCUSSION"
+
+
+class CompanionSuggestedAction(BaseModel):
+    """确定性推荐行动模型"""
+    model_config = ConfigDict(extra="ignore")
+
+    action_id: str = Field(..., description="行动唯一标识")
+    action_type: ActionType = Field(..., description="行动类型（白名单）")
+    label: str = Field(default="", description="行动按钮展示文本")
+    title: Optional[str] = Field(default=None, description="行动标题（别名）")
+    description: Optional[str] = Field(default=None, description="行动说明")
+    knowledge_id: Optional[str] = Field(default=None, description="目标知识点ID")
+    target_knowledge_id: Optional[str] = Field(default=None, description="目标知识点ID（别名）")
+    question_id: Optional[str] = Field(default=None, description="目标试题ID")
+    target_question_id: Optional[str] = Field(default=None, description="目标试题ID（别名）")
+    route_destination: Optional[str] = Field(default=None, description="跳转目标路径")
+    reason: str = Field(default="", description="客观事实依据（禁止主观AI宣称）")
+    source_reason: Optional[str] = Field(default=None, description="事实依据（别名）")
+    badge: Optional[str] = Field(default=None, description="状态徽章")
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.title is None:
+            self.title = self.label
+        if not self.label and self.title:
+            self.label = self.title
+        if self.description is None:
+            self.description = self.reason
+        if not self.reason and self.description:
+            self.reason = self.description
+        if self.target_knowledge_id is None:
+            self.target_knowledge_id = self.knowledge_id
+        if self.knowledge_id is None and self.target_knowledge_id:
+            self.knowledge_id = self.target_knowledge_id
+        if self.target_question_id is None:
+            self.target_question_id = self.question_id
+        if self.source_reason is None:
+            self.source_reason = self.reason
+        if self.route_destination is None:
+            if self.action_type in {ActionType.REVIEW_CONCEPT, ActionType.READ_CONCEPT}:
+                self.route_destination = f"/student/concept/{self.knowledge_id or 'K01'}"
+            elif self.action_type in {ActionType.RETRY_QUIZ, ActionType.TARGETED_PRACTICE}:
+                self.route_destination = f"/student/quiz/{self.knowledge_id or 'K01'}"
+            elif self.action_type == ActionType.VIEW_PROGRESS:
+                self.route_destination = "/student/profile/progress"
+            elif self.action_type == ActionType.REVIEW_WRONG_ANSWERS:
+                self.route_destination = "/student/profile/wrong-answers"
+            else:
+                self.route_destination = "/student/assistant"
+
+
+class QuickCheckOption(BaseModel):
+    """快速思维检查选项"""
+    model_config = ConfigDict(extra="ignore")
+
+    key: str = Field(..., description="选项标识符，如 A/B/C")
+    id: Optional[str] = Field(default=None, description="选项标识符（别名）")
+    text: str = Field(..., description="选项正文")
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.id is None:
+            self.id = self.key
+
+
+class QuickCheckQuestion(BaseModel):
+    """快速思维检查题目实体（轻量互动，非正式测验）"""
+    model_config = ConfigDict(extra="ignore")
+
+    check_id: str = Field(..., description="快速检查唯一ID")
+    question_id: Optional[str] = Field(default=None, description="题目ID（别名）")
+    knowledge_id: str = Field(..., description="关联考点ID")
+    knowledge_name: str = Field(..., description="关联考点名称")
+    prompt: str = Field(..., description="问题描述")
+    stem: Optional[str] = Field(default=None, description="题干（别名）")
+    options: List[QuickCheckOption] = Field(..., description="选项列表")
+    hint: Optional[str] = Field(default=None, description="启发式思考提示")
+    concept_summary: Optional[str] = Field(default=None, description="考点要点总结")
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.question_id is None:
+            self.question_id = self.check_id
+        if self.stem is None:
+            self.stem = self.prompt
+
+
+class QuickCheckSubmitRequest(BaseModel):
+    """学生提交快速思维检查作答"""
+    model_config = ConfigDict(extra="ignore")
+
+    student_id: str = Field(..., description="学生ID")
+    check_id: Optional[str] = Field(default=None, description="快速检查题目ID")
+    question_id: Optional[str] = Field(default=None, description="题目ID（别名）")
+    knowledge_id: str = Field(..., description="考点ID")
+    selected_option: str = Field(..., description="选中选项键")
+
+    def model_post_init(self, __context: Any) -> None:
+        if not self.check_id and self.question_id:
+            self.check_id = self.question_id
+        elif not self.question_id and self.check_id:
+            self.question_id = self.check_id
+
+
+class QuickCheckResponse(BaseModel):
+    """快速检查判定反馈（零BKT副作用）"""
+    model_config = ConfigDict(extra="ignore")
+
+    check_id: str = Field(..., description="快速检查题目ID")
+    knowledge_id: str = Field(..., description="考点ID")
+    is_correct: bool = Field(..., description="是否正确")
+    correct_option: Optional[str] = Field(default="A", description="正确选项键")
+    explanation: str = Field(..., description="启发式反馈解析")
+    key_takeaway: Optional[str] = Field(default=None, description="核心要点总结")
+    verified_quiz_action: Optional[CompanionSuggestedAction] = Field(
+        default=None, description="引导前往正式测验验证的推荐行动"
+    )
+    suggested_actions: List[CompanionSuggestedAction] = Field(
+        default_factory=list, description="跟进建议行动列表"
+    )
+    safety: CompanionSafetyMetadata = Field(
+        default_factory=CompanionSafetyMetadata, description="安全元数据"
+    )
+
+    def model_post_init(self, __context: Any) -> None:
+        if not self.suggested_actions and self.verified_quiz_action:
+            self.suggested_actions = [self.verified_quiz_action]
+
+
+class LearningActionResultRequest(BaseModel):
+    """学习行动完成后向伴学导师上报真实闭环请求"""
+    model_config = ConfigDict(extra="ignore")
+
+    student_id: str = Field(..., description="学生ID")
+    action_type: str = Field(..., description="完成的行动类型，如 retry_quiz / review_concept")
+    knowledge_id: str = Field(..., description="知识点ID")
+    question_id: Optional[str] = Field(default=None, description="相关题目ID（若有）")
+    result: Optional[str] = Field(default=None, description="客观作答结果，如 correct / incorrect / completed")
+    is_correct: Optional[bool] = Field(default=None, description="作答是否正确")
+    score: Optional[float] = Field(default=None, description="测验得分")
+    session_id: Optional[str] = Field(default=None, description="当前伴学会话ID")
+
+
+class LearningActionResultResponse(BaseModel):
+    """伴学导师对学习行动结果的客观反思与下一步引导响应"""
+    model_config = ConfigDict(extra="ignore")
+
+    session_id: Optional[str] = Field(default=None, description="会话ID")
+    student_id: Optional[str] = Field(default=None, description="学生ID")
+    action_id: Optional[str] = Field(default=None, description="行动ID")
+    action: str = Field(default="", description="本次反思针对的行动")
+    action_type: Optional[str] = Field(default=None, description="行动类型")
+    knowledge_id: Optional[str] = Field(default=None, description="考点ID")
+    knowledge_name: Optional[str] = Field(default=None, description="考点名称")
+    before_mastery: Optional[float] = Field(default=0.20, description="行动前掌握度")
+    after_mastery: Optional[float] = Field(default=0.20, description="行动后掌握度")
+    mastery_delta: Optional[float] = Field(default=0.0, description="掌握度净增量")
+    consecutive_incorrect: Optional[int] = Field(default=0, description="连续答错次数")
+    mastery_state_text: Optional[str] = Field(default="起步阶段", description="掌握度状态文本")
+    reflection: str = Field(default="", description="导师专业复盘与学情反思内容")
+    reflection_text: Optional[str] = Field(default=None, description="反思文案（别名）")
+    guided_actions: List[CompanionSuggestedAction] = Field(
+        default_factory=list, description="下一步确定性学习行动列表"
+    )
+    next_actions: List[CompanionSuggestedAction] = Field(
+        default_factory=list, description="下一步行动列表（别名）"
+    )
+    learning_state: Dict[str, Any] = Field(default_factory=dict, description="系统当前客观掌握度真实状态")
+    safety: CompanionSafetyMetadata = Field(
+        default_factory=CompanionSafetyMetadata, description="安全元数据"
+    )
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.reflection_text is None:
+            self.reflection_text = self.reflection
+        if not self.next_actions and self.guided_actions:
+            self.next_actions = self.guided_actions
 
 
 class CompanionChatMessage(BaseModel):

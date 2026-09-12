@@ -28,6 +28,12 @@ import type {
   CompanionStudyRequest,
   CompanionStudyResponse,
   CompanionSession,
+  QuickCheckQuestion,
+  QuickCheckSubmitRequest,
+  QuickCheckResponse,
+  LearningActionResultRequest,
+  LearningActionResultResponse,
+  CompanionSuggestedAction,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -458,6 +464,52 @@ export async function getCompanionSession(
   sessionId: string
 ): Promise<CompanionSession> {
   return request<CompanionSession>(`/ai/companion/sessions/${sessionId}`);
+}
+
+/**
+ * Sprint 9-B: 获取针对考点的微理解检测题 (只读轻量交互)
+ */
+export async function getQuickCheck(
+  knowledgeId: string
+): Promise<QuickCheckQuestion> {
+  return request<QuickCheckQuestion>(`/ai/companion/quick-check/${encodeURIComponent(knowledgeId)}`);
+}
+
+/**
+ * Sprint 9-B: 提交微理解检测作答 (不写 BKT / 不记 QUESTION_ATTEMPT)
+ */
+export async function submitQuickCheck(
+  req: QuickCheckSubmitRequest
+): Promise<QuickCheckResponse> {
+  return request<QuickCheckResponse>('/ai/companion/quick-check', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}
+
+/**
+ * Sprint 9-B: 提交学习行动完成结果并获得 AI 结果反思
+ */
+export async function postLearningActionResult(
+  req: LearningActionResultRequest
+): Promise<LearningActionResultResponse> {
+  return request<LearningActionResultResponse>('/ai/companion/action-result', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}
+
+/**
+ * Sprint 9-B: 获取学生当前的智能伴学建议行动清单
+ */
+export async function getCompanionActions(
+  studentId: string,
+  knowledgeId?: string
+): Promise<{ student_id: string; actions: CompanionSuggestedAction[] }> {
+  const query = knowledgeId ? `?knowledge_id=${encodeURIComponent(knowledgeId)}` : '';
+  return request<{ student_id: string; actions: CompanionSuggestedAction[] }>(
+    `/ai/companion/actions/${encodeURIComponent(studentId)}${query}`
+  );
 }
 
 

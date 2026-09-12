@@ -689,6 +689,9 @@ export interface CompanionStudyResponse {
   suggested_actions: string[];
   provider: string;
   referenced_facts: string[];
+  guided_actions?: CompanionSuggestedAction[];
+  learning_state?: Record<string, any>;
+  quick_check?: QuickCheckQuestion;
 }
 
 export interface CompanionChatMessage {
@@ -705,6 +708,81 @@ export interface CompanionSession {
   created_at: string;
 }
 
+// ============================================================
+// Phase 5 / Sprint 9-B: AI 引导学习与行动反思契约类型
+// ============================================================
 
+export type ActionType =
+  | 'READ_CONCEPT'
+  | 'TARGETED_PRACTICE'
+  | 'VIEW_PROGRESS'
+  | 'REVIEW_WRONG_ANSWERS'
+  | 'CONTINUE_DISCUSSION';
 
+export interface CompanionSuggestedAction {
+  action_id: string;
+  action_type: ActionType;
+  title: string;
+  description: string;
+  target_knowledge_id?: string;
+  target_question_id?: string;
+  route_destination: string;
+  source_reason: string;
+  badge?: string;
+}
 
+export interface QuickCheckOption {
+  id: string;
+  text: string;
+}
+
+export interface QuickCheckQuestion {
+  question_id: string;
+  knowledge_id: string;
+  stem: string;
+  options: QuickCheckOption[];
+  concept_summary: string;
+}
+
+export interface QuickCheckSubmitRequest {
+  student_id: string;
+  knowledge_id: string;
+  question_id: string;
+  selected_option: string;
+}
+
+export interface QuickCheckResponse {
+  is_correct: boolean;
+  correct_option: string;
+  explanation: string;
+  key_takeaway: string;
+  suggested_actions: CompanionSuggestedAction[];
+}
+
+export interface LearningActionResultRequest {
+  student_id: string;
+  action_id: string;
+  action_type: ActionType;
+  knowledge_id: string;
+  question_id?: string;
+  is_correct?: boolean;
+  score?: number;
+}
+
+export interface LearningActionResultResponse {
+  session_id: string;
+  action_id: string;
+  action_type: ActionType;
+  knowledge_id: string;
+  knowledge_name: string;
+  before_mastery: number;
+  after_mastery: number;
+  mastery_delta: number;
+  consecutive_incorrect: number;
+  mastery_state_text: string;
+  reflection_text: string;
+  reflection?: string;
+  next_actions: CompanionSuggestedAction[];
+  guided_actions?: CompanionSuggestedAction[];
+  offline_mode: boolean;
+}

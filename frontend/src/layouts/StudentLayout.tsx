@@ -28,6 +28,7 @@ import type {
   StudentProgressResponse,
   WrongAnswerReviewResponse,
   CompanionMode,
+  LearningActionResultResponse,
 } from '../types';
 import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
@@ -44,6 +45,7 @@ import {
   getStudentProgress,
   getStudentWrongAnswers,
   recordLearningEvent,
+  postLearningActionResult,
   type StudentInitRequest,
 } from '../api';
 
@@ -105,6 +107,9 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     message?: string;
   } | null>(null);
 
+  // 学习行动完成与反思通知状态 (Sprint 9-B)
+  const [latestActionResult, setLatestActionResult] = useState<LearningActionResultResponse | null>(null);
+
   const fetchDynamicRoute = useCallback(async () => {
     try {
       const goal = dashboardData?.profile?.student?.learning_goal;
@@ -149,6 +154,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     setWrongAnswerData(null);
     setDynamicRoute(null);
     setActiveCompanionContext(null);
+    setLatestActionResult(null);
   }, [studentId]);
 
   const handleStartQuiz = useCallback(
@@ -176,9 +182,21 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   );
 
   const handleCloseConceptCard = useCallback(() => {
+    if (activeConceptCard) {
+      postLearningActionResult({
+        student_id: studentId,
+        action_id: `act-concept-${Date.now()}`,
+        action_type: 'READ_CONCEPT',
+        knowledge_id: activeConceptCard.knowledgeId,
+      })
+        .then((res) => {
+          setLatestActionResult(res);
+        })
+        .catch((err) => console.warn('Companion reflection notification error:', err));
+    }
     setActiveConceptCard(null);
     fetchAnalyticsData();
-  }, [fetchAnalyticsData]);
+  }, [activeConceptCard, studentId, fetchAnalyticsData]);
 
   const handleInitStudentSubmit = useCallback(
     async (data: StudentInitRequest) => {
@@ -198,13 +216,25 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   );
 
   const handleCloseQuiz = useCallback(() => {
+    if (activeQuiz) {
+      postLearningActionResult({
+        student_id: studentId,
+        action_id: `act-quiz-${Date.now()}`,
+        action_type: 'TARGETED_PRACTICE',
+        knowledge_id: activeQuiz.knowledgeId,
+      })
+        .then((res) => {
+          setLatestActionResult(res);
+        })
+        .catch((err) => console.warn('Companion reflection notification error:', err));
+    }
     setActiveQuiz(null);
     fetchDynamicRoute();
     fetchAnalyticsData();
     if (onRefresh) {
       onRefresh();
     }
-  }, [onRefresh, fetchDynamicRoute, fetchAnalyticsData]);
+  }, [activeQuiz, studentId, onRefresh, fetchDynamicRoute, fetchAnalyticsData]);
 
   const handleNextKnowledgePoint = useCallback(
     (nextKnowledgeId: string, nextKnowledgeName: string) => {
@@ -511,12 +541,28 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                     isOnline={isOnline}
                     learningContext={learningContext}
                     initialContext={activeCompanionContext}
+                    latestActionResult={latestActionResult}
                     onNavigateToQuiz={(kid) => {
                       const kpName =
                         dashboardData.profile.weak_knowledge_points.find(
                           (w) => w.knowledge_id === kid
                         )?.knowledge_name || kid;
                       handleStartQuiz(kid, kpName);
+                    }}
+                    onNavigateToConcept={(kid) => {
+                      const kpName =
+                        dashboardData.profile.weak_knowledge_points.find(
+                          (w) => w.knowledge_id === kid
+                        )?.knowledge_name || kid;
+                      handleViewConceptCard(kid, kpName);
+                    }}
+                    onNavigateToProgress={() => {
+                      navigate('/student/profile');
+                      setProfileSubTab('progress');
+                    }}
+                    onNavigateToWrongAnswers={() => {
+                      navigate('/student/profile');
+                      setProfileSubTab('wrong_answers');
                     }}
                   />
                 </div>

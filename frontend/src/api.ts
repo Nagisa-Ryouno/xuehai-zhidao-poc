@@ -34,6 +34,11 @@ import type {
   LearningActionResultRequest,
   LearningActionResultResponse,
   CompanionSuggestedAction,
+  ResourceType,
+  LearningResource,
+  RecommendedResourcesResponse,
+  ResourceListResponse,
+  ResourceEventPayload,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -511,6 +516,55 @@ export async function getCompanionActions(
     `/ai/companion/actions/${encodeURIComponent(studentId)}${query}`
   );
 }
+
+/**
+ * Sprint 9-C: 获取指定考点的全量学习材料列表
+ */
+export async function getResourcesByKnowledge(
+  knowledgeId: string,
+  resourceType?: ResourceType
+): Promise<ResourceListResponse> {
+  const query = resourceType ? `?resource_type=${encodeURIComponent(resourceType)}` : '';
+  return request<ResourceListResponse>(`/learning/resources/${encodeURIComponent(knowledgeId)}${query}`);
+}
+
+/**
+ * Sprint 9-C: 获取学生当前考点的自适应推荐学习资源清单
+ */
+export async function getRecommendedResources(
+  studentId: string,
+  knowledgeId?: string
+): Promise<RecommendedResourcesResponse> {
+  const query = knowledgeId ? `?knowledge_id=${encodeURIComponent(knowledgeId)}` : '';
+  return request<RecommendedResourcesResponse>(
+    `/learning/resources/recommended/${encodeURIComponent(studentId)}${query}`
+  );
+}
+
+/**
+ * Sprint 9-C: 获取单个学习资源详情
+ */
+export async function getResourceItem(
+  resourceId: string
+): Promise<LearningResource> {
+  return request<LearningResource>(`/learning/resources/item/${encodeURIComponent(resourceId)}`);
+}
+
+/**
+ * Sprint 9-C: 记录学习资源交互事件 (物理隔离写入 resource_events.jsonl)
+ */
+export async function recordResourceEvent(
+  payload: ResourceEventPayload
+): Promise<{ status: string; event_id: string; server_timestamp: string }> {
+  return request<{ status: string; event_id: string; server_timestamp: string }>(
+    '/learning/resources/events',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
 
 
 

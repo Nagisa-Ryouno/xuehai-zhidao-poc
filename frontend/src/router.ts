@@ -10,7 +10,7 @@
 
 export type AppRole = 'student' | 'teacher';
 
-export type StudentSubRoute = 'tasks' | 'graph' | 'profile' | 'assistant';
+export type StudentSubRoute = 'tasks' | 'resources' | 'graph' | 'profile' | 'assistant';
 
 export type TeacherSubRoute = 'dashboard';
 
@@ -68,7 +68,8 @@ export function resolveRoute(pathname: string): RouteResolution {
   if (cleanPath.startsWith('/student/')) {
     const sub = cleanPath.replace('/student/', '').split('/')[0];
     let matchedSub: StudentSubRoute = 'tasks';
-    if (sub === 'graph') matchedSub = 'graph';
+    if (sub === 'resources') matchedSub = 'resources';
+    else if (sub === 'graph') matchedSub = 'graph';
     else if (sub === 'profile') matchedSub = 'profile';
     else if (sub === 'assistant') matchedSub = 'assistant';
     else matchedSub = 'tasks';

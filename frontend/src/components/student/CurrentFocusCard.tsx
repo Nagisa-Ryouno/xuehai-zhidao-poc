@@ -28,6 +28,7 @@ interface CurrentFocusCardProps {
   onViewConceptCard?: (knowledgeId: string, knowledgeName: string) => void;
   onAskAI?: (knowledgeId: string, knowledgeName: string) => void;
   onViewGraph?: () => void;
+  onViewResources?: (knowledgeId: string) => void;
 }
 
 export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
@@ -37,6 +38,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   onViewConceptCard,
   onAskAI,
   onViewGraph,
+  onViewResources,
 }) => {
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
 
@@ -301,7 +303,18 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
               className="flex-1 sm:flex-none py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-indigo-200 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 transition-all cursor-pointer min-h-[44px]"
             >
               <BookOpen className="w-4 h-4 text-indigo-600" />
-              <span>📖 考点精要速览 (先学)</span>
+              <span>📖 考点精要速览</span>
+            </button>
+          )}
+
+          {onViewResources && (
+            <button
+              type="button"
+              onClick={() => onViewResources(focus.knowledgeId)}
+              className="flex-1 sm:flex-none py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-amber-200 bg-amber-50/80 text-amber-800 hover:bg-amber-100 hover:text-amber-950 transition-all cursor-pointer min-h-[44px]"
+            >
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span>📚 推荐学习材料</span>
             </button>
           )}
 

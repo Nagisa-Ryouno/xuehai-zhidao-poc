@@ -786,3 +786,59 @@ export interface LearningActionResultResponse {
   guided_actions?: CompanionSuggestedAction[];
   offline_mode: boolean;
 }
+
+// -----------------------------------------------------------------------------
+// Phase 5 / Sprint 9-C: Learning Resource Hub & Resource-aware Adaptive Learning
+// -----------------------------------------------------------------------------
+export type ResourceType = 'CONCEPT_CARD' | 'EXAMPLE' | 'PRACTICE' | 'DOCUMENT' | 'VIDEO';
+
+export interface LearningResource {
+  resource_id: string;
+  knowledge_id: string;
+  resource_type: ResourceType;
+  title: string;
+  description: string;
+  source: string;
+  source_url?: string | null;
+  estimated_minutes: number;
+  difficulty: number;
+  summary?: string | null;
+  content_ref?: string | null;
+  is_external: boolean;
+  priority: number;
+  metadata?: Record<string, any>;
+}
+
+export interface ResourceRecommendation {
+  resource: LearningResource;
+  rank: number;
+  recommended_reason: string;
+  reason_category: string;
+  suggested_order: number;
+}
+
+export interface RecommendedResourcesResponse {
+  student_id: string;
+  knowledge_id: string;
+  mastery: number;
+  case_code: string;
+  recommendations: ResourceRecommendation[];
+  reason_summary: string;
+}
+
+export interface ResourceListResponse {
+  knowledge_id: string;
+  total: number;
+  resources: LearningResource[];
+}
+
+export interface ResourceEventPayload {
+  student_id: string;
+  resource_id: string;
+  knowledge_id: string;
+  event_type: 'RESOURCE_VIEW' | 'RESOURCE_OPEN' | 'RESOURCE_COMPLETE' | 'RESOURCE_EXTERNAL_OPEN';
+  duration_seconds?: number;
+  metadata?: Record<string, any>;
+  client_timestamp?: string;
+}
+

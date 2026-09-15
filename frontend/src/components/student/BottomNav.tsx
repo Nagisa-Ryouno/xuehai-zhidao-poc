@@ -1,10 +1,11 @@
 import React from 'react';
-import { CalendarCheck, Network, UserCheck, Bot } from 'lucide-react';
+import { CalendarCheck, BookOpen, Network, UserCheck, Bot } from 'lucide-react';
 import { useApp } from '../../context/useApp';
 import { STUDENT_NAV_TABS, BOTTOM_NAV_CONFIG } from './navConfig';
 
 const ICON_MAP = {
   CalendarCheck,
+  BookOpen,
   Network,
   UserCheck,
   Bot,

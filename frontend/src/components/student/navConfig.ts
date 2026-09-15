@@ -3,7 +3,7 @@
  * 学生端移动优先 4-Tab 导航配置与规范常量
  */
 
-export type StudentTabId = 'tasks' | 'graph' | 'profile' | 'assistant';
+export type StudentTabId = 'tasks' | 'resources' | 'graph' | 'profile' | 'assistant';
 
 export interface StudentNavTab {
   id: StudentTabId;
@@ -12,6 +12,14 @@ export interface StudentNavTab {
   iconName: string;
   description: string;
 }
+
+export const RESOURCE_TAB_INFO: StudentNavTab = {
+  id: 'resources',
+  label: '学习资源',
+  path: '/student/resources',
+  iconName: 'BookOpen',
+  description: '考点精要微卡、典型例题与针对性练习',
+};
 
 export const STUDENT_NAV_TABS: StudentNavTab[] = [
   {
@@ -50,6 +58,7 @@ export const STUDENT_NAV_TABS: StudentNavTab[] = [
 export function getActiveStudentTab(pathname: string): StudentTabId {
   const clean = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
+  if (clean === '/student/resources') return 'resources';
   if (clean === '/student/graph') return 'graph';
   if (clean === '/student/profile') return 'profile';
   if (clean === '/student/assistant') return 'assistant';

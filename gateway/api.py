@@ -112,6 +112,20 @@ from gateway.learning.companion import (
     record_companion_event,
     default_companion_service,
 )
+from gateway.learning.resources import (
+    ResourceType,
+    LearningResource,
+    ResourceRecommendation,
+    RecommendedResourcesResponse,
+    ResourceListResponse,
+    ResourceEventPayload,
+    VALID_RESOURCE_EVENT_TYPES,
+    get_resource_by_id,
+    get_resources_by_knowledge,
+    default_resource_resolver,
+    record_resource_event,
+)
+from gateway.content.concept_cards import CONCEPT_CARDS
 
 logger = logging.getLogger("xuehai.gateway")
 
@@ -940,6 +954,22 @@ def create_gateway_app() -> FastAPI:
                 "event_id": stored["event_id"],
                 "server_timestamp": stored["server_timestamp"],
             }
+        elif event_in.event_type in VALID_RESOURCE_EVENT_TYPES:
+            dur = event_in.payload.get("duration_seconds")
+            stored = record_resource_event(
+                student_id=event_in.student_id,
+                resource_id=event_in.payload.get("resource_id", f"res_{event_in.knowledge_id.lower()}"),
+                knowledge_id=event_in.knowledge_id,
+                event_type=event_in.event_type,
+                duration_seconds=dur,
+                metadata=event_in.payload,
+                client_timestamp=event_in.client_timestamp,
+            )
+            return {
+                "status": "recorded",
+                "event_id": stored["event_id"],
+                "server_timestamp": stored["server_timestamp"],
+            }
         else:
             evt_create = LearningEventCreate(
                 event_id=event_in.event_id or f"evt-{uuid.uuid4().hex[:12]}",
@@ -955,6 +985,73 @@ def create_gateway_app() -> FastAPI:
                 "event_id": stored_domain.event_id,
                 "server_timestamp": stored_domain.server_timestamp,
             }
+
+    # -------------------------------------------------------------------------
+    # 学习资源中心端点 (Sprint 9-C: Learning Resource Hub Endpoints)
+    # -------------------------------------------------------------------------
+    @application.post("/api/learning/resources/events")
+    def record_resource_event_endpoint(payload: ResourceEventPayload) -> Dict[str, Any]:
+        """记录学习资源辅助交互日志（物理隔离写入 data/resource_events.jsonl）(Sprint 9-C)"""
+        stored = record_resource_event(
+            student_id=payload.student_id,
+            resource_id=payload.resource_id,
+            knowledge_id=payload.knowledge_id,
+            event_type=payload.event_type,
+            duration_seconds=payload.duration_seconds,
+            metadata=payload.metadata,
+            client_timestamp=payload.client_timestamp,
+        )
+        return {
+            "status": "recorded",
+            "event_id": stored["event_id"],
+            "server_timestamp": stored["server_timestamp"],
+        }
+
+    @application.get("/api/learning/resources/recommended/{student_id}", response_model=RecommendedResourcesResponse)
+    def get_recommended_resources_endpoint(
+        student_id: str,
+        knowledge_id: Optional[str] = None,
+    ) -> RecommendedResourcesResponse:
+        """根据学生当前掌握度与做题状态，确定性输出自适应资源推荐清单 (Sprint 9-C)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到学生档案：{student_id}")
+
+        if knowledge_id and knowledge_id not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"找不到指定考点：{knowledge_id}")
+
+        return default_resource_resolver.resolve(student_id=student_id, knowledge_id=knowledge_id)
+
+    @application.get("/api/learning/resources/item/{resource_id}", response_model=LearningResource)
+    def get_resource_item_endpoint(resource_id: str) -> LearningResource:
+        """获取单个学习资源详情 (Sprint 9-C)"""
+        item = get_resource_by_id(resource_id)
+        if not item:
+            raise HTTPException(status_code=404, detail=f"找不到学习资源：{resource_id}")
+        return item
+
+    @application.get("/api/learning/resources/{knowledge_id}", response_model=ResourceListResponse)
+    def get_knowledge_resources_endpoint(
+        knowledge_id: str,
+        resource_type: Optional[str] = None,
+    ) -> ResourceListResponse:
+        """获取指定考点的全量学习材料列表 (Sprint 9-C)"""
+        if knowledge_id not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"找不到指定考点：{knowledge_id}")
+
+        r_type = None
+        if resource_type:
+            try:
+                r_type = ResourceType(resource_type)
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"不支持的资源类型: {resource_type}")
+
+        resources = get_resources_by_knowledge(knowledge_id, resource_type=r_type)
+        return ResourceListResponse(
+            knowledge_id=knowledge_id,
+            total=len(resources),
+            resources=resources,
+        )
 
     @application.get("/api/teacher/overview", response_model=TeacherOverviewResponse)
     def get_teacher_overview_endpoint() -> TeacherOverviewResponse:

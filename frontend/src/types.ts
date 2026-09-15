@@ -678,6 +678,8 @@ export interface CompanionStudyRequest {
   question_id?: string;
   message?: string;
   session_id?: string;
+  resource_id?: string;
+  resource_context?: Record<string, any>;
 }
 
 export interface CompanionStudyResponse {
@@ -841,4 +843,70 @@ export interface ResourceEventPayload {
   metadata?: Record<string, any>;
   client_timestamp?: string;
 }
+
+// -----------------------------------------------------------------------------
+// Phase 5 / Sprint 9-D: Learning Effectiveness & Adaptive Resource Feedback
+// -----------------------------------------------------------------------------
+export type SessionStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+export type EffectivenessStatus = 'STRONG_PROGRESS' | 'MEANINGFUL_PROGRESS' | 'STABLE' | 'NEEDS_MORE_SUPPORT';
+
+export interface LearningSession {
+  session_id: string;
+  student_id: string;
+  knowledge_id: string;
+  started_at: string;
+  completed_at?: string | null;
+  initial_mastery: number;
+  final_mastery?: number | null;
+  mastery_delta?: number | null;
+  resource_ids: string[];
+  completed_resource_ids: string[];
+  quiz_question_id?: string | null;
+  quiz_result?: Record<string, any> | null;
+  status: SessionStatus;
+  metadata?: Record<string, any>;
+}
+
+export interface LearningEffectiveness {
+  session_id: string;
+  student_id: string;
+  knowledge_id: string;
+  initial_mastery: number;
+  final_mastery: number;
+  mastery_delta: number;
+  status: EffectivenessStatus;
+  status_display: string;
+  feedback_title: string;
+  feedback_message: string;
+  suggested_next_action: string;
+  resources_completed_count: number;
+  quiz_passed?: boolean | null;
+}
+
+export interface ResourceEffectivenessSignal {
+  resource_id: string;
+  knowledge_id: string;
+  sample_size: number;
+  avg_mastery_delta: number;
+  completion_rate: number;
+  effectiveness_score: number;
+  confidence_level: 'LOW' | 'MEDIUM' | 'HIGH';
+  status_distribution: Record<string, number>;
+}
+
+export interface KnowledgeEffectivenessResponse {
+  student_id: string;
+  knowledge_id: string;
+  current_mastery: number;
+  latest_session?: LearningSession | null;
+  effectiveness?: LearningEffectiveness | null;
+  historical_signal?: ResourceEffectivenessSignal | null;
+}
+
+export interface SessionCompleteResponse {
+  session: LearningSession;
+  effectiveness: LearningEffectiveness;
+  next_step_summary: string;
+}
+
 

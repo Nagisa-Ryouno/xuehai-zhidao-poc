@@ -106,6 +106,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     knowledgeId?: string;
     questionId?: string;
     message?: string;
+    resourceContext?: Record<string, any>;
   } | null>(null);
 
   // 学习行动完成与反思通知状态 (Sprint 9-B)
@@ -266,6 +267,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       knowledgeId?: string;
       questionId?: string;
       message?: string;
+      resourceContext?: Record<string, any>;
     }) => {
       setActiveCompanionContext(ctx);
       navigate('/student/assistant');
@@ -305,7 +307,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   ] as const;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-100 selection:text-indigo-800">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-100 selection:text-indigo-800 overflow-x-hidden w-full max-w-full">
       {/* Top Header */}
       {/* Top Header */}
       <Header
@@ -410,11 +412,12 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 initialKnowledgeId={focusResult.focus?.knowledgeId || 'K01'}
                 onOpenConceptCard={handleViewConceptCard}
                 onStartQuiz={handleStartQuiz}
-                onAskAI={(kid, kname, prefill) => {
+                onAskAI={(kid, kname, prefill, resourceContext) => {
                   handleJumpToAssistantWithContext({
                     mode: 'concept_explain',
                     knowledgeId: kid,
                     message: prefill || `请老师精讲考点【${kid} ${kname}】`,
+                    resourceContext,
                   });
                 }}
               />

@@ -88,7 +88,7 @@ def _build_catalog() -> Dict[str, LearningResource]:
             knowledge_id=kid,
             resource_type=ResourceType.PRACTICE,
             title=f"{card.knowledge_name} 靶向通关微测验",
-            description=f"针对【{card.knowledge_name}】的微测验，检验概念掌握度并驱动 BKT 状态更新。",
+            description=f"针对【{card.knowledge_name}】的微测验，检验概念掌握度并驱动掌握度更新。",
             source="xuehai_internal",
             source_url=None,
             estimated_minutes=4,

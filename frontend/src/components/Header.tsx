@@ -76,15 +76,16 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Student Selector Dropdown */}
-          <div className="relative flex items-center gap-2">
-            <div className="relative flex items-center bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl px-3 py-1.5 border border-slate-200 transition-all cursor-pointer shadow-xs">
-              <User className="w-4 h-4 text-indigo-600 mr-2 shrink-0" />
+          <div className="relative flex items-center gap-1.5 sm:gap-2">
+            <div className="relative flex items-center bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 border border-slate-200 transition-all cursor-pointer shadow-xs max-w-[130px] sm:max-w-none">
+              <User className="w-4 h-4 text-indigo-600 mr-1.5 sm:mr-2 shrink-0" />
               <select
                 aria-label="选择切换当前学习学生"
+                id="student-select"
                 value={currentStudentId}
                 onChange={(e) => onSelectStudent(e.target.value)}
                 disabled={isLoading}
-                className="appearance-none bg-transparent pr-7 text-sm font-semibold focus:outline-none cursor-pointer text-slate-800"
+                className="appearance-none bg-transparent pr-6 sm:pr-7 text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer text-slate-800 truncate"
               >
                 {students.map((stu) => (
                   <option key={stu.student_id} value={stu.student_id}>
@@ -99,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onOpenPretestModal}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200/80 transition-all cursor-pointer shadow-2xs shrink-0"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200/80 transition-all cursor-pointer shadow-2xs shrink-0"
                 title="启动 3 题极速前测与学情诊断"
               >
                 <Sparkles className="w-3.5 h-3.5 text-purple-600" />
@@ -111,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onOpenInitModal}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200/80 transition-all cursor-pointer shadow-2xs shrink-0"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200/80 transition-all cursor-pointer shadow-2xs shrink-0"
                 title="设定个性化学习目标或新建演示学生"
               >
                 <Plus className="w-3.5 h-3.5" />

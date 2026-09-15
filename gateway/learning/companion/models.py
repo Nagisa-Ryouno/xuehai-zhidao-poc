@@ -82,6 +82,8 @@ class CompanionStudyRequest(BaseModel):
     question_id: Optional[str] = Field(default=None, description="目标题目ID（错题辅导模式）")
     message: Optional[str] = Field(default=None, description="学生提问或输入文本（限制 2000 字符内）")
     session_id: Optional[str] = Field(default=None, description="连续对话会话标识")
+    resource_id: Optional[str] = Field(default=None, description="关联的学习资源ID")
+    resource_context: Optional[Dict[str, Any]] = Field(default=None, description="学习资源上下文（标题、类型、摘要等）")
 
     @field_validator("message")
     @classmethod

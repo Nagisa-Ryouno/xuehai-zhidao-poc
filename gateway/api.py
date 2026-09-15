@@ -125,6 +125,16 @@ from gateway.learning.resources import (
     default_resource_resolver,
     record_resource_event,
 )
+from gateway.learning.effectiveness import (
+    LearningSession,
+    LearningSessionCreateRequest,
+    LearningSessionCompleteRequest,
+    SessionCompleteResponse,
+    LearningEffectiveness,
+    KnowledgeEffectivenessResponse,
+    default_session_service,
+    default_effectiveness_analyzer,
+)
 from gateway.content.concept_cards import CONCEPT_CARDS
 
 logger = logging.getLogger("xuehai.gateway")
@@ -1052,6 +1062,90 @@ def create_gateway_app() -> FastAPI:
             total=len(resources),
             resources=resources,
         )
+
+    # -------------------------------------------------------------------------
+    # Sprint 9-D: 学习会话生命周期与学习效果评估及反馈 API
+    # -------------------------------------------------------------------------
+    @application.post("/api/learning/sessions", response_model=LearningSession)
+    def create_learning_session_endpoint(payload: LearningSessionCreateRequest) -> LearningSession:
+        """创建新的学习会话，服务端权威快照 initial_mastery (Sprint 9-D)"""
+        student_info = default_companion_service.context_builder.resolve_student(payload.student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到学生档案：{payload.student_id}")
+
+        if payload.knowledge_id not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"找不到指定考点：{payload.knowledge_id}")
+
+        try:
+            return default_session_service.create_session(
+                student_id=payload.student_id,
+                knowledge_id=payload.knowledge_id,
+                resource_ids=payload.resource_ids,
+            )
+        except KeyError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+    @application.get("/api/learning/sessions/{session_id}", response_model=LearningSession)
+    def get_learning_session_endpoint(session_id: str, student_id: Optional[str] = None) -> LearningSession:
+        """查询指定学习会话，强校验学生上下文隔离 (Sprint 9-D)"""
+        try:
+            return default_session_service.get_session(session_id, request_student_id=student_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail=f"找不到指定的学习会话：{session_id}")
+        except PermissionError as pe:
+            raise HTTPException(status_code=403, detail=str(pe))
+
+    @application.post("/api/learning/sessions/{session_id}/complete", response_model=SessionCompleteResponse)
+    def complete_learning_session_endpoint(session_id: str, payload: LearningSessionCompleteRequest) -> SessionCompleteResponse:
+        """完成学习会话，服务端权威读取 final_mastery 并计算 delta 与效果评价 (Sprint 9-D)"""
+        try:
+            completed_session = default_session_service.complete_session(
+                session_id=session_id,
+                student_id=payload.student_id,
+                completed_resource_ids=payload.completed_resource_ids,
+                quiz_question_id=payload.quiz_question_id,
+                quiz_result=payload.quiz_result,
+            )
+            effectiveness = default_effectiveness_analyzer.analyze_session(completed_session)
+            return SessionCompleteResponse(
+                session=completed_session,
+                effectiveness=effectiveness,
+            )
+        except KeyError:
+            raise HTTPException(status_code=404, detail=f"找不到指定的学习会话：{session_id}")
+        except PermissionError as pe:
+            raise HTTPException(status_code=403, detail=str(pe))
+
+    @application.get("/api/learning/resources/{knowledge_id}/effectiveness", response_model=KnowledgeEffectivenessResponse)
+    def get_knowledge_effectiveness_endpoint(knowledge_id: str, student_id: str) -> KnowledgeEffectivenessResponse:
+        """获取指定考点的学习效果与历史表现信号 (Sprint 9-D)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到学生档案：{student_id}")
+
+        if knowledge_id not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"找不到指定考点：{knowledge_id}")
+
+        latest_session = default_session_service.get_latest_session(student_id=student_id, knowledge_id=knowledge_id)
+        effectiveness = None
+        if latest_session:
+            effectiveness = default_effectiveness_analyzer.analyze_session(latest_session)
+
+        sessions = default_session_service.get_student_sessions(student_id=student_id, knowledge_id=knowledge_id)
+        historical_signal = default_effectiveness_analyzer.aggregate_historical_signal(
+            knowledge_id=knowledge_id,
+            sessions=sessions,
+            student_id=student_id,
+        )
+
+        return KnowledgeEffectivenessResponse(
+            student_id=student_id,
+            knowledge_id=knowledge_id,
+            latest_session=latest_session,
+            effectiveness=effectiveness,
+            historical_signal=historical_signal,
+        )
+
 
     @application.get("/api/teacher/overview", response_model=TeacherOverviewResponse)
     def get_teacher_overview_endpoint() -> TeacherOverviewResponse:

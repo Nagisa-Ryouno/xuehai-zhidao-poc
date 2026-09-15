@@ -199,6 +199,15 @@ class CompanionService:
         else:
             raise ValueError(f"未知的伴学辅导模式：{mode}")
 
+        # 若请求包含学习材料上下文，进行真实材料联结增强
+        if request.resource_context:
+            res_title = request.resource_context.get("resource_title") or request.resource_context.get("title", "")
+            res_type = request.resource_context.get("resource_type") or request.resource_context.get("type", "")
+            if res_title:
+                answer += f"\n\n📚 **结合研读材料**：针对【{res_title}】（{res_type}），建议结合上述逻辑关注其核心推演与实际应用。"
+                if referenced is not None:
+                    referenced.append(f"学习材料：{res_title}")
+
         # 维护内存会话历史（最多保存 5 轮，即 10 条消息）
         session.messages.append(
             CompanionChatMessage(

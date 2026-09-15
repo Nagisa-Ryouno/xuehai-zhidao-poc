@@ -39,6 +39,9 @@ import type {
   RecommendedResourcesResponse,
   ResourceListResponse,
   ResourceEventPayload,
+  LearningSession,
+  KnowledgeEffectivenessResponse,
+  SessionCompleteResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -564,6 +567,66 @@ export async function recordResourceEvent(
     }
   );
 }
+
+/**
+ * Sprint 9-D: 创建学习会话，服务端权威快照 initial_mastery
+ */
+export async function createLearningSession(
+  studentId: string,
+  knowledgeId: string,
+  resourceIds: string[] = []
+): Promise<LearningSession> {
+  return request<LearningSession>('/learning/sessions', {
+    method: 'POST',
+    body: JSON.stringify({
+      student_id: studentId,
+      knowledge_id: knowledgeId,
+      resource_ids: resourceIds,
+    }),
+  });
+}
+
+/**
+ * Sprint 9-D: 获取指定学习会话，强校验学生隔离
+ */
+export async function getLearningSession(
+  sessionId: string,
+  studentId?: string
+): Promise<LearningSession> {
+  const query = studentId ? `?student_id=${encodeURIComponent(studentId)}` : '';
+  return request<LearningSession>(`/learning/sessions/${encodeURIComponent(sessionId)}${query}`);
+}
+
+/**
+ * Sprint 9-D: 完成学习会话，服务端权威读取 final_mastery 并计算 delta 与效果评价
+ */
+export async function completeLearningSession(
+  sessionId: string,
+  payload: {
+    student_id: string;
+    completed_resource_ids?: string[];
+    quiz_question_id?: string;
+    quiz_result?: Record<string, any>;
+  }
+): Promise<SessionCompleteResponse> {
+  return request<SessionCompleteResponse>(`/learning/sessions/${encodeURIComponent(sessionId)}/complete`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Sprint 9-D: 获取指定考点的学习效果评估与历史表现信号
+ */
+export async function getKnowledgeEffectiveness(
+  knowledgeId: string,
+  studentId: string
+): Promise<KnowledgeEffectivenessResponse> {
+  return request<KnowledgeEffectivenessResponse>(
+    `/learning/resources/${encodeURIComponent(knowledgeId)}/effectiveness?student_id=${encodeURIComponent(studentId)}`
+  );
+}
+
 
 
 

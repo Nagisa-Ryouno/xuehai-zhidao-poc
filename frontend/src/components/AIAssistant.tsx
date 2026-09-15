@@ -47,6 +47,7 @@ interface AIAssistantProps {
     knowledgeId?: string;
     questionId?: string;
     message?: string;
+    resourceContext?: Record<string, any>;
   } | null;
   latestActionResult?: LearningActionResultResponse | null;
   onNavigateToKnowledge?: (knowledgeId: string) => void;
@@ -199,6 +200,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           question_id: mode === 'wrong_answer_review' ? qid : undefined,
           message: userText || undefined,
           session_id: sessionId || undefined,
+          resource_context: initialContext?.resourceContext || undefined,
         };
 
         const res: CompanionStudyResponse = await postCompanionStudy(req);

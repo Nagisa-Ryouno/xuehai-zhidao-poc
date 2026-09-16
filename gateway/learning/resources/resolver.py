@@ -19,10 +19,16 @@ gateway.learning.resources.resolver
    推荐理由一律采用通俗自然中文，严禁暴露技术指标、类名或内部变量名。
 """
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from app.infrastructure.persistence.bkt_state_repository import default_bkt_state_repository
 from app.services.knowledge_graph_service import knowledge_graph_service
 from gateway.content.concept_cards import CONCEPT_CARDS
+from gateway.learning.resource_effectiveness import (
+    ResourceEffectivenessAggregator,
+    default_adaptation_strategy,
+    default_resource_effectiveness_aggregator,
+)
 from gateway.learning.resources.catalog import (
     get_resource_by_id,
     get_resources_by_knowledge,
@@ -45,6 +51,7 @@ class ResourceResolver:
         knowledge_id: Optional[str] = None,
         mastery_override: Optional[float] = None,
         consecutive_incorrect_override: Optional[int] = None,
+        events_file: Optional[Path] = None,
     ) -> RecommendedResourcesResponse:
         """
         根据学生的真实掌握度与做题状态，确定性输出自适应资源推荐序列
@@ -84,9 +91,26 @@ class ResourceResolver:
             unmastered_successors=unmastered_successors,
         )
 
+        # Sprint 9-E: 读取真实历史资源效果，对合法候选资源进行确定性二次微调排序
+        aggregator = (
+            ResourceEffectivenessAggregator(events_file=events_file)
+            if events_file
+            else default_resource_effectiveness_aggregator
+        )
+        profiles = aggregator.get_resource_effectiveness(
+            student_id=student_id,
+            knowledge_id=target_kid,
+        )
+        adapted_recommendations = default_adaptation_strategy.apply_adaptation(
+            candidates=raw_recommendations,
+            profiles=profiles,
+        )
+
         # 赋予 rank 与 suggested_order (1-indexed)
         final_recommendations: List[ResourceRecommendation] = []
-        for idx, item in enumerate(raw_recommendations, start=1):
+        for idx, item in enumerate(adapted_recommendations, start=1):
+            eff = item.get("historical_effectiveness", "INSUFFICIENT_DATA")
+            eff_val = eff.value if hasattr(eff, "value") else str(eff)
             final_recommendations.append(
                 ResourceRecommendation(
                     resource=item["resource"],
@@ -94,6 +118,9 @@ class ResourceResolver:
                     recommended_reason=item["recommended_reason"],
                     reason_category=item["reason_category"],
                     suggested_order=item.get("suggested_order", idx),
+                    historical_effectiveness=eff_val,
+                    why_recommended=item.get("why_recommended"),
+                    score_adjustment=int(item.get("score_adjustment", 0)),
                 )
             )
 

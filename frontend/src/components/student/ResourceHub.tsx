@@ -646,7 +646,8 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
             {recommendedData.recommendations.map((rec) => (
               <div
                 key={rec.resource.resource_id}
-                className="relative flex flex-col justify-between bg-white rounded-2xl border border-indigo-100/80 p-4 shadow-2xs hover:shadow-xs transition-shadow"
+                data-testid="recommended-resource-card"
+                className="relative flex flex-col justify-between bg-white rounded-2xl border border-indigo-100/80 p-4 shadow-2xs hover:shadow-xs transition-shadow overflow-hidden"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
@@ -658,18 +659,49 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
                       {rec.resource.estimated_minutes} 分钟
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 line-clamp-1 mb-1">
+                  <h4 className="text-sm font-bold text-slate-900 line-clamp-1 mb-1.5">
                     {rec.resource.title}
                   </h4>
-                  <p className="text-xs text-amber-800 leading-snug line-clamp-2 bg-amber-50/80 p-2 rounded-xl border border-amber-100/80 mb-3">
-                    {rec.recommended_reason}
-                  </p>
+
+                  {/* Sprint 9-E: 为什么推荐 / 这次换一种方式试试 / 默认推荐理由 */}
+                  {rec.historical_effectiveness === 'VERY_EFFECTIVE' || rec.historical_effectiveness === 'EFFECTIVE' ? (
+                    <div className="mb-3 bg-emerald-50/90 p-2.5 rounded-xl border border-emerald-200/80 text-left">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 mb-1">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px]">
+                          💡 为什么推荐？
+                        </span>
+                        {rec.score_adjustment && rec.score_adjustment > 0 ? (
+                          <span className="text-[10px] font-semibold text-emerald-600">
+                            成效优选 (+{rec.score_adjustment})
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="text-xs text-emerald-900 leading-snug font-medium">
+                        {rec.why_recommended || rec.recommended_reason}
+                      </p>
+                    </div>
+                  ) : rec.historical_effectiveness === 'INEFFECTIVE' ? (
+                    <div className="mb-3 bg-amber-50/90 p-2.5 rounded-xl border border-amber-200/90 text-left">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-900 mb-1">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px]">
+                          🔄 这次换一种方式试试
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-950 leading-snug font-medium">
+                        {rec.why_recommended || rec.recommended_reason}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-amber-800 leading-snug line-clamp-2 bg-amber-50/80 p-2 rounded-xl border border-amber-100/80 mb-3">
+                      {rec.recommended_reason}
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="button"
                   onClick={() => handleOpenResource(rec.resource)}
-                  className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs cursor-pointer mt-1"
                 >
                   <span>立即执行</span>
                   <ArrowRight className="w-3.5 h-3.5" />

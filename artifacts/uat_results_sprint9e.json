@@ -1,0 +1,336 @@
+{
+  "sprint": "Sprint 9-E",
+  "timestamp": "2026-09-16T09:58:08Z",
+  "console_messages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "api_responses": [
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/recommended/S001?knowledge_id=K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08/effectiveness?student_id=S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08/effectiveness?student_id=S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/recommended/S001?knowledge_id=K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K15",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K15/effectiveness?student_id=S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/recommended/S001?knowledge_id=K15",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S002/path-states",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S002/dashboard",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/recommended/S002?knowledge_id=K15",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K15/effectiveness?student_id=S002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K15",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S002/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S002/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S002?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S002/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S002/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S002?goal=%E5%A4%AF%E5%AE%9E%E4%BE%9B%E6%B1%82%E4%B8%8E%E6%B6%88%E8%B4%B9%E8%80%85%E8%A1%8C%E4%B8%BA%E5%9F%BA%E7%A1%80%EF%BC%8C%E6%8F%90%E5%8D%87%E4%B8%AD%E7%AD%89%E9%9A%BE%E5%BA%A6%E9%A2%98%E7%9B%AE%E7%9A%84%E7%A8%B3%E5%AE%9A%E5%BE%97%E5%88%86%E7%8E%87",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08/effectiveness?student_id=S002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/recommended/S002?knowledge_id=K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/dashboard",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/path-states",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08/effectiveness?student_id=S001",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/recommended/S001?knowledge_id=K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/K08",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/learning/resources/events",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E5%A4%AF%E5%AE%9E%E4%BE%9B%E6%B1%82%E4%B8%8E%E6%B6%88%E8%B4%B9%E8%80%85%E8%A1%8C%E4%B8%BA%E5%9F%BA%E7%A1%80%EF%BC%8C%E6%8F%90%E5%8D%87%E4%B8%AD%E7%AD%89%E9%9A%BE%E5%BA%A6%E9%A2%98%E7%9B%AE%E7%9A%84%E7%A8%B3%E5%AE%9A%E5%BE%97%E5%88%86%E7%8E%87",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/wrong-answers",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/students/S001/progress",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/path/dynamic/S001?goal=%E6%8E%8C%E6%8F%A1%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E7%BB%BC%E5%90%88%E5%88%86%E6%9E%90%E9%A2%98%EF%BC%8C%E9%87%8D%E7%82%B9%E7%AA%81%E7%A0%B4%E5%BC%B9%E6%80%A7%E8%AE%A1%E7%AE%97%E8%96%84%E5%BC%B1%E7%8E%AF%E8%8A%82",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "scenarios": {
+    "scenario_a": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9e_01_resource_hub_adaptive_ranking.png"
+    },
+    "scenario_b": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9e_02_why_recommended_badge_and_narrative.png"
+    },
+    "scenario_c": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9e_03_ineffective_try_alternative_card.png"
+    },
+    "scenario_d": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9e_04_insufficient_data_graceful_fallback.png"
+    },
+    "scenario_e": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9e_05_multi_student_adaptation_isolation.png"
+    },
+    "scenario_f": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9e_06_mobile_375px_ergonomics_no_overflow.png"
+    }
+  },
+  "security_invariants": {}
+}

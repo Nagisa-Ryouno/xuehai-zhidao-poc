@@ -68,6 +68,15 @@ class ResourceRecommendation(BaseModel):
     recommended_reason: str = Field(..., description="通俗易懂的自适应推荐理由（严禁技术黑话）")
     reason_category: str = Field(..., description="推荐类别（FOUNDATION, APPLICATION, CONSOLIDATION, REPAIR, ADVANCEMENT）")
     suggested_order: int = Field(..., ge=1, description="学习时序建议（第几步完成）")
+    historical_effectiveness: Optional[str] = Field(
+        default="INSUFFICIENT_DATA", description="历史资源效果分级 (Sprint 9-E)"
+    )
+    why_recommended: Optional[str] = Field(
+        default=None, description="确定性推荐解释理由 (Sprint 9-E)"
+    )
+    score_adjustment: int = Field(
+        default=0, description="自适应排序分值微调量 (Sprint 9-E)"
+    )
 
 
 class RecommendedResourcesResponse(BaseModel):

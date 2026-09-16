@@ -135,6 +135,12 @@ from gateway.learning.effectiveness import (
     default_session_service,
     default_effectiveness_analyzer,
 )
+from gateway.learning.resource_effectiveness import (
+    EffectivenessProfileResponse,
+    ResourceEffectivenessProfile,
+    default_resource_effectiveness_aggregator,
+)
+from gateway.learning.resource_effectiveness.aggregator import normalize_resource_type_key
 from gateway.content.concept_cards import CONCEPT_CARDS
 
 logger = logging.getLogger("xuehai.gateway")
@@ -1039,6 +1045,40 @@ def create_gateway_app() -> FastAPI:
         if not item:
             raise HTTPException(status_code=404, detail=f"找不到学习资源：{resource_id}")
         return item
+
+    @application.get(
+        "/api/learning/resources/effectiveness-profile/{student_id}",
+        response_model=EffectivenessProfileResponse,
+    )
+    def get_resource_effectiveness_profile_endpoint(
+        student_id: str,
+        knowledge_id: Optional[str] = None,
+    ) -> EffectivenessProfileResponse:
+        """获取学生针对特定考点的资源历史学习效果档案 (Sprint 9-E)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到学生档案：{student_id}")
+
+        target_kid = knowledge_id or "K01"
+        if target_kid not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"找不到指定考点：{target_kid}")
+
+        profile_map = default_resource_effectiveness_aggregator.get_resource_effectiveness(
+            student_id=student_id,
+            knowledge_id=target_kid,
+        )
+
+        unique_profiles: Dict[str, ResourceEffectivenessProfile] = {}
+        for k, prof in profile_map.items():
+            norm_k = normalize_resource_type_key(prof.resource_type)
+            if norm_k not in unique_profiles:
+                unique_profiles[norm_k] = prof
+
+        return EffectivenessProfileResponse(
+            student_id=student_id,
+            knowledge_id=target_kid,
+            profiles=list(unique_profiles.values()),
+        )
 
     @application.get("/api/learning/resources/{knowledge_id}", response_model=ResourceListResponse)
     def get_knowledge_resources_endpoint(

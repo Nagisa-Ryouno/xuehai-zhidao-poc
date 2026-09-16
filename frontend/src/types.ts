@@ -817,6 +817,9 @@ export interface ResourceRecommendation {
   recommended_reason: string;
   reason_category: string;
   suggested_order: number;
+  historical_effectiveness?: HistoricalEffectiveness | string;
+  why_recommended?: string | null;
+  score_adjustment?: number;
 }
 
 export interface RecommendedResourcesResponse {
@@ -908,5 +911,32 @@ export interface SessionCompleteResponse {
   effectiveness: LearningEffectiveness;
   next_step_summary: string;
 }
+
+// -----------------------------------------------------------------------------
+// Phase 5 / Sprint 9-E: Learning Retention & Resource Strategy Adaptation Lite
+// -----------------------------------------------------------------------------
+export type HistoricalEffectiveness =
+  | 'VERY_EFFECTIVE'
+  | 'EFFECTIVE'
+  | 'NEUTRAL'
+  | 'INEFFECTIVE'
+  | 'INSUFFICIENT_DATA';
+
+export interface ResourceEffectivenessProfile {
+  student_id: string;
+  knowledge_id: string;
+  resource_type: string;
+  usage_count: number;
+  average_delta: number;
+  last_delta: number;
+  effectiveness: HistoricalEffectiveness;
+}
+
+export interface EffectivenessProfileResponse {
+  student_id: string;
+  knowledge_id: string;
+  profiles: ResourceEffectivenessProfile[];
+}
+
 
 

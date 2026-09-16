@@ -42,6 +42,7 @@ import type {
   LearningSession,
   KnowledgeEffectivenessResponse,
   SessionCompleteResponse,
+  EffectivenessProfileResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -626,6 +627,20 @@ export async function getKnowledgeEffectiveness(
     `/learning/resources/${encodeURIComponent(knowledgeId)}/effectiveness?student_id=${encodeURIComponent(studentId)}`
   );
 }
+
+/**
+ * Sprint 9-E: 获取学生针对特定考点的资源历史学习效果档案与策略分级
+ */
+export async function getResourceEffectivenessProfile(
+  studentId: string,
+  knowledgeId?: string
+): Promise<EffectivenessProfileResponse> {
+  const query = knowledgeId ? `?knowledge_id=${encodeURIComponent(knowledgeId)}` : '';
+  return request<EffectivenessProfileResponse>(
+    `/learning/resources/effectiveness-profile/${encodeURIComponent(studentId)}${query}`
+  );
+}
+
 
 
 

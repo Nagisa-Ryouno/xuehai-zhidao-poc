@@ -296,6 +296,50 @@
     position: relative;
     z-index: 1;
   }
+
+  /* ===== 形态系统（学 Material 3 Shape Scale：圆角/叶片/花瓣/拱顶/切角，打破清一色矩形） ===== */
+  /* 拱顶卡：顶部大圆角如拱，底部小圆角 */
+  .shape-arch {
+    border-radius: 34px 34px 22px 22px;
+  }
+  /* 叶片卡：三圆一角收紧（右下角） */
+  .shape-leaf {
+    border-radius: 28px 28px 8px 28px;
+  }
+  /* 花瓣卡：对角逐圆 */
+  .shape-petal {
+    border-radius: 30px 12px 30px 12px;
+  }
+  /* 全圆胶囊 */
+  .shape-pill {
+    border-radius: 9999px;
+  }
+  /* M3 切角卡：右上角斜切 */
+  .shape-cut {
+    border-radius: 22px;
+    clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+  }
+  /* 有机气泡（装饰容器） */
+  .shape-blob {
+    border-radius: 42% 58% 56% 44% / 52% 46% 54% 48%;
+  }
+  /* 统计卡角部节奏：父容器加 shape-variety 后子卡自动获得不同角形 */
+  .shape-variety > *:nth-child(4n + 1) > *,
+  .shape-variety > *:nth-child(4n + 1) {
+    border-radius: 26px 26px 26px 8px;
+  }
+  .shape-variety > *:nth-child(4n + 2) > *,
+  .shape-variety > *:nth-child(4n + 2) {
+    border-radius: 26px 26px 8px 26px;
+  }
+  .shape-variety > *:nth-child(4n + 3) > *,
+  .shape-variety > *:nth-child(4n + 3) {
+    border-radius: 26px 8px 26px 26px;
+  }
+  .shape-variety > *:nth-child(4n + 4) > *,
+  .shape-variety > *:nth-child(4n + 4) {
+    border-radius: 8px 26px 26px 26px;
+  }
 }
 
 /* Custom scrollbar */

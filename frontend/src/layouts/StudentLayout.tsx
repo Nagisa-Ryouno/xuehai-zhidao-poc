@@ -457,7 +457,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 />
 
                 {/* 界面音效设置（移动端亦可访问的音效开/关选项） */}
-                <div className="glass-card rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+                <div className="glass-card shape-pill px-5 py-3 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     {soundMuted ? (
                       <VolumeX className="w-[18px] h-[18px] text-slate-400 shrink-0" />

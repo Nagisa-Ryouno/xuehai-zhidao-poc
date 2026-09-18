@@ -86,7 +86,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col justify-between glass-card rounded-3xl p-5 transition-all duration-300 hover:shadow-[0_18px_40px_rgba(214,150,105,.2)] hover:-translate-y-0.5`}
+      className={`relative flex flex-col justify-between glass-card shape-petal p-5 transition-all duration-300 hover:shadow-[0_18px_40px_rgba(214,150,105,.2)] hover:-translate-y-0.5`}
     >
       <div>
         {/* 顶部标签栏 */}

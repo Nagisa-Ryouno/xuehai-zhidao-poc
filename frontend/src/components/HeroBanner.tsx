@@ -1,7 +1,7 @@
 import React from 'react';
 import { Target, Compass, BookOpen } from 'lucide-react';
 import type { StudentBasic } from '../types';
-import { StudyScene } from './decor/Illustration';
+import { CSS3DLogo } from './decor/CSS3DLogo';
 
 interface HeroBannerProps {
   student: StudentBasic;
@@ -28,12 +28,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl glass-card dot-texture p-6 sm:p-8">
+    <div className="relative overflow-hidden shape-arch glass-card dot-texture p-6 sm:p-8">
       {/* Warm decorative background blur */}
       <div className="absolute -right-16 -top-16 w-64 h-64 bg-orange-300/25 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute right-32 -bottom-16 w-64 h-64 bg-amber-200/30 rounded-full blur-3xl pointer-events-none" />
-      {/* 等距学习场景插画（桌面端展示，缓慢浮动） */}
-      <StudyScene className="hidden lg:block absolute -top-3 right-[26rem] w-52 opacity-95 pointer-events-none" animated={false} />
+      {/* 品牌 3D 立方体（桌面端文档流中列，避免遮挡内容：自转+浮动+指针视差+环绕星轨） */}
 
       <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         {/* Left: Greeting & Identity */}
@@ -62,8 +61,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           </p>
         </div>
 
+        {/* Center: 品牌 3D 立方体（文档流中列，自转+浮动+指针视差+环绕星轨） */}
+        <div className="hidden lg:flex items-center justify-center w-44 shrink-0 pointer-events-none" aria-hidden="true">
+          <CSS3DLogo />
+        </div>
+
         {/* Right: Learning Goal Card */}
-        <div className="lg:max-w-md w-full glass-card rounded-2xl p-4 sm:p-5 tilt-3d transition-transform duration-500 hover:[transform:perspective(900px)_rotateX(6deg)_rotateY(-9deg)_translateZ(6px)] hover:shadow-[0_24px_50px_rgba(214,150,105,.24)]">
+        <div className="lg:max-w-md w-full glass-card shape-leaf p-4 sm:p-5 tilt-3d transition-transform duration-500 hover:[transform:perspective(900px)_rotateX(6deg)_rotateY(-9deg)_translateZ(6px)] hover:shadow-[0_24px_50px_rgba(214,150,105,.24)]">
           <div className="tilt-layer">
           <div className="flex items-center gap-2 mb-2 text-indigo-700 font-semibold text-xs tracking-wider uppercase">
             <Target className="w-4 h-4 text-indigo-600 shrink-0" />

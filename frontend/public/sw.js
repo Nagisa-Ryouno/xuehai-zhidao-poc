@@ -4,9 +4,9 @@
  * - 静态资源（JS/CSS/图片/音效）：缓存优先，后台更新
  * - 页面导航请求：网络优先，离线回退到缓存的 index.html
  * - /api 请求：仅网络（学习数据不缓存，杜绝陈旧学情）
- * 版本升级时修改 CACHE_VERSION 触发换血。
+ * 版本升级时修改 CACHE_VERSION 触发换血（每次发布构建前务必递增）。
  */
-const CACHE_VERSION = 'xuehai-pwa-v1';
+const CACHE_VERSION = 'xuehai-pwa-v2';
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 

@@ -96,7 +96,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
   return (
     <div className="space-y-6" data-testid="student-progress-overview">
       {/* 总体成效总览 Hero Banner */}
-      <div className="hero-navy rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-slate-900/20 relative overflow-hidden">
+      <div className="hero-navy shape-arch p-6 sm:p-8 text-white shadow-xl shadow-slate-900/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

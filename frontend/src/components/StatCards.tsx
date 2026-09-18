@@ -105,7 +105,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ profile }) => {
         return (
           <div
             key={idx}
-            className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
+            className="glass-card rounded-2xl p-5 hover:shadow-[0_18px_40px_rgba(214,150,105,.2)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">

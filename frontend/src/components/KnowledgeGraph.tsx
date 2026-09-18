@@ -179,13 +179,13 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         animated: isPath,
         style: isSpecialPath
           ? {
-              stroke: '#8b5cf6',
+              stroke: '#F2764A',
               strokeWidth: 2.5,
               strokeDasharray: '6,4',
             }
           : isPath
           ? {
-              stroke: '#6366f1',
+              stroke: '#E8593C',
               strokeWidth: 2.5,
             }
           : {
@@ -194,7 +194,7 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
             },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: isSpecialPath ? '#8b5cf6' : isPath ? '#6366f1' : '#94a3b8',
+          color: isSpecialPath ? '#F2764A' : isPath ? '#E8593C' : '#94a3b8',
           width: 14,
           height: 14,
         },
@@ -236,6 +236,15 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
     setNodes(formattedNodes);
     setEdges([...formattedEdges, ...routeEdges]);
   }, [graphData, activeFilter, searchQuery, selectedNodeId, activeRoute, setNodes, setEdges]);
+
+  // 节点就绪后自动拟合画布（修复实例初始化时数据未到位导致的画布空白/节点挤压）
+  useEffect(() => {
+    if (nodes.length === 0 || !reactFlowInstance.current) return;
+    const raf = requestAnimationFrame(() => {
+      reactFlowInstance.current?.fitView({ padding: 0.15, duration: 600 });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [nodes.length]);
 
   // 点击节点事件
   const onNodeClick = useCallback(

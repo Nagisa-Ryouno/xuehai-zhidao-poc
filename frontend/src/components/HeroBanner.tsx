@@ -27,10 +27,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-white via-indigo-50/30 to-violet-50/20 border border-slate-200/80 p-6 sm:p-8 shadow-xs">
-      {/* Subtle decorative background blur */}
-      <div className="absolute -right-16 -top-16 w-64 h-64 bg-indigo-200/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute right-32 -bottom-16 w-64 h-64 bg-violet-200/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-8">
+      {/* Warm decorative background blur */}
+      <div className="absolute -right-16 -top-16 w-64 h-64 bg-orange-300/25 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute right-32 -bottom-16 w-64 h-64 bg-amber-200/30 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         {/* Left: Greeting & Identity */}
@@ -60,7 +60,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         </div>
 
         {/* Right: Learning Goal Card */}
-        <div className="lg:max-w-md w-full bg-white/90 backdrop-blur-xs rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
+        <div className="lg:max-w-md w-full glass-card rounded-2xl p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-2 text-indigo-700 font-semibold text-xs tracking-wider uppercase">
             <Target className="w-4 h-4 text-indigo-600 shrink-0" />
             <span>个人学习目标</span>

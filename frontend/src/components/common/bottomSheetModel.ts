@@ -44,7 +44,7 @@ export const BOTTOM_SHEET_STYLE_CLASSES = {
   backdrop:
     'fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-50 transition-opacity duration-200',
   sheet:
-    'fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl border-t border-slate-200/80 max-h-[85vh] flex flex-col pb-[env(safe-area-inset-bottom)] animate-in slide-in-from-bottom duration-300',
+    'fixed inset-x-0 bottom-0 z-50 bg-[rgba(253,246,238,.94)] backdrop-blur-2xl rounded-t-3xl shadow-2xl border-t border-white/80 max-h-[85vh] flex flex-col pb-[env(safe-area-inset-bottom)] animate-screen-in',
   handleBar: 'w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 shrink-0',
   header: 'px-6 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0',
   body: 'overflow-y-auto overscroll-contain flex-1 px-6 py-4',

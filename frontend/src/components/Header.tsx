@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, Sparkles, User, ChevronDown, Plus } from 'lucide-react';
+import { Sparkles, User, ChevronDown, Plus } from 'lucide-react';
 import type { StudentListItem } from '../types';
 import { RoleSwitcher } from './RoleSwitcher';
 
@@ -23,16 +23,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPretestModal,
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+    <header className="sticky top-0 z-30 bg-[rgba(251,241,231,.78)] backdrop-blur-xl backdrop-saturate-150 border-b border-white/75 shadow-[0_8px_24px_rgba(214,150,105,.10)] transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-2">
         {/* Left: Brand & Identity */}
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-            <GraduationCap className="w-6 h-6" />
-          </div>
-          <div>
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <img src="/logo.svg" alt="学海智导 Logo" className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-orange-500/20 shrink-0" />
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-tight text-slate-900">
+              <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap truncate">
                 学海智导
               </span>
               <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
@@ -47,13 +45,13 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Right: Service Status, Role Switcher & Student Selector */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {/* Dual-Role Switcher (Student View <-> Teacher Cockpit) */}
           <RoleSwitcher />
 
           {/* Backend Health Pill */}
           <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+            className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
               isOnline
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
                 : 'bg-rose-50 text-rose-700 border-rose-200/80'
@@ -77,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Student Selector Dropdown */}
           <div className="relative flex items-center gap-1.5 sm:gap-2">
-            <div className="relative flex items-center bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 border border-slate-200 transition-all cursor-pointer shadow-xs max-w-[130px] sm:max-w-none">
+            <div className="relative flex items-center bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 border border-slate-200 transition-all cursor-pointer shadow-xs max-w-[118px] sm:max-w-none overflow-hidden">
               <User className="w-4 h-4 text-indigo-600 mr-1.5 sm:mr-2 shrink-0" />
               <select
                 aria-label="选择切换当前学习学生"
@@ -85,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
                 value={currentStudentId}
                 onChange={(e) => onSelectStudent(e.target.value)}
                 disabled={isLoading}
-                className="appearance-none bg-transparent pr-6 sm:pr-7 text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer text-slate-800 truncate"
+                className="appearance-none bg-transparent pr-6 sm:pr-7 text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer text-slate-800 truncate w-full min-w-0 max-w-full"
               >
                 {students.map((stu) => (
                   <option key={stu.student_id} value={stu.student_id}>

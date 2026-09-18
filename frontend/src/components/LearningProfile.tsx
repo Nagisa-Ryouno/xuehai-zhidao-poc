@@ -41,7 +41,7 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ profile }) => 
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between h-full">
+    <div className="glass-card rounded-2xl p-6 flex flex-col justify-between h-full">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

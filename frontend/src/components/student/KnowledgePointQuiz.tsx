@@ -347,7 +347,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             {session.records.map((rec, idx) => (
               <div
                 key={rec.questionId}
-                className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-start justify-between gap-3 text-xs"
+                className="p-3 glass-card rounded-xl flex items-start justify-between gap-3 text-xs"
               >
                 <div className="flex items-start gap-2">
                   <span className="mt-0.5">
@@ -438,7 +438,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             </div>
 
             {/* 认知阶段演进反馈提示 */}
-            <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 bg-white/80 px-2.5 py-1.5 rounded-lg border border-slate-200/60">
+            <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 glass-chip px-2.5 py-1.5 rounded-lg">
               <span className="font-bold text-slate-800">
                 {completedProgression.stageChange.badgeText}
               </span>
@@ -466,7 +466,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="p-3 rounded-xl bg-white/80 border border-slate-200/70 text-xs text-slate-700 space-y-1">
+              <div className="p-3 rounded-xl glass-chip text-xs text-slate-700 space-y-1">
                 <div className="flex items-center gap-1.5 font-bold text-slate-800">
                   <span>{completedProgression.pathChange.title}</span>
                 </div>
@@ -603,7 +603,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
 
           // Feedback 状态下的智能高亮（只有服务端返回后才展示）
           let optionStyle =
-            'bg-white border-slate-200 text-slate-800 hover:border-indigo-300 hover:bg-slate-50/60';
+            'glass-card text-slate-800 hover:bg-white/70';
 
           if (isFeedback && session.lastFeedback) {
             const isCorrectAnswer = session.lastFeedback.correct_option === option.key;
@@ -614,7 +614,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
               optionStyle =
                 'bg-rose-50/90 border-rose-500 text-rose-950 line-through opacity-80';
             } else {
-              optionStyle = 'bg-white border-slate-200 text-slate-400 opacity-60';
+              optionStyle = 'glass-card text-slate-400 opacity-60';
             }
           } else if (isSelected) {
             optionStyle =
@@ -746,7 +746,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
               </div>
 
               {/* Layer 3 反馈信息条 */}
-              <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 bg-white/80 px-2.5 py-1.5 rounded-lg border border-slate-200/60">
+              <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 glass-chip px-2.5 py-1.5 rounded-lg">
                 <span className="font-bold text-slate-800">
                   {progressionExplanation.stageChange.badgeText}
                 </span>
@@ -778,7 +778,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-white/80 border border-slate-200/70 text-xs text-slate-700 space-y-1">
+                <div className="p-3 rounded-xl glass-chip text-xs text-slate-700 space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-slate-800">
                     <span>{progressionExplanation.pathChange.title}</span>
                   </div>

@@ -314,7 +314,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
               setActiveSession(null);
               setCompletionResult(null);
             }}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-slate-800 shadow-xs focus:border-indigo-500 focus:outline-hidden cursor-pointer w-full sm:w-auto max-w-full truncate"
+            className="rounded-xl glass-card px-3 py-2 text-xs sm:text-sm font-semibold text-slate-800 focus:border-indigo-500 focus:outline-hidden cursor-pointer w-full sm:w-auto max-w-full truncate"
           >
             {ALL_CONCEPT_CARDS.map((card: ConceptCardData) => (
               <option key={card.knowledgeId} value={card.knowledgeId}>
@@ -329,7 +329,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
       {/* 1. 核心结果卡：本次学习完成与效果评估 (Sprint 9-D 闭环展示) */}
       {/* ========================================================================= */}
       {completionResult && (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-indigo-50 border-2 border-emerald-300 p-6 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="relative overflow-hidden rounded-3xl glass-card border-2 border-emerald-300/70 p-6 animate-screen-in">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-100">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-2xl bg-emerald-600 text-white shadow-xs">
@@ -365,7 +365,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
 
           {/* 掌握度对比与净变化展示 (Initial -> Final + Delta) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-5">
-            <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-2xs">
+            <div className="glass-card rounded-2xl p-4">
               <span className="text-xs font-medium text-slate-500">学习前掌握度</span>
               <div className="text-2xl font-black text-slate-700 mt-1">
                 {(completionResult.effectiveness.initial_mastery * 100).toFixed(1)}%
@@ -373,7 +373,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
               <div className="text-[11px] text-slate-400 mt-0.5">学习会话开始时快照</div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-2xs">
+            <div className="glass-card rounded-2xl p-4">
               <span className="text-xs font-medium text-slate-500">学习后掌握度</span>
               <div className="text-2xl font-black text-slate-900 mt-1">
                 {(completionResult.effectiveness.final_mastery * 100).toFixed(1)}%
@@ -383,7 +383,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-2xs flex flex-col justify-between">
+            <div className="glass-card rounded-2xl p-4 flex flex-col justify-between">
               <div>
                 <span className="text-xs font-medium text-slate-500">掌握度净变化</span>
                 <div className="flex items-center gap-2 mt-1">
@@ -417,7 +417,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
           </div>
 
           {/* 本次学习完成清单 */}
-          <div className="bg-white/90 rounded-2xl p-4 border border-emerald-100 mb-4">
+          <div className="glass-card rounded-2xl p-4 mb-4">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>已完成的学习步骤清单</span>
@@ -489,7 +489,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
       {/* 2. 活跃学习会话进行中卡片 (Sprint 9-D 4步闭环流转) */}
       {/* ========================================================================= */}
       {activeSession && activeSession.status === 'IN_PROGRESS' && !completionResult && (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 text-white p-6 shadow-md">
+        <div className="relative overflow-hidden rounded-3xl hero-navy text-white p-6 shadow-md">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-2xl bg-white/20 text-white backdrop-blur-xs">
@@ -589,7 +589,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
       {/* 3. 自适应推荐横幅 (当无活跃会话且未展示完成卡时呈现) */}
       {/* ========================================================================= */}
       {(!activeSession || activeSession.status !== 'IN_PROGRESS') && !completionResult && recommendedData && recommendedData.recommendations.length > 0 && (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500/10 via-white to-amber-500/10 border border-indigo-200/80 p-6 shadow-xs">
+        <div className="relative overflow-hidden rounded-3xl glass-card p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-2xl bg-indigo-600 text-white shadow-xs">
@@ -647,7 +647,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
               <div
                 key={rec.resource.resource_id}
                 data-testid="recommended-resource-card"
-                className="relative flex flex-col justify-between bg-white rounded-2xl border border-indigo-100/80 p-4 shadow-2xs hover:shadow-xs transition-shadow overflow-hidden"
+                className="relative flex flex-col justify-between glass-card rounded-3xl p-4 hover:shadow-[0_18px_40px_rgba(214,150,105,.2)] transition-all duration-300 overflow-hidden"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
@@ -743,7 +743,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
             placeholder="搜索材料名称或关键词..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-600 shadow-xs focus:border-indigo-500 focus:outline-hidden"
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl glass-card text-xs text-slate-900 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-hidden"
           />
         </div>
       </div>

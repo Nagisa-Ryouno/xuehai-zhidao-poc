@@ -307,7 +307,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   ] as const;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-100 selection:text-indigo-800 overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen flex flex-col text-slate-900 selection:bg-indigo-100 selection:text-indigo-800 overflow-x-hidden w-full max-w-full">
       {/* Top Header */}
       {/* Top Header */}
       <Header

@@ -70,7 +70,7 @@ export const ExampleReaderModal: React.FC<ExampleReaderModalProps> = ({
       aria-labelledby="reader-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col glass-card rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/70">
           <div className="flex items-center gap-3">
@@ -141,7 +141,7 @@ export const ExampleReaderModal: React.FC<ExampleReaderModalProps> = ({
           </div>
 
           {/* 案例精析 / 讲义正文 */}
-          <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs space-y-3">
+          <div className="rounded-2xl glass-card p-5 space-y-3">
             <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-500" />
               <span>

@@ -37,8 +37,8 @@ export const BottomNav: React.FC = () => {
               }`}
             >
               <div
-                className={`relative flex items-center justify-center p-1 rounded-xl transition-colors ${
-                  isActive ? 'bg-indigo-50' : ''
+                className={`relative flex items-center justify-center p-1.5 rounded-xl transition-all ${
+                  isActive ? 'bg-gradient-to-br from-white to-orange-100 shadow-[0_4px_14px_rgba(226,87,63,.16)]' : ''
                 }`}
               >
                 <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />

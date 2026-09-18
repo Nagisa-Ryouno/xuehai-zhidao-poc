@@ -68,7 +68,7 @@ export const TasksQuickNav: React.FC<TasksQuickNavProps> = ({
               type="button"
               key={idx}
               onClick={item.onClick}
-              className="group p-4 bg-white hover:bg-slate-50/80 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between min-h-[110px] text-left w-full"
+              className="group p-4 glass-card hover:bg-white/70 rounded-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[110px] text-left w-full"
             >
               <div className="flex items-start gap-3">
                 <div className={`p-2 rounded-xl border ${item.color} shrink-0`}>

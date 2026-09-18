@@ -63,10 +63,10 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ profile }) => 
         <div className="w-full h-56 -my-2 flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-              <PolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+              <PolarGrid stroke="#EFE0D0" strokeDasharray="3 3" />
               <PolarAngleAxis
                 dataKey="subject"
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
+                tick={{ fill: '#7A6F66', fontSize: 11, fontWeight: 500 }}
               />
               <PolarRadiusAxis
                 angle={30}
@@ -80,15 +80,15 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ profile }) => 
                   backgroundColor: '#ffffff',
                   borderRadius: '12px',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  borderColor: '#e2e8f0',
+                  borderColor: '#EFE0D0',
                   fontSize: '12px',
                 }}
               />
               <Radar
                 name="学情能力"
                 dataKey="value"
-                stroke="#6366f1"
-                fill="#818cf8"
+                stroke="#E8593C"
+                fill="#F2764A"
                 fillOpacity={0.4}
               />
             </RadarChart>

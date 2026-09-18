@@ -14,6 +14,30 @@
   --color-indigo-900: #7F2D1D;
   --color-indigo-950: #571F14;
 
+  /* purple/violet 统一到珊瑚红（品牌单一化，语义色保留 emerald/amber/sky/rose） */
+  --color-purple-50: #FDEBDD;
+  --color-purple-100: #FADCC8;
+  --color-purple-200: #F3C3AB;
+  --color-purple-300: #F0A37E;
+  --color-purple-400: #EE8A5C;
+  --color-purple-500: #F2764A;
+  --color-purple-600: #E8593C;
+  --color-purple-700: #C8452A;
+  --color-purple-800: #A83A24;
+  --color-purple-900: #7F2D1D;
+  --color-purple-950: #571F14;
+  --color-violet-50: #FDEBDD;
+  --color-violet-100: #FADCC8;
+  --color-violet-200: #F3C3AB;
+  --color-violet-300: #F0A37E;
+  --color-violet-400: #EE8A5C;
+  --color-violet-500: #F2764A;
+  --color-violet-600: #E8593C;
+  --color-violet-700: #C8452A;
+  --color-violet-800: #A83A24;
+  --color-violet-900: #7F2D1D;
+  --color-violet-950: #571F14;
+
   --color-slate-50: #FBF1E7;
   --color-slate-100: #F5EADF;
   --color-slate-200: #EFE0D0;

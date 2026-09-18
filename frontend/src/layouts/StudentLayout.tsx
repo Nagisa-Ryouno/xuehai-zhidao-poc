@@ -348,9 +348,10 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         </div>
       </div>
 
-      {/* Main Content Area with MobileContainer */}
+      {/* Main Content Area with MobileContainer（subRoute 切换时 520ms 徐徐展开入场） */}
       <main className="flex-1 w-full py-4 sm:py-8">
-        <MobileContainer>
+        <MobileContainer key={subRoute}>
+          <div className="animate-screen-in" key={`${subRoute}-${studentId}`}>
         {isLoading ? (
           <LoadingSkeleton />
         ) : errorMessage ? (
@@ -592,6 +593,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
             )}
           </div>
         ) : null}
+          </div>
         </MobileContainer>
       </main>
 

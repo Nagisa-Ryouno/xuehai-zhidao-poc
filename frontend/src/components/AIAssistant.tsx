@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { playSound } from '../soundService';
 import {
   Bot,
   Sparkles,
@@ -191,6 +192,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         mode,
       };
       setMessages((prev) => [...prev, userDisplayMsg]);
+      playSound('send');
 
       try {
         const req: CompanionStudyRequest = {
@@ -225,6 +227,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         };
 
         setMessages((prev) => [...prev, assistantDisplayMsg]);
+        playSound('notification');
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '伴学服务暂时无响应，请重试';
         setErrorMsg(msg);

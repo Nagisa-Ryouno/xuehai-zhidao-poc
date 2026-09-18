@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { playSound } from '../../soundService';
 import {
   CheckCircle2,
   XCircle,
@@ -87,9 +88,15 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
     };
   }, [knowledgeId, knowledgeName]);
 
+  // 微测验完成荣誉时刻：播放一次升级音效
+  useEffect(() => {
+    if (session.status === 'completed') playSound('levelup');
+  }, [session.status]);
+
   // 处理选中选项
   const handleSelectOption = (optionKey: string) => {
     if (session.status !== 'answering') return;
+    playSound('select');
     setSession((s) => selectOption(s, optionKey));
   };
 
@@ -99,6 +106,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
   const handleSubmitAnswer = async () => {
     if (isSubmittingRef.current || !canSubmitAnswer(session)) return;
     isSubmittingRef.current = true;
+    playSound('press');
 
     const requestStudentId = studentId;
 
@@ -121,6 +129,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
       if (requestStudentId !== studentId) return;
 
       setSession((s) => setSubmitSuccess(s, res, timeSpentMs));
+      playSound(res?.is_correct ? 'success' : 'error');
     } catch (err: unknown) {
       if (requestStudentId !== studentId) return;
 
@@ -129,6 +138,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
           ? err.message
           : '答案提交失败，请检查网络后重试';
       setSession((s) => setSubmitError(s, msg));
+      playSound('error');
     } finally {
       isSubmittingRef.current = false;
     }
@@ -279,7 +289,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
           }`}
         >
           <div
-            className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center ${
+            className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center animate-spring-pop ${
               isPerfect
                 ? 'bg-emerald-100 text-emerald-600'
                 : isPassing

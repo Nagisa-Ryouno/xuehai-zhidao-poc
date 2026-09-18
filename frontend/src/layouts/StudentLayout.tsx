@@ -20,6 +20,7 @@ import { resolveCurrentFocusTask } from '../components/student/taskFocusModel';
 import { buildLearningContext } from '../components/student/learningContextModel';
 
 import { useApp } from '../context/useApp';
+import { playSound } from '../soundService';
 import type {
   StudentListItem,
   StudentDashboardResponse,
@@ -161,6 +162,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   const handleStartQuiz = useCallback(
     (knowledgeId: string, knowledgeName: string) => {
+      playSound('open');
       setActiveQuiz({ knowledgeId, knowledgeName });
     },
     []
@@ -170,6 +172,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     (knowledgeId: string, _knowledgeName: string) => {
       const card = getConceptCardById(knowledgeId);
       if (card) {
+        playSound('open');
         setActiveConceptCard(card);
         // 上报微卡阅读真实事件 (Sprint 8-C)
         recordLearningEvent({
@@ -231,6 +234,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         .catch((err) => console.warn('Companion reflection notification error:', err));
     }
     setActiveQuiz(null);
+    playSound('close');
     fetchDynamicRoute();
     fetchAnalyticsData();
     if (onRefresh) {

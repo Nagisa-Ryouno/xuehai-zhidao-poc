@@ -45,8 +45,26 @@ import type {
   EffectivenessProfileResponse,
 } from './types';
 
-// API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
-const API_BASE = '/api';
+// API 基础路径（默认走 Vite 代理 /api；手机端独立使用时可通过
+// URL 参数 ?api=https://host:port 或 localStorage['xuehai-api-base'] 覆盖，
+// 例如手机访问电脑局域网服务：http://<电脑IP>:5173/?api=http://<电脑IP>:8011）
+function resolveApiBase(): string {
+  try {
+    if (typeof window !== 'undefined') {
+      const fromQuery = new URLSearchParams(window.location.search).get('api');
+      if (fromQuery) {
+        localStorage.setItem('xuehai-api-base', fromQuery.replace(/\/$/, ''));
+        return `${fromQuery.replace(/\/$/, '')}/api`;
+      }
+      const fromStore = localStorage.getItem('xuehai-api-base');
+      if (fromStore) return `${fromStore.replace(/\/$/, '')}/api`;
+    }
+  } catch {
+    /* 非浏览器环境（如契约测试）回落到默认相对路径 */
+  }
+  return '/api';
+}
+const API_BASE = resolveApiBase();
 
 /**
  * 通用请求包装函数，提供统一的 HTTP 错误与网络异常拦截

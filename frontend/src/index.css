@@ -73,6 +73,7 @@
   --animate-check-in: check-in 480ms cubic-bezier(.16, 1, .3, 1) 300ms forwards;
   --animate-success-pop: success-pop 680ms cubic-bezier(.16, 1, .3, 1) both;
   --animate-wave: wave 2.4s ease-in-out infinite;
+  --animate-fade-in: fade-in 320ms ease both;
   --animate-sheet-up: sheet-up 460ms cubic-bezier(.34, 1.2, .5, 1) both;
   --animate-spring-pop: spring-pop 520ms cubic-bezier(.34, 1.56, .64, 1) both;
 
@@ -81,6 +82,10 @@
     10%, 30% { transform: rotate(14deg); }
     20%, 40% { transform: rotate(-8deg); }
     50% { transform: rotate(6deg); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   /* 弹簧过冲（easeOutBack 系，源自 easings.net 开源缓动表） */
   @keyframes sheet-up {

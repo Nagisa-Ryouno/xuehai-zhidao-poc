@@ -68,7 +68,7 @@ export const ExampleReaderModal: React.FC<ExampleReaderModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="reader-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
     >
       <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col glass-card rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}

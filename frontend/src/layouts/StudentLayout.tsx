@@ -460,7 +460,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <div className="glass-card rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     {soundMuted ? (
-                      <VolumeX className="w-4.5 h-4.5 w-[18px] h-[18px] text-slate-400 shrink-0" />
+                      <VolumeX className="w-[18px] h-[18px] text-slate-400 shrink-0" />
                     ) : (
                       <Volume2 className="w-[18px] h-[18px] text-indigo-600 shrink-0" />
                     )}

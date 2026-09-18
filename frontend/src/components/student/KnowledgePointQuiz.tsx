@@ -460,7 +460,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             {/* 学习路径变化提示 */}
             {completedProgression.pathChange.hasUnlocked &&
             completedProgression.pathChange.unlockedNodes.length > 0 ? (
-              <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-in fade-in duration-200">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-fade-in">
                 <div className="flex items-center gap-1.5 font-black text-emerald-900">
                   <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{completedProgression.pathChange.title}</span>
@@ -772,7 +772,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             <div className="pt-1">
               {progressionExplanation.pathChange.hasUnlocked &&
               progressionExplanation.pathChange.unlockedNodes.length > 0 ? (
-                <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-in fade-in duration-200">
+                <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-fade-in">
                   <div className="flex items-center gap-1.5 font-black text-emerald-900">
                     <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>{progressionExplanation.pathChange.title}</span>

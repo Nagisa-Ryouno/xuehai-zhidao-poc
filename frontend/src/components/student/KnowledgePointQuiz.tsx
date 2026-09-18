@@ -628,7 +628,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             }
           } else if (isSelected) {
             optionStyle =
-              'bg-indigo-50 border-indigo-600 text-indigo-950 font-bold ring-2 ring-indigo-200 shadow-xs';
+              'bg-indigo-50 border-indigo-600 text-indigo-950 font-bold ring-2 ring-indigo-200 shadow-xs scale-[1.015]';
           }
 
           return (
@@ -637,7 +637,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
               type="button"
               disabled={!isAnswering}
               onClick={() => handleSelectOption(option.key)}
-              className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 min-h-[48px] cursor-pointer disabled:cursor-default ${optionStyle}`}
+              className={`w-full text-left p-3.5 rounded-xl border transition-all duration-300 active:scale-[.985] flex items-start gap-3 min-h-[48px] cursor-pointer disabled:cursor-default ${optionStyle}`}
             >
               <div
                 className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${

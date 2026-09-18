@@ -436,7 +436,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       {/* 顶部状态与安全隔离声明栏 */}
       <div className="bg-[rgba(255,252,248,.6)] backdrop-blur-xl border-b border-white/75 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#F2764A] to-[#E2573F] text-white flex items-center justify-center shadow-md shadow-indigo-200">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#F2764A] to-[#E2573F] text-white flex items-center justify-center shadow-md shadow-orange-300/40 orb-ring animate-float">
             <Bot className="w-6 h-6" />
           </div>
           <div>

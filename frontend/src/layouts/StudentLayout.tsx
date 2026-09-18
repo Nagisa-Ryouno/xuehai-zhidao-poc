@@ -479,13 +479,13 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                       setSoundMuted(next);
                       if (!next) playSound('toggle');
                     }}
-                    className={`relative w-12 h-7 rounded-full transition-colors duration-300 cursor-pointer shrink-0 ${
+                    className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full transition-colors duration-300 ease-out cursor-pointer ${
                       soundMuted ? 'bg-slate-300' : 'bg-indigo-500'
                     }`}
                   >
                     <span
-                      className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                        soundMuted ? 'translate-x-0.5' : 'translate-x-[22px]'
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-1 ring-black/5 transition-transform duration-300 ease-out ${
+                        soundMuted ? 'translate-x-1' : 'translate-x-7'
                       }`}
                     />
                   </button>

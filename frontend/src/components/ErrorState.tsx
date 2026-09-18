@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle, RefreshCw, ServerOff } from 'lucide-react';
+import { RocketScene } from './decor/Illustration';
 
 interface ErrorStateProps {
   message: string;
@@ -14,7 +15,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   return (
     <div className="min-h-[50vh] flex items-center justify-center p-6">
-      <div className="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200/90 shadow-lg max-w-md w-full text-center space-y-5">
+      <div className="glass-card rounded-3xl p-8 sm:p-10 max-w-md w-full text-center space-y-5 relative overflow-hidden">
+        <RocketScene className="w-36 mx-auto -mb-2" />
         <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-50 text-rose-500 border border-rose-100 flex items-center justify-center">
           <ServerOff className="w-8 h-8" />
         </div>

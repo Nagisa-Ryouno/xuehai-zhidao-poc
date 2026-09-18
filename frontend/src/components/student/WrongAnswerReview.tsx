@@ -11,6 +11,7 @@ import {
   Bot,
 } from 'lucide-react';
 import type { WrongAnswerReviewResponse } from '../../types';
+import { RocketScene } from '../decor/Illustration';
 
 interface WrongAnswerReviewProps {
   wrongAnswerData: WrongAnswerReviewResponse | null;
@@ -91,8 +92,9 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
       {totalWrong === 0 ? (
         <div
           data-testid="wrong-answers-empty-state"
-          className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-2xs space-y-4"
+          className="glass-card rounded-3xl p-12 text-center space-y-4 relative overflow-hidden"
         >
+          <RocketScene className="w-32 mx-auto -mb-2" />
           <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle className="w-8 h-8" />
           </div>

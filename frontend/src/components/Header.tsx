@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap truncate">
                 学海智导
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60 whitespace-nowrap shrink-0">
                 <Sparkles className="w-3 h-3 text-indigo-500" />
                 AI Learning Pilot
               </span>

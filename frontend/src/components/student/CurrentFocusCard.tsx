@@ -165,7 +165,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
       {/* 顶部标签行 */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs">
+          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs animate-float">
             <Flame className="w-4 h-4" />
           </div>
           <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-700">

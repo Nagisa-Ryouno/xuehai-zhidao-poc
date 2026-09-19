@@ -1,10 +1,10 @@
 # 学海智导 (Xuehai Zhidao) V2
 
 > **面向大学生的个性化自适应智能导学平台**  
-> **当前版本**：Phase 5 / Sprint 9-E 封版 (`feat(learning): add resource strategy adaptation`)  
+> **当前版本**：Phase 6 / UI-UX 玻璃拟态封版 (`feat(ui): glassmorphism + 3D interaction + soft synth sound + PWA`)  
 > **架构基线**：`FROZEN` (务实分层模块化单体 + 安全网关层)  
-> **产品状态**：**全闭环自适应学习与资源策略自适应就绪 (READY FOR COLLABORATION)**  
-> **质量门禁**：后端 558 测试全通 (100%)，前端 242 测试全通 (100%)，质量门禁 9/9 CHECKS GREEN  
+> **产品状态**：**全闭环自适应学习 + 移动端玻璃拟态 UI 与 PWA 手机应用化就绪 (READY FOR DEMO & REVIEW)**  
+> **质量门禁**：后端 557/558（唯一失败为 Windows 文件锁跨平台问题，见 PR #2），前端 242 测试全通 (100%)  
 
 ---
 
@@ -304,7 +304,20 @@ git push -u origin feat/ui-enhancement
 
 ---
 
-## 10. 项目免责声明 (Disclaimer)
+## 10. Phase 6 UI/UX 更新说明 (2026-09 · feat/ui-enhancement)
+
+- **视觉**：玻璃拟态全站落地（Tailwind v4 `@theme` 色板重映射：珊瑚红品牌 + 深藏青文字 + 奶油渐变网格背景），Material 3 形态系统（拱顶/叶片/花瓣/胶囊/切角/角部节奏）
+- **品牌**：新 Logo（珊瑚红书本 + 深藏青箭头 + 智导星，`frontend/public/logo.svg`）
+- **3D 交互**：纯 CSS 3D 品牌立方体（自转 + 指针视差 + 星轨）；TiltCard 3D 倾斜引擎应用于 6 类面板；RingProgress 环形掌握度
+- **动效**：easeOutExpo 全局缓动 + easeOutBack 弹簧过冲；页面徐徐展开入场、卡片扫光、流光进度条；`prefers-reduced-motion` 全局降级
+- **音效**：Web Audio API 实时合成的清透柔和语义音效（11 种，正弦/三角波 + 低通滤波），学情页与桌面 Header 双开关
+- **PWA 手机应用化**：manifest + Service Worker（外壳离线可用、/api 永不缓存）+ 全套图标；Capacitor 原生壳脚手架与构建文档（见 `frontend/README.md` 第 6 节）
+- **一键体验**：`python scripts/serve_dist.py`（起后端 + 托管 PWA + 代理 API + 自动开浏览器）
+- **红线遵守**：17 个 `data-testid` 全保留，前端 242 项契约测试全绿，未触碰 `app/`、`tests/`、`data/seeds/`
+
+---
+
+## 11. 项目免责声明 (Disclaimer)
 
 - **系统定位**：本项目属于高校大学生创新创业训练计划（国家级创新训练项目）教育科技自适应学习系统研发原型（POC / Prototype），严谨探索认知模型、知识图谱与智能推荐在高等教育专业课中的有机落地。
 - **开源协作**：欢迎小组同学与教育科技研究者交流探讨！

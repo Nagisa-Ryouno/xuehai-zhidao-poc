@@ -120,3 +120,43 @@ npm run build
 ```
 
 如果三项全部绿灯，即可放心将你的 UI 成果提交并推送到 GitHub！
+
+---
+
+## 6. 打包为手机 App（PWA 与原生壳）
+
+本前端已具备两种手机 App 交付形态，均在 **2026-09 Phase 6** 落地。
+
+### 6.1 PWA（开箱即用，推荐首选）
+
+构建产物即为完整 PWA：可"添加到主屏幕"、独立窗口运行、离线打开应用外壳。
+
+- **已实现**：`public/manifest.webmanifest`（名称/图标/独立窗口/竖屏）、
+  `public/sw.js`（应用外壳预缓存 + 静态资源缓存优先 + `/api` 永不缓存）、
+  全套图标（`logo.svg`、`icon-192/512.png`、`icon-maskable-512.png`、`apple-touch-icon.png`）、
+  `main.tsx` 仅生产环境注册 Service Worker。
+- **使用方式**：
+  1. `npm run build` 后将 `dist/` 部署到任意 HTTPS 静态服务（PWA 要求 HTTPS 或 localhost）；
+  2. 手机浏览器打开后：Android（Chrome）菜单选择"添加到主屏幕"；iOS（Safari）分享 →"添加到主屏幕"；
+  3. 图标即为珊瑚红新 Logo，启动后是全屏独立 App 体验。
+- **后端通信**：默认走同源 `/api`。开发期手机与电脑同一局域网体验时，直接访问
+  `http://<电脑IP>:5173` 即可（Vite 开发服务器会在电脑侧把 `/api` 代理到 8011 后端，手机无需任何配置）；
+  生产部署请将 dist 与后端网关置于同源（或在前置代理把 `/api` 转发到网关）。
+
+### 6.2 Capacitor 原生壳（可上架应用商店）
+
+已内置 `capacitor.config.ts`（appId `com.xuehai.zhidao`，webDir `dist`）与依赖
+（`@capacitor/core`、`@capacitor/cli`）。
+
+```bash
+cd frontend
+npm run build                 # 1. 产出 dist/
+npx cap add android           # 2. 生成 Android 原生工程（需 Android SDK 才能继续构建）
+npx cap add ios               # 3. 生成 iOS 原生工程（仅 macOS + Xcode）
+npx cap sync                  # 4. 同步 web 产物到原生工程
+# Android：用 Android Studio 打开 android/ 后 Run / Build APK（或 ./gradlew assembleDebug）
+# iOS：用 Xcode 打开 ios/ 后配置签名并 Archive
+```
+
+> 注意：生成 APK 需要本机安装 JDK 17+ 与 Android SDK；iOS 包只能在 macOS 上构建。
+> 原生壳内前端不带 Vite 代理，请将后端网关与 dist 同源部署（或在前置代理转发 `/api`）。

@@ -8,6 +8,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import type { OverallProfile } from '../types';
+import { TiltCard } from './decor/TiltCard';
 
 interface StatCardsProps {
   profile: OverallProfile;
@@ -99,15 +100,16 @@ export const StatCards: React.FC<StatCardsProps> = ({ profile }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div className="shape-variety grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
       {cards.map((card, idx) => {
         const Icon = card.icon;
         return (
-          <div
+          <TiltCard
             key={idx}
-            className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
+            maxTilt={11}
+            innerClassName="glass-card rounded-2xl p-5 h-full flex flex-col justify-between"
           >
-            <div>
+            <div className="tilt-z">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-slate-500">
                   {card.title}
@@ -139,7 +141,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ profile }) => {
                 {card.badge}
               </span>
             </div>
-          </div>
+          </TiltCard>
         );
       })}
     </div>

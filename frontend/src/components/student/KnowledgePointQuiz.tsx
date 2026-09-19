@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { playSound } from '../../soundService';
 import {
   CheckCircle2,
   XCircle,
@@ -87,9 +88,15 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
     };
   }, [knowledgeId, knowledgeName]);
 
+  // 微测验完成荣誉时刻：播放一次升级音效
+  useEffect(() => {
+    if (session.status === 'completed') playSound('levelup');
+  }, [session.status]);
+
   // 处理选中选项
   const handleSelectOption = (optionKey: string) => {
     if (session.status !== 'answering') return;
+    playSound('select');
     setSession((s) => selectOption(s, optionKey));
   };
 
@@ -99,6 +106,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
   const handleSubmitAnswer = async () => {
     if (isSubmittingRef.current || !canSubmitAnswer(session)) return;
     isSubmittingRef.current = true;
+    playSound('press');
 
     const requestStudentId = studentId;
 
@@ -121,6 +129,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
       if (requestStudentId !== studentId) return;
 
       setSession((s) => setSubmitSuccess(s, res, timeSpentMs));
+      playSound(res?.is_correct ? 'success' : 'error');
     } catch (err: unknown) {
       if (requestStudentId !== studentId) return;
 
@@ -129,6 +138,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
           ? err.message
           : '答案提交失败，请检查网络后重试';
       setSession((s) => setSubmitError(s, msg));
+      playSound('error');
     } finally {
       isSubmittingRef.current = false;
     }
@@ -279,7 +289,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
           }`}
         >
           <div
-            className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center ${
+            className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center animate-spring-pop ${
               isPerfect
                 ? 'bg-emerald-100 text-emerald-600'
                 : isPassing
@@ -347,7 +357,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             {session.records.map((rec, idx) => (
               <div
                 key={rec.questionId}
-                className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-start justify-between gap-3 text-xs"
+                className="p-3 glass-card rounded-xl flex items-start justify-between gap-3 text-xs"
               >
                 <div className="flex items-start gap-2">
                   <span className="mt-0.5">
@@ -438,7 +448,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             </div>
 
             {/* 认知阶段演进反馈提示 */}
-            <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 bg-white/80 px-2.5 py-1.5 rounded-lg border border-slate-200/60">
+            <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 glass-chip px-2.5 py-1.5 rounded-lg">
               <span className="font-bold text-slate-800">
                 {completedProgression.stageChange.badgeText}
               </span>
@@ -450,7 +460,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             {/* 学习路径变化提示 */}
             {completedProgression.pathChange.hasUnlocked &&
             completedProgression.pathChange.unlockedNodes.length > 0 ? (
-              <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-in fade-in duration-200">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-fade-in">
                 <div className="flex items-center gap-1.5 font-black text-emerald-900">
                   <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{completedProgression.pathChange.title}</span>
@@ -466,7 +476,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="p-3 rounded-xl bg-white/80 border border-slate-200/70 text-xs text-slate-700 space-y-1">
+              <div className="p-3 rounded-xl glass-chip text-xs text-slate-700 space-y-1">
                 <div className="flex items-center gap-1.5 font-bold text-slate-800">
                   <span>{completedProgression.pathChange.title}</span>
                 </div>
@@ -603,7 +613,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
 
           // Feedback 状态下的智能高亮（只有服务端返回后才展示）
           let optionStyle =
-            'bg-white border-slate-200 text-slate-800 hover:border-indigo-300 hover:bg-slate-50/60';
+            'glass-card text-slate-800 hover:bg-white/70';
 
           if (isFeedback && session.lastFeedback) {
             const isCorrectAnswer = session.lastFeedback.correct_option === option.key;
@@ -614,11 +624,11 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
               optionStyle =
                 'bg-rose-50/90 border-rose-500 text-rose-950 line-through opacity-80';
             } else {
-              optionStyle = 'bg-white border-slate-200 text-slate-400 opacity-60';
+              optionStyle = 'glass-card text-slate-400 opacity-60';
             }
           } else if (isSelected) {
             optionStyle =
-              'bg-indigo-50 border-indigo-600 text-indigo-950 font-bold ring-2 ring-indigo-200 shadow-xs';
+              'bg-indigo-50 border-indigo-600 text-indigo-950 font-bold ring-2 ring-indigo-200 shadow-xs scale-[1.015]';
           }
 
           return (
@@ -627,7 +637,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
               type="button"
               disabled={!isAnswering}
               onClick={() => handleSelectOption(option.key)}
-              className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 min-h-[48px] cursor-pointer disabled:cursor-default ${optionStyle}`}
+              className={`w-full text-left p-3.5 rounded-full border transition-all duration-300 active:scale-[.985] flex items-start gap-3 min-h-[48px] cursor-pointer disabled:cursor-default ${optionStyle}`}
             >
               <div
                 className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
@@ -746,7 +756,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
               </div>
 
               {/* Layer 3 反馈信息条 */}
-              <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 bg-white/80 px-2.5 py-1.5 rounded-lg border border-slate-200/60">
+              <div className="text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-600 glass-chip px-2.5 py-1.5 rounded-lg">
                 <span className="font-bold text-slate-800">
                   {progressionExplanation.stageChange.badgeText}
                 </span>
@@ -762,7 +772,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
             <div className="pt-1">
               {progressionExplanation.pathChange.hasUnlocked &&
               progressionExplanation.pathChange.unlockedNodes.length > 0 ? (
-                <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-in fade-in duration-200">
+                <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-300 text-xs text-emerald-950 space-y-1 animate-fade-in">
                   <div className="flex items-center gap-1.5 font-black text-emerald-900">
                     <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>{progressionExplanation.pathChange.title}</span>
@@ -778,7 +788,7 @@ export const KnowledgePointQuiz: React.FC<KnowledgePointQuizProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-white/80 border border-slate-200/70 text-xs text-slate-700 space-y-1">
+                <div className="p-3 rounded-xl glass-chip text-xs text-slate-700 space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-slate-800">
                     <span>{progressionExplanation.pathChange.title}</span>
                   </div>

@@ -12,6 +12,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import type { LearningPathStep, PathState } from '../types';
+import { TiltCard } from './decor/TiltCard';
 import { resolveStepPathState } from './student/taskFocusModel';
 import { getPathStatePresentation } from './student/pathStatePresentation';
 
@@ -83,11 +84,11 @@ export const LearningPath: React.FC<LearningPathProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+    <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-5 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20">
+          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-[#F2764A] to-[#E2573F] text-white shadow-md shadow-orange-500/25">
             <Compass className="w-6 h-6" />
           </div>
           <div>
@@ -138,7 +139,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
 
           {/* Advancement Training Direction Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left max-w-4xl mx-auto pt-2">
-            <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs hover:border-emerald-300 hover:shadow-xs transition-all">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5">
                 <Target className="w-4 h-4" />
               </div>
@@ -148,9 +149,9 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 强化弹性与福利、税收归宿交叉大题的多步计算推导。
               </p>
-            </div>
+            </TiltCard>
 
-            <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs hover:border-emerald-300 hover:shadow-xs transition-all">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2.5">
                 <Sparkles className="w-4 h-4" />
               </div>
@@ -160,9 +161,9 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 打通供求理论与消费者最优均衡，训练宏微观联动思考。
               </p>
-            </div>
+            </TiltCard>
 
-            <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs hover:border-emerald-300 hover:shadow-xs transition-all">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-2.5">
                 <Clock className="w-4 h-4" />
               </div>
@@ -172,9 +173,9 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 针对目前答题耗时 168 秒的特征，进行高强度限时模拟训练。
               </p>
-            </div>
+            </TiltCard>
 
-            <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs hover:border-emerald-300 hover:shadow-xs transition-all">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center mb-2.5">
                 <BookMarked className="w-4 h-4" />
               </div>
@@ -184,12 +185,12 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 挑战完全竞争与垄断市场的长期均衡推导等深度拔高考点。
               </p>
-            </div>
+            </TiltCard>
           </div>
         </div>
       ) : (
         /* Timeline Roadmap View */
-        <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-4 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-indigo-500 before:via-violet-400 before:to-slate-200">
+        <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-4 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-[#F2764A] before:via-[#EE8A5C] before:to-slate-200">
           {safeLearningPath.map((step, index) => {
             const isHighPriority = step.priority === '高';
             const stepState = resolveStepState(step, index);
@@ -281,7 +282,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
 
                   {/* Accuracy & Learning Goal */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 my-3">
-                    <div className="bg-white/80 rounded-xl p-2.5 border border-slate-200/70">
+                    <div className="glass-chip rounded-xl p-2.5">
                       <span className="text-[11px] text-slate-500 block">
                         当前掌握正确率
                       </span>
@@ -296,7 +297,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
                       </span>
                     </div>
 
-                    <div className="md:col-span-2 bg-white/80 rounded-xl p-2.5 border border-slate-200/70 flex items-center gap-2">
+                    <div className="md:col-span-2 glass-chip rounded-xl p-2.5 flex items-center gap-2">
                       <Target className="w-4 h-4 text-indigo-500 shrink-0" />
                       <div>
                         <span className="text-[11px] text-slate-500 block">

@@ -20,6 +20,8 @@ import { resolveCurrentFocusTask } from '../components/student/taskFocusModel';
 import { buildLearningContext } from '../components/student/learningContextModel';
 
 import { useApp } from '../context/useApp';
+import { playSound, isSoundMuted, setSoundMuted, subscribeSoundMuted } from '../soundService';
+import { AuroraWaves } from '../components/decor/Illustration';
 import type {
   StudentListItem,
   StudentDashboardResponse,
@@ -30,7 +32,7 @@ import type {
   CompanionMode,
   LearningActionResultResponse,
 } from '../types';
-import { CalendarCheck, BookOpen, Network, UserCheck, Bot } from 'lucide-react';
+import { CalendarCheck, BookOpen, Network, UserCheck, Bot, Volume2, VolumeX } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
 import { MobileContainer } from '../components/student/MobileContainer';
 import { ConceptCardModal } from '../components/student/ConceptCardModal';
@@ -96,6 +98,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   // 学情成效沉淀与错题复盘状态 (Sprint 8-C)
   const [profileSubTab, setProfileSubTab] = useState<'progress' | 'wrong_answers' | 'radar'>('progress');
+  const [soundMuted, setSoundMutedState] = useState<boolean>(isSoundMuted());
+  useEffect(() => subscribeSoundMuted(setSoundMutedState), []);
   const [progressData, setProgressData] = useState<StudentProgressResponse | null>(null);
   const [wrongAnswerData, setWrongAnswerData] = useState<WrongAnswerReviewResponse | null>(null);
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState<boolean>(false);
@@ -161,6 +165,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   const handleStartQuiz = useCallback(
     (knowledgeId: string, knowledgeName: string) => {
+      playSound('open');
       setActiveQuiz({ knowledgeId, knowledgeName });
     },
     []
@@ -170,6 +175,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     (knowledgeId: string, _knowledgeName: string) => {
       const card = getConceptCardById(knowledgeId);
       if (card) {
+        playSound('open');
         setActiveConceptCard(card);
         // 上报微卡阅读真实事件 (Sprint 8-C)
         recordLearningEvent({
@@ -231,6 +237,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         .catch((err) => console.warn('Companion reflection notification error:', err));
     }
     setActiveQuiz(null);
+    playSound('close');
     fetchDynamicRoute();
     fetchAnalyticsData();
     if (onRefresh) {
@@ -307,7 +314,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   ] as const;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-100 selection:text-indigo-800 overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen flex flex-col text-slate-900 selection:bg-indigo-100 selection:text-indigo-800 overflow-x-hidden w-full max-w-full">
       {/* Top Header */}
       {/* Top Header */}
       <Header
@@ -348,9 +355,10 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         </div>
       </div>
 
-      {/* Main Content Area with MobileContainer */}
+      {/* Main Content Area with MobileContainer（subRoute 切换时 520ms 徐徐展开入场） */}
       <main className="flex-1 w-full py-4 sm:py-8">
-        <MobileContainer>
+        <MobileContainer key={subRoute}>
+          <div className="animate-screen-in" key={`${subRoute}-${studentId}`}>
         {isLoading ? (
           <LoadingSkeleton />
         ) : errorMessage ? (
@@ -369,6 +377,9 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   student={dashboardData.profile.student}
                   recommendationType={dashboardData.learning_path.recommendation_type}
                 />
+
+                {/* 极光波浪分隔（打破笔直矩形边缘） */}
+                <AuroraWaves className="w-full h-9 -my-3 opacity-90" />
 
                 {/* 2. Today's Learning Mission: Current Focus Task (Sprint 2 Core) */}
                 <CurrentFocusCard
@@ -448,6 +459,41 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   student={dashboardData.profile.student}
                   recommendationType={dashboardData.learning_path.recommendation_type}
                 />
+
+                {/* 界面音效设置（移动端亦可访问的音效开/关选项） */}
+                <div className="glass-card shape-pill px-5 py-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {soundMuted ? (
+                      <VolumeX className="w-[18px] h-[18px] text-slate-400 shrink-0" />
+                    ) : (
+                      <Volume2 className="w-[18px] h-[18px] text-indigo-600 shrink-0" />
+                    )}
+                    <div className="min-w-0">
+                      <span className="text-sm font-bold text-slate-800">界面音效</span>
+                      <span className="text-xs text-slate-500 ml-2 hidden sm:inline">按键与反馈提示音 · 清透柔和合成音色</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={!soundMuted}
+                    aria-label="界面音效开关"
+                    onClick={() => {
+                      const next = !soundMuted;
+                      setSoundMuted(next);
+                      if (!next) playSound('toggle');
+                    }}
+                    className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full transition-colors duration-300 ease-out cursor-pointer ${
+                      soundMuted ? 'bg-slate-300' : 'bg-indigo-500'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-1 ring-black/5 transition-transform duration-300 ease-out ${
+                        soundMuted ? 'translate-x-1' : 'translate-x-7'
+                      }`}
+                    />
+                  </button>
+                </div>
 
                 {/* Profile Sub-view Navigation Pill Bar */}
                 <div className="flex items-center gap-2 p-1.5 bg-slate-200/70 rounded-2xl w-fit max-w-full overflow-x-auto no-scrollbar">
@@ -592,6 +638,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
             )}
           </div>
         ) : null}
+          </div>
         </MobileContainer>
       </main>
 

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { playSound } from '../soundService';
+import { TiltCard } from './decor/TiltCard';
 import {
   Bot,
   Sparkles,
@@ -191,6 +193,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         mode,
       };
       setMessages((prev) => [...prev, userDisplayMsg]);
+      playSound('send');
 
       try {
         const req: CompanionStudyRequest = {
@@ -225,6 +228,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         };
 
         setMessages((prev) => [...prev, assistantDisplayMsg]);
+        playSound('notification');
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '伴学服务暂时无响应，请重试';
         setErrorMsg(msg);
@@ -429,11 +433,11 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const isOverLimit = inputMessage.length > 2000;
 
   return (
-    <div className="flex flex-col h-[780px] bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden shadow-sm" data-testid="ai-companion-assistant">
+    <div className="flex flex-col h-[780px] glass-card rounded-3xl overflow-hidden" data-testid="ai-companion-assistant">
       {/* 顶部状态与安全隔离声明栏 */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-[rgba(255,252,248,.6)] backdrop-blur-xl border-b border-white/75 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#F2764A] to-[#E2573F] text-white flex items-center justify-center shadow-md shadow-orange-300/40 orb-ring animate-float">
             <Bot className="w-6 h-6" />
           </div>
           <div>
@@ -539,7 +543,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold shadow-xs ${
                   isUser
                     ? 'bg-slate-900 text-white'
-                    : 'bg-gradient-to-tr from-indigo-600 to-purple-600 text-white'
+                    : 'bg-gradient-to-tr from-[#F2764A] to-[#E2573F] text-white'
                 }`}
               >
                 {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -552,7 +556,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                   className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                     isUser
                       ? 'bg-slate-900 text-white rounded-tr-none'
-                      : 'bg-white text-slate-800 border border-slate-200/90 shadow-xs rounded-tl-none space-y-3'
+                      : 'glass-card text-slate-800 rounded-tl-none space-y-3'
                   }`}
                 >
                   {/* 消息正文 */}
@@ -562,7 +566,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
                   {/* 学习行动反思卡片 (Sprint 9-B 闭环结果) */}
                   {actResult && (
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50/70 to-slate-50 border border-indigo-200/80 space-y-3 mt-3">
+                    <div className="p-4 rounded-2xl glass-card space-y-3 mt-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Target className="w-4 h-4 text-indigo-600" />
@@ -635,7 +639,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
                 {/* 交互式微理解测验小部件 (Sprint 9-B Quick Check) */}
                 {qc && (
-                  <div className="p-4 rounded-2xl bg-white border border-purple-200 shadow-xs space-y-3" data-testid="quick-check-widget">
+                  <div className="p-4 rounded-2xl glass-card space-y-3" data-testid="quick-check-widget">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900">
                         <Lightbulb className="w-4 h-4 text-purple-600" />
@@ -731,12 +735,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                         if (act.action_type === 'REVIEW_WRONG_ANSWERS') IconComponent = RotateCw;
 
                         return (
-                          <button
-                            key={act.action_id}
-                            type="button"
-                            onClick={() => handleGuidedActionClick(act)}
-                            className="p-3 rounded-xl bg-white hover:bg-indigo-50/50 border border-slate-200 hover:border-indigo-300 text-left transition-all cursor-pointer shadow-2xs group flex flex-col justify-between"
-                          >
+                          <TiltCard key={act.action_id} maxTilt={8} innerClassName="rounded-2xl h-full">
+                            <button
+                              type="button"
+                              onClick={() => handleGuidedActionClick(act)}
+                              className="w-full h-full p-3 rounded-2xl glass-card hover:bg-white/70 text-left transition-all duration-300 cursor-pointer group flex flex-col justify-between"
+                            >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 group-hover:text-indigo-700">
                                 <IconComponent className="w-4 h-4 text-indigo-600 shrink-0" />
@@ -755,7 +759,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                               <span>立即前往</span>
                               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                             </div>
-                          </button>
+                            </button>
+                          </TiltCard>
                         );
                       })}
                     </div>
@@ -818,7 +823,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       </div>
 
       {/* 底部输入框与字数指示 */}
-      <div className="p-4 bg-white border-t border-slate-200">
+      <div className="p-4 bg-[rgba(255,252,248,.6)] backdrop-blur-xl border-t border-white/75">
         <div className="relative">
           <textarea
             rows={2}
@@ -838,7 +843,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             className={`w-full p-3 pr-24 rounded-2xl border text-xs sm:text-sm focus:outline-none focus:ring-2 resize-none transition-all ${
               isOverLimit
                 ? 'border-rose-400 focus:ring-rose-400 bg-rose-50/30'
-                : 'border-slate-200 focus:ring-indigo-500 focus:border-transparent bg-slate-50/50'
+                : 'border-white/80 focus:ring-indigo-500 focus:border-transparent bg-white/60'
             }`}
           />
 

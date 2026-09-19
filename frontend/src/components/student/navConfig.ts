@@ -72,9 +72,9 @@ export function getActiveStudentTab(pathname: string): StudentTabId {
 export const BOTTOM_NAV_CONFIG = {
   // 最小触控靶点（像素）
   minTouchTargetPx: 48,
-  // 容器固定定位与毛玻璃背景类
+  // 容器固定定位与暖白毛玻璃背景类
   containerClass:
-    'fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-lg pb-[env(safe-area-inset-bottom)] md:hidden',
+    'fixed bottom-0 left-0 right-0 z-40 bg-[rgba(251,241,231,.82)] backdrop-blur-xl backdrop-saturate-150 border-t border-white/75 shadow-[0_-6px_20px_rgba(214,150,105,.14)] pb-[env(safe-area-inset-bottom)] md:hidden',
   // 主体内容底部安全预留类（确保不遮挡内容）
   contentPaddingClass: 'pb-24 sm:pb-8',
   // iOS 安全区域适配类

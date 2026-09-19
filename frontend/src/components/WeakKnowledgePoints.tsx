@@ -73,7 +73,7 @@ export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
   const visiblePoints = showAll ? weakPoints : weakPoints.slice(0, 6);
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
+    <div className="glass-card rounded-2xl p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2.5">
@@ -126,7 +126,7 @@ export const WeakKnowledgePoints: React.FC<WeakKnowledgePointsProps> = ({
               <div
                 key={item.knowledge_id}
                 onClick={() => handleOpenPoint(item)}
-                className="bg-slate-50/60 hover:bg-white rounded-xl p-4 border border-slate-200/80 hover:border-indigo-300 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group"
+                className="glass-chip hover:bg-white/70 rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300 flex flex-col justify-between cursor-pointer group"
               >
                 <div>
                   {/* Card Header */}

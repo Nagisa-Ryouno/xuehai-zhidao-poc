@@ -11,6 +11,7 @@ import {
   Bot,
 } from 'lucide-react';
 import type { StudentProgressResponse } from '../../types';
+import { TiltCard } from '../decor/TiltCard';
 
 interface ProgressOverviewProps {
   progressData: StudentProgressResponse | null;
@@ -55,7 +56,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xs animate-pulse space-y-6">
+      <div className="glass-card rounded-3xl p-8 animate-pulse space-y-6">
         <div className="h-8 bg-slate-200 rounded-lg w-1/3" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="h-24 bg-slate-100 rounded-2xl" />
@@ -70,7 +71,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
 
   if (!progressData) {
     return (
-      <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-xs">
+      <div className="glass-card rounded-3xl p-12 text-center">
         <HelpCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
         <p className="text-slate-600 font-medium">暂无掌握度成效数据</p>
       </div>
@@ -95,8 +96,8 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
 
   return (
     <div className="space-y-6" data-testid="student-progress-overview">
-      {/* 总体成效总览 Hero Banner */}
-      <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/20 border border-slate-800 relative overflow-hidden">
+      {/* 总体成效总览 Hero Banner（3D 倾斜交互面板） */}
+      <TiltCard maxTilt={4} glareColor="rgba(255,255,255,.14)" innerClassName="hero-navy shape-arch p-6 sm:p-8 text-white shadow-xl shadow-slate-900/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -164,12 +165,12 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </TiltCard>
 
       {/* 4 维考点分类统计卡片 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 1. 已达标 */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs">
+        <div className="glass-card rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500">已达标考点 (≥80%)</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -191,7 +192,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
         </div>
 
         {/* 2. 发展中 */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs">
+        <div className="glass-card rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500">发展中 (60%~79%)</span>
             <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -213,7 +214,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
         </div>
 
         {/* 3. 需巩固 */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs">
+        <div className="glass-card rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500">需重点巩固 (&lt;60%)</span>
             <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
@@ -235,7 +236,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
         </div>
 
         {/* 4. 未学习 */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs">
+        <div className="glass-card rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500">待解锁探索</span>
             <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
@@ -258,7 +259,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
       </div>
 
       {/* 掌握度变动历史趋势 (真实事件序列呈现) */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs space-y-4">
+      <div className="glass-card rounded-3xl p-6 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
@@ -289,7 +290,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
               {mastery_trend.map((pt, idx) => (
                 <div
                   key={`${pt.timestamp}-${idx}`}
-                  className="flex flex-col items-center min-w-[90px] p-3 rounded-2xl bg-slate-50 border border-slate-200/80 shrink-0 hover:border-indigo-300 transition-colors"
+                  className="flex flex-col items-center min-w-[90px] p-3 rounded-2xl glass-chip shrink-0 hover:bg-white/70 transition-colors"
                 >
                   <span className="text-[11px] text-slate-400 font-mono">#{idx + 1}</span>
                   <span className="text-sm font-black text-indigo-700 font-mono my-1">
@@ -306,7 +307,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
       </div>
 
       {/* 30 考点掌握度矩阵与分类浏览 */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs space-y-5">
+      <div className="glass-card rounded-3xl p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-base font-bold text-slate-900">30 考点认知矩阵全览</h3>
@@ -374,7 +375,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
               return (
                 <div
                   key={item.knowledge_id}
-                  className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-indigo-300 hover:shadow-xs transition-all space-y-3"
+                  className="p-4 rounded-2xl glass-card hover:shadow-[0_18px_40px_rgba(214,150,105,.2)] transition-all duration-300 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -444,7 +445,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
       </div>
 
       {/* 最近真实学习流水时间轴 */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs space-y-4">
+      <div className="glass-card rounded-3xl p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl bg-blue-50 text-blue-600">

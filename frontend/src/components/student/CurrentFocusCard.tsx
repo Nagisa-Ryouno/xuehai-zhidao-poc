@@ -20,6 +20,7 @@ import {
   MASTERY_TARGET_PERCENT,
 } from './adaptiveLearningModel.ts';
 import type { DynamicLearningRoute } from '../../types';
+import { RingProgress } from '../decor/RingProgress';
 
 interface CurrentFocusCardProps {
   focusResult: CurrentFocusResult;
@@ -160,12 +161,12 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   return (
     <div
       data-testid="current-focus-card"
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50/25 to-violet-50/20 border-2 border-indigo-200/90 p-5 sm:p-7 shadow-sm transition-all hover:shadow-md"
+      className="relative overflow-hidden rounded-3xl glass-card p-5 sm:p-7 transition-all hover:shadow-[0_18px_40px_rgba(214,150,105,.2)]"
     >
       {/* 顶部标签行 */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs">
+          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs animate-float">
             <Flame className="w-4 h-4" />
           </div>
           <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-700">
@@ -199,20 +200,24 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
         </div>
 
         {/* 掌握度可视化进度对比 */}
-        <div className="p-4 bg-white/95 backdrop-blur-xs rounded-xl border border-slate-200/90 shadow-2xs space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-              <span>当前掌握度：</span>
-              <strong className="font-mono font-black text-slate-900 text-sm">
-                {focus.currentMasteryPercent}%
-              </strong>
-            </span>
-            <span className="font-semibold text-indigo-700 flex items-center gap-1">
-              <span>目标掌握度：</span>
-              <strong className="font-mono font-black text-indigo-600 text-sm">
-                {focus.targetMasteryPercent}%
-              </strong>
-            </span>
+        <div className="p-4 glass-card rounded-2xl space-y-2.5">
+          {/* 掌握度可视化：环形指示器 + 进度对比 */}
+          <div className="flex items-center gap-4">
+            <RingProgress percent={focus.currentMasteryPercent} size={72} className="shrink-0" />
+            <div className="flex-1 flex items-center justify-between text-xs">
+              <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                <span>当前掌握度：</span>
+                <strong className="font-mono font-black text-slate-900 text-sm">
+                  {focus.currentMasteryPercent}%
+                </strong>
+              </span>
+              <span className="font-semibold text-indigo-700 flex items-center gap-1">
+                <span>目标掌握度：</span>
+                <strong className="font-mono font-black text-indigo-600 text-sm">
+                  {focus.targetMasteryPercent}%
+                </strong>
+              </span>
+            </div>
           </div>
 
           {/* 进度条轨道 */}
@@ -225,10 +230,10 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
             />
             {/* 当前掌握度进度条 */}
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
+              className={`h-full rounded-full transition-all duration-1000 ${
                 focus.currentMasteryPercent >= MASTERY_TARGET_PERCENT
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                  : 'bg-gradient-to-r from-indigo-500 to-violet-600'
+                  : 'progress-shimmer'
               }`}
               style={{ width: `${Math.min(100, Math.max(0, focus.currentMasteryPercent))}%` }}
             />
@@ -264,7 +269,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
               id="current-focus-explanation"
               role="region"
               aria-live="polite"
-              className="p-4 rounded-xl bg-white/95 border border-indigo-100 shadow-2xs space-y-2.5 animate-in fade-in duration-200"
+              className="p-4 rounded-2xl glass-card space-y-2.5 animate-screen-in"
             >
               <div className="text-xs text-slate-700 leading-relaxed font-medium">
                 <strong className="text-indigo-950 font-bold">核心推荐依据：</strong>

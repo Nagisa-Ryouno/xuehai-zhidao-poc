@@ -19,7 +19,7 @@ export const AIDiagnosis: React.FC<AIDiagnosisProps> = ({
   profileDiagnosis,
 }) => {
   return (
-    <div className="bg-gradient-to-br from-white via-indigo-50/20 to-violet-50/30 rounded-2xl p-6 border border-indigo-100/90 shadow-xs relative overflow-hidden flex flex-col justify-between h-full">
+    <div className="glass-card rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between h-full">
       {/* Decorative subtle ambient light */}
       <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
 
@@ -27,7 +27,7 @@ export const AIDiagnosis: React.FC<AIDiagnosisProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-sm shadow-indigo-500/20">
+            <div className="p-2 rounded-xl bg-gradient-to-tr from-[#F2764A] to-[#E2573F] text-white shadow-sm shadow-indigo-500/20">
               <Bot className="w-5 h-5" />
             </div>
             <div>
@@ -50,7 +50,7 @@ export const AIDiagnosis: React.FC<AIDiagnosisProps> = ({
         {/* Core Diagnosis Narrative */}
         <div className="space-y-3 mb-5">
           {/* Mastery Evaluation */}
-          <div className="bg-white/80 backdrop-blur-xs rounded-xl p-3.5 border border-slate-200/80 shadow-2xs">
+          <div className="glass-card rounded-xl p-3.5">
             <div className="flex items-start gap-2.5">
               <Brain className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
               <div>
@@ -63,7 +63,7 @@ export const AIDiagnosis: React.FC<AIDiagnosisProps> = ({
           </div>
 
           {/* Behavior Pattern */}
-          <div className="bg-white/80 backdrop-blur-xs rounded-xl p-3.5 border border-slate-200/80 shadow-2xs">
+          <div className="glass-card rounded-xl p-3.5">
             <div className="flex items-start gap-2.5">
               <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>

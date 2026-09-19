@@ -1,0 +1,28 @@
+# Render 一键部署蓝图（Blueprint）
+# 使用：Render Dashboard → New → Blueprint Instance → 选择本仓库 → Apply
+# 会创建两个服务：xuehai-api（后端）+ xuehai-app（前端 PWA 静态站，/api 自动转发到后端）
+services:
+  # 后端 API 服务（FastAPI + uvicorn，免费计划）
+  - type: web
+    name: xuehai-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn gateway.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+
+  # 前端 PWA 静态站（Vite 构建产物，/api 重写代理到后端服务）
+  - type: web
+    name: xuehai-app
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    routes:
+      # /api 请求由 Render 服务端转发到后端，浏览器端保持同源，无跨域问题
+      - type: rewrite
+        source: /api/*
+        destination: https://xuehai-api.onrender.com/api/*
+      # SPA 路由回退
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,0 +1,40 @@
+{
+  "name": "学海智导 —— AI驱动的个性化学习成长助手",
+  "short_name": "学海智导",
+  "description": "面向大学生的个性化自适应智能导学平台：知识图谱、BKT 掌握度追踪、动态路径推荐与 AI 伴学。",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#FBF1E7",
+  "background_color": "#FBF1E7",
+  "lang": "zh-CN",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

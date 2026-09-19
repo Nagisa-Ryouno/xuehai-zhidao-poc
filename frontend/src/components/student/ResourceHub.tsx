@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Check,
   RotateCcw,
+  Play,
 } from 'lucide-react';
 import type {
   LearningResource,
@@ -21,6 +22,7 @@ import type {
   LearningSession,
   KnowledgeEffectivenessResponse,
   SessionCompleteResponse,
+  RetentionProfile,
 } from '../../types';
 import {
   getResourcesByKnowledge,
@@ -29,6 +31,7 @@ import {
   createLearningSession,
   completeLearningSession,
   getKnowledgeEffectiveness,
+  getRetentionProfile,
 } from '../../api';
 import { ResourceCard } from './ResourceCard';
 import { ExampleReaderModal } from './ExampleReaderModal';
@@ -82,6 +85,9 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
   const [completionResult, setCompletionResult] = useState<SessionCompleteResponse | null>(null);
   const [knowledgeEffectiveness, setKnowledgeEffectiveness] = useState<KnowledgeEffectivenessResponse | null>(null);
 
+  // Sprint 9-F: 学习保持度分析状态
+  const [retentionProfile, setRetentionProfile] = useState<RetentionProfile | null>(null);
+
   // 例题阅读模态框状态
   const [activeReadingResource, setActiveReadingResource] = useState<LearningResource | null>(null);
 
@@ -96,6 +102,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
     setActiveSession(null);
     setCompletionResult(null);
     setKnowledgeEffectiveness(null);
+    setRetentionProfile(null);
   }, [studentId]);
 
   // 加载当前考点学习效果与最新会话信息 (Sprint 9-D)
@@ -110,6 +117,16 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
       setKnowledgeEffectiveness(null);
     }
   }, [selectedKnowledgeId, studentId]);
+
+  // 加载当前考点保持度分析与复习建议 (Sprint 9-F)
+  const fetchRetention = useCallback(async () => {
+    try {
+      const data = await getRetentionProfile(studentId, selectedKnowledgeId);
+      setRetentionProfile(data);
+    } catch {
+      setRetentionProfile(null);
+    }
+  }, [studentId, selectedKnowledgeId]);
 
   // 加载自适应推荐资源
   const fetchRecommendations = useCallback(async () => {
@@ -141,7 +158,8 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
     fetchRecommendations();
     fetchResources();
     fetchEffectiveness();
-  }, [fetchRecommendations, fetchResources, fetchEffectiveness]);
+    fetchRetention();
+  }, [fetchRecommendations, fetchResources, fetchEffectiveness, fetchRetention]);
 
   // 记录卡片曝光事件 (RESOURCE_VIEW)
   useEffect(() => {
@@ -313,6 +331,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
               setSelectedKnowledgeId(e.target.value);
               setActiveSession(null);
               setCompletionResult(null);
+              setRetentionProfile(null);
             }}
             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-slate-800 shadow-xs focus:border-indigo-500 focus:outline-hidden cursor-pointer w-full sm:w-auto max-w-full truncate"
           >
@@ -324,6 +343,96 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
           </select>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* 0. 学习保持度提示卡 (Sprint 9-F: Learning Retention Check Lite) */}
+      {/* ========================================================================= */}
+      {retentionProfile?.retention_status === 'DUE_FOR_REVIEW' && (
+        <div
+          data-testid="retention-prompt-card"
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-300 p-5 sm:p-6 shadow-sm animate-in fade-in slide-in-from-top-3 duration-300"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="p-3 rounded-2xl bg-amber-500 text-white shadow-xs shrink-0">
+                <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200 text-amber-900">
+                    <RotateCcw className="w-3 h-3" />
+                    该复习一下了
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    考点：{selectedKnowledgeId} {currentKnowledgeName}
+                  </span>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-1">
+                  你之前学习过「{currentKnowledgeName}」
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-relaxed">
+                  距离上次学习已经过去 <span className="font-bold text-amber-800">{retentionProfile.days_since_learning ?? 3}</span> 天。建议花 1 分钟做一道快速复测，检验知识记忆保持情况。
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              <button
+                type="button"
+                data-testid="start-retention-quiz-btn"
+                onClick={() => onStartQuiz(selectedKnowledgeId, currentKnowledgeName)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-amber-600 hover:bg-amber-700 active:scale-95 shadow-sm cursor-pointer transition-all duration-150"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                <span>开始快速复测</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {retentionProfile?.retention_status === 'NEEDS_REINFORCEMENT' && (
+        <div
+          data-testid="retention-reinforcement-card"
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-2 border-indigo-200 p-5 sm:p-6 shadow-sm animate-in fade-in slide-in-from-top-3 duration-300"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-xs shrink-0">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">
+                    📘 建议再巩固一下
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    考点：{selectedKnowledgeId} {currentKnowledgeName}
+                  </span>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-1">
+                  这次复测发现这个考点还有一些容易混淆的地方
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-relaxed">
+                  建议重新看一下概念精要微卡，理清关键核心逻辑，然后再做一道针对性练习。
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              <button
+                type="button"
+                data-testid="review-concept-btn"
+                onClick={() => onOpenConceptCard(selectedKnowledgeId, currentKnowledgeName)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-sm cursor-pointer transition-all duration-150"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>重新学习</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 1. 核心结果卡：本次学习完成与效果评估 (Sprint 9-D 闭环展示) */}

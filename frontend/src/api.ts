@@ -43,6 +43,7 @@ import type {
   KnowledgeEffectivenessResponse,
   SessionCompleteResponse,
   EffectivenessProfileResponse,
+  RetentionProfile,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -641,8 +642,14 @@ export async function getResourceEffectivenessProfile(
   );
 }
 
-
-
-
-
-
+/**
+ * Sprint 9-F: 获取学生针对指定考点的学习保持度档案与间隔复习建议
+ */
+export async function getRetentionProfile(
+  studentId: string,
+  knowledgeId: string
+): Promise<RetentionProfile> {
+  return request<RetentionProfile>(
+    `/learning/retention/${encodeURIComponent(studentId)}/${encodeURIComponent(knowledgeId)}`
+  );
+}

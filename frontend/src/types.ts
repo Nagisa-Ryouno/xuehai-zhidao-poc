@@ -938,5 +938,22 @@ export interface EffectivenessProfileResponse {
   profiles: ResourceEffectivenessProfile[];
 }
 
+// -----------------------------------------------------------------------------
+// Phase 5 / Sprint 9-F: Learning Retention Check Lite
+// -----------------------------------------------------------------------------
+export type RetentionStatus =
+  | 'NOT_DUE'
+  | 'DUE_FOR_REVIEW'
+  | 'NEEDS_REINFORCEMENT'
+  | 'INSUFFICIENT_DATA';
 
-
+export interface RetentionProfile {
+  student_id: string;
+  knowledge_id: string;
+  last_learning_at: string | null;
+  days_since_learning: number | null;
+  current_mastery: number | null;
+  retention_status: RetentionStatus;
+  should_review: boolean;
+  suggested_action: 'REVIEW_CONCEPT' | 'RETAKE_QUIZ' | 'VIEW_PROGRESS' | null;
+}

@@ -141,6 +141,11 @@ from gateway.learning.resource_effectiveness import (
     default_resource_effectiveness_aggregator,
 )
 from gateway.learning.resource_effectiveness.aggregator import normalize_resource_type_key
+from gateway.learning.retention import (
+    RetentionProfile,
+    RetentionStatus,
+    default_retention_analyzer,
+)
 from gateway.content.concept_cards import CONCEPT_CARDS
 
 logger = logging.getLogger("xuehai.gateway")
@@ -1199,6 +1204,18 @@ def create_gateway_app() -> FastAPI:
         if not detail:
             raise HTTPException(status_code=404, detail=f"找不到学生教师端分析数据：{student_id}")
         return detail
+
+    @application.get("/api/learning/retention/{student_id}/{knowledge_id}", response_model=RetentionProfile)
+    def get_retention_profile_endpoint(student_id: str, knowledge_id: str) -> RetentionProfile:
+        """获取指定学生在指定考点的学习保持度档案与间隔复习建议 (Sprint 9-F)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到学生档案：{student_id}")
+
+        if knowledge_id not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"找不到指定考点：{knowledge_id}")
+
+        return default_retention_analyzer.analyze(student_id=student_id, knowledge_id=knowledge_id)
 
     # 挂载核心业务应用为子路由兜底
     application.mount("/", app_main)

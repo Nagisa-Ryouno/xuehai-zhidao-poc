@@ -11,6 +11,7 @@ import {
   Bot,
 } from 'lucide-react';
 import type { StudentProgressResponse } from '../../types';
+import { TiltCard } from '../decor/TiltCard';
 
 interface ProgressOverviewProps {
   progressData: StudentProgressResponse | null;
@@ -95,8 +96,8 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
 
   return (
     <div className="space-y-6" data-testid="student-progress-overview">
-      {/* 总体成效总览 Hero Banner */}
-      <div className="hero-navy shape-arch p-6 sm:p-8 text-white shadow-xl shadow-slate-900/20 relative overflow-hidden">
+      {/* 总体成效总览 Hero Banner（3D 倾斜交互面板） */}
+      <TiltCard maxTilt={4} glareColor="rgba(255,255,255,.14)" innerClassName="hero-navy shape-arch p-6 sm:p-8 text-white shadow-xl shadow-slate-900/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -164,7 +165,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </TiltCard>
 
       {/* 4 维考点分类统计卡片 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

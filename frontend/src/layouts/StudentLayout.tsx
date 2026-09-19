@@ -21,6 +21,7 @@ import { buildLearningContext } from '../components/student/learningContextModel
 
 import { useApp } from '../context/useApp';
 import { playSound, isSoundMuted, setSoundMuted, subscribeSoundMuted } from '../soundService';
+import { AuroraWaves } from '../components/decor/Illustration';
 import type {
   StudentListItem,
   StudentDashboardResponse,
@@ -376,6 +377,9 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   student={dashboardData.profile.student}
                   recommendationType={dashboardData.learning_path.recommendation_type}
                 />
+
+                {/* 极光波浪分隔（打破笔直矩形边缘） */}
+                <AuroraWaves className="w-full h-9 -my-3 opacity-90" />
 
                 {/* 2. Today's Learning Mission: Current Focus Task (Sprint 2 Core) */}
                 <CurrentFocusCard

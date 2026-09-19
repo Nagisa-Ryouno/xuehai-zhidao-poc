@@ -266,6 +266,10 @@
     background-image: radial-gradient(rgba(190, 140, 100, .16) 1px, transparent 1.4px);
     background-size: 22px 22px;
   }
+  /* TiltCard 景深层：子元素加此类获得 translateZ 悬浮 */
+  .tilt-z {
+    transform: translateZ(30px);
+  }
   /* CSS 3D 悬浮卡（鼠标未指向时缓慢回正） */
   .tilt-3d {
     transform-style: preserve-3d;

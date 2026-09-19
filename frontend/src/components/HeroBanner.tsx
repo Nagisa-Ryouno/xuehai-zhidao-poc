@@ -2,6 +2,7 @@ import React from 'react';
 import { Target, Compass, BookOpen } from 'lucide-react';
 import type { StudentBasic } from '../types';
 import { CSS3DLogo } from './decor/CSS3DLogo';
+import { TiltCard } from './decor/TiltCard';
 
 interface HeroBannerProps {
   student: StudentBasic;
@@ -67,8 +68,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         </div>
 
         {/* Right: Learning Goal Card */}
-        <div className="lg:max-w-md w-full glass-card shape-leaf p-4 sm:p-5 tilt-3d transition-transform duration-500 hover:[transform:perspective(900px)_rotateX(6deg)_rotateY(-9deg)_translateZ(6px)] hover:shadow-[0_24px_50px_rgba(214,150,105,.24)]">
-          <div className="tilt-layer">
+        <TiltCard
+          className="lg:max-w-md w-full"
+          maxTilt={12}
+          innerClassName="glass-card shape-leaf p-4 sm:p-5"
+        >
+          <div className="tilt-z">
           <div className="flex items-center gap-2 mb-2 text-indigo-700 font-semibold text-xs tracking-wider uppercase">
             <Target className="w-4 h-4 text-indigo-600 shrink-0" />
             <span>个人学习目标</span>
@@ -77,7 +82,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             "{student.learning_goal}"
           </p>
           </div>
-        </div>
+        </TiltCard>
       </div>
     </div>
   );

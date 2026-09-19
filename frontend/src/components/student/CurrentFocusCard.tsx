@@ -20,6 +20,7 @@ import {
   MASTERY_TARGET_PERCENT,
 } from './adaptiveLearningModel.ts';
 import type { DynamicLearningRoute } from '../../types';
+import { RingProgress } from '../decor/RingProgress';
 
 interface CurrentFocusCardProps {
   focusResult: CurrentFocusResult;
@@ -200,19 +201,23 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
 
         {/* 掌握度可视化进度对比 */}
         <div className="p-4 glass-card rounded-2xl space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-              <span>当前掌握度：</span>
-              <strong className="font-mono font-black text-slate-900 text-sm">
-                {focus.currentMasteryPercent}%
-              </strong>
-            </span>
-            <span className="font-semibold text-indigo-700 flex items-center gap-1">
-              <span>目标掌握度：</span>
-              <strong className="font-mono font-black text-indigo-600 text-sm">
-                {focus.targetMasteryPercent}%
-              </strong>
-            </span>
+          {/* 掌握度可视化：环形指示器 + 进度对比 */}
+          <div className="flex items-center gap-4">
+            <RingProgress percent={focus.currentMasteryPercent} size={72} className="shrink-0" />
+            <div className="flex-1 flex items-center justify-between text-xs">
+              <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                <span>当前掌握度：</span>
+                <strong className="font-mono font-black text-slate-900 text-sm">
+                  {focus.currentMasteryPercent}%
+                </strong>
+              </span>
+              <span className="font-semibold text-indigo-700 flex items-center gap-1">
+                <span>目标掌握度：</span>
+                <strong className="font-mono font-black text-indigo-600 text-sm">
+                  {focus.targetMasteryPercent}%
+                </strong>
+              </span>
+            </div>
           </div>
 
           {/* 进度条轨道 */}

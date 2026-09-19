@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { LearningResource, ResourceType } from '../../types';
+import { TiltCard } from '../decor/TiltCard';
 
 interface ResourceCardProps {
   resource: LearningResource;
@@ -85,10 +86,11 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
   const IconComponent = config.icon;
 
   return (
-    <div
-      className={`relative flex flex-col justify-between glass-card shape-petal p-5 transition-all duration-300 hover:shadow-[0_18px_40px_rgba(214,150,105,.2)] hover:-translate-y-0.5`}
+    <TiltCard
+      maxTilt={7}
+      innerClassName="relative flex flex-col justify-between glass-card shape-petal p-5 h-full"
     >
-      <div>
+      <div className="tilt-z">
         {/* 顶部标签栏 */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
@@ -174,6 +176,6 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
-    </div>
+    </TiltCard>
   );
 };

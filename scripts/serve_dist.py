@@ -38,6 +38,15 @@ def start_backend() -> subprocess.Popen:
     )
 
 
+def is_alive(url: str, timeout: float = 1.5) -> bool:
+    """服务是否已在运行（避免重复启动时静默崩溃）"""
+    try:
+        with urllib.request.urlopen(url, timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
 class DistHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DIST), **kwargs)
@@ -79,8 +88,19 @@ def main() -> None:
         print("frontend/dist 不存在，请先执行：npm --prefix frontend install && npm --prefix frontend run build")
         sys.exit(1)
 
-    backend = start_backend()
-    print(f"后端网关已启动: http://127.0.0.1:{API_PORT}")
+    # 已在运行：直接打开浏览器，双击多少次都不会报错
+    if is_alive(f"http://127.0.0.1:{WEB_PORT}/"):
+        print(f"学海智导已在运行: http://127.0.0.1:{WEB_PORT} ，正在打开浏览器…")
+        webbrowser.open(f"http://127.0.0.1:{WEB_PORT}")
+        return
+
+    # 后端已在运行（如之前残留）：复用，不重复启动
+    backend = None
+    if is_alive(f"http://127.0.0.1:{API_PORT}/api/health"):
+        print(f"检测到后端已在运行: http://127.0.0.1:{API_PORT}")
+    else:
+        backend = start_backend()
+        print(f"后端网关已启动: http://127.0.0.1:{API_PORT}")
     try:
         with socketserver.ThreadingTCPServer(("127.0.0.1", WEB_PORT), DistHandler) as httpd:
             url = f"http://127.0.0.1:{WEB_PORT}"
@@ -88,7 +108,8 @@ def main() -> None:
             threading.Timer(1.0, lambda: webbrowser.open(url)).start()
             httpd.serve_forever()
     finally:
-        backend.terminate()
+        if backend is not None:
+            backend.terminate()
 
 
 if __name__ == "__main__":

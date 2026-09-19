@@ -24,6 +24,8 @@ import type {
   StudentProgressResponse,
   WrongAnswerReviewResponse,
   TeacherOverviewResponse,
+  TeacherKnowledgeResponse,
+  TeacherStudentSummary,
   TeacherStudentDetailResponse,
   CompanionStudyRequest,
   CompanionStudyResponse,
@@ -434,6 +436,20 @@ export async function recordLearningEvent(event: {
  */
 export async function getTeacherOverview(): Promise<TeacherOverviewResponse> {
   return request<TeacherOverviewResponse>('/teacher/overview');
+}
+
+/**
+ * Sprint 10-C / Phase 2: 获取全班 30 知识点学情聚合全景
+ */
+export async function getTeacherKnowledge(): Promise<TeacherKnowledgeResponse> {
+  return request<TeacherKnowledgeResponse>('/teacher/knowledge');
+}
+
+/**
+ * Sprint 10-C / Phase 2: 获取教师端全班学生花名册列表
+ */
+export async function getTeacherStudents(): Promise<TeacherStudentSummary[]> {
+  return request<TeacherStudentSummary[]>('/teacher/students');
 }
 
 /**

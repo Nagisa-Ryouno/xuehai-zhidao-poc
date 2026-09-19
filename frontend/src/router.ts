@@ -12,7 +12,7 @@ export type AppRole = 'student' | 'teacher';
 
 export type StudentSubRoute = 'tasks' | 'resources' | 'graph' | 'profile' | 'assistant';
 
-export type TeacherSubRoute = 'dashboard';
+export type TeacherSubRoute = 'dashboard' | 'overview' | 'knowledge' | 'students';
 
 export interface RouteResolution {
   role: AppRole;
@@ -48,11 +48,25 @@ export function resolveRoute(pathname: string): RouteResolution {
   }
 
   // 2. 教师端路由：/teacher 及子路径
-  if (cleanPath === '/teacher' || cleanPath.startsWith('/teacher/')) {
+  if (cleanPath === '/teacher') {
     return {
       role: 'teacher',
       layout: 'TeacherLayout',
       subRoute: 'dashboard',
+    };
+  }
+
+  if (cleanPath.startsWith('/teacher/')) {
+    const sub = cleanPath.replace('/teacher/', '').split('/')[0];
+    let matchedSub: TeacherSubRoute = 'dashboard';
+    if (sub === 'overview') matchedSub = 'overview';
+    else if (sub === 'knowledge') matchedSub = 'knowledge';
+    else if (sub === 'students') matchedSub = 'students';
+
+    return {
+      role: 'teacher',
+      layout: 'TeacherLayout',
+      subRoute: matchedSub,
     };
   }
 

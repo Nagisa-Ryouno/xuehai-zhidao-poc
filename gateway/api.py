@@ -96,6 +96,7 @@ from gateway.learning.analytics import (
     WrongAnswerReviewResponse,
     TeacherOverviewResponse,
     TeacherStudentDetailResponse,
+    TeacherStudentSummary,
     default_analytics_service,
 )
 from gateway.learning.companion import (
@@ -223,6 +224,22 @@ class PretestSubmitResponse(BaseModel):
 
 class CompanionResetRequest(BaseModel):
     student_id: str = Field(..., description="学生唯一标识")
+
+
+class TeacherKnowledgeItem(BaseModel):
+    knowledge_id: str
+    knowledge_name: str
+    chapter: str
+    average_mastery: float
+    student_count: int
+    weak_student_count: int
+    total_mistakes: int
+    urgency: str = "MEDIUM"
+
+
+class TeacherKnowledgeResponse(BaseModel):
+    total_count: int
+    knowledge_points: List[TeacherKnowledgeItem]
 
 
 # 动态初始化的 Demo 学生档案注册表（内存态，支持测试与体验会话）
@@ -1326,6 +1343,63 @@ def create_gateway_app() -> FastAPI:
         if not detail:
             raise HTTPException(status_code=404, detail=f"找不到学生教师端分析数据：{student_id}")
         return detail
+
+    @application.get("/api/teacher/knowledge", response_model=TeacherKnowledgeResponse)
+    def get_teacher_knowledge_endpoint() -> TeacherKnowledgeResponse:
+        """获取教师端 30 个考点全景分析与掌握度分布 (Sprint 10-C Phase 2)"""
+        overview = default_analytics_service.get_teacher_overview()
+        all_sids = [s.student_id for s in overview.students]
+
+        kp_mastery_accum: Dict[str, List[float]] = {k: [] for k in CONCEPT_CARDS.keys()}
+        kp_mistake_accum: Dict[str, int] = {k: 0 for k in CONCEPT_CARDS.keys()}
+
+        for sid in all_sids:
+            prog = default_analytics_service.get_student_progress(sid)
+            if not prog:
+                continue
+            for kp_item in prog.knowledge_point_masteries:
+                if kp_item.knowledge_id in kp_mastery_accum:
+                    kp_mastery_accum[kp_item.knowledge_id].append(kp_item.mastery)
+
+            stu_events = default_event_repository.get_events_by_student(sid)
+            for se in stu_events:
+                if se.event_type == "QUESTION_ATTEMPT" and se.payload.get("is_correct") is False:
+                    if se.knowledge_id in kp_mistake_accum:
+                        kp_mistake_accum[se.knowledge_id] += 1
+
+        items: List[TeacherKnowledgeItem] = []
+        for kid in sorted(CONCEPT_CARDS.keys()):
+            card = CONCEPT_CARDS[kid]
+            m_list = kp_mastery_accum.get(kid, [])
+            avg_m = round(sum(m_list) / max(1, len(m_list)), 4) if m_list else 0.0
+            weak_count = sum(1 for m in m_list if m < 0.60)
+            mistakes = kp_mistake_accum.get(kid, 0)
+
+            urgency = "HIGH" if weak_count >= 2 else ("MEDIUM" if weak_count == 1 else "LOW")
+
+            items.append(
+                TeacherKnowledgeItem(
+                    knowledge_id=kid,
+                    knowledge_name=card.knowledge_name,
+                    chapter=card.chapter,
+                    average_mastery=avg_m,
+                    student_count=len(m_list),
+                    weak_student_count=weak_count,
+                    total_mistakes=mistakes,
+                    urgency=urgency,
+                )
+            )
+
+        return TeacherKnowledgeResponse(
+            total_count=len(items),
+            knowledge_points=items,
+        )
+
+    @application.get("/api/teacher/students", response_model=List[TeacherStudentSummary])
+    def get_teacher_students_endpoint() -> List[TeacherStudentSummary]:
+        """获取教师端全班学生花名册与学情摘要列表 (Sprint 10-C Phase 2)"""
+        overview = default_analytics_service.get_teacher_overview()
+        return overview.students
 
     @application.get("/api/learning/retention/{student_id}/{knowledge_id}", response_model=RetentionProfile)
     def get_retention_profile_endpoint(student_id: str, knowledge_id: str) -> RetentionProfile:

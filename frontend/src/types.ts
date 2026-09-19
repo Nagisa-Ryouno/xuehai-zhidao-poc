@@ -634,6 +634,22 @@ export interface TeacherOverviewResponse {
   students: TeacherStudentSummary[];
 }
 
+export interface TeacherKnowledgeItem {
+  knowledge_id: string;
+  knowledge_name: string;
+  chapter: string;
+  average_mastery: number;
+  student_count: number;
+  weak_student_count: number;
+  total_mistakes: number;
+  urgency: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface TeacherKnowledgeResponse {
+  total_count: number;
+  knowledge_points: TeacherKnowledgeItem[];
+}
+
 export interface TeacherStudentDetailResponse {
   summary: TeacherStudentSummary;
   progress: StudentProgressResponse;

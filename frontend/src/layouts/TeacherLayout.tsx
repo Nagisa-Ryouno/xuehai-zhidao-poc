@@ -223,7 +223,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                 班级学情全景监控与成效分析
               </h1>
               <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-                基于知识图谱拓扑与 BKT 认知追踪，客观呈现班级认知分布与薄弱考点瓶颈。本数据仅供教师决策参考，系统不自动替教师做出生产性决策。
+                基于知识图谱拓扑与认知状态追踪，客观呈现班级认知分布与薄弱考点瓶颈。本数据仅供教师决策参考，系统不自动替教师做出生产性决策。
               </p>
             </div>
 
@@ -365,7 +365,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   </span>
                   <span className="text-xs text-slate-400">名注册学子</span>
                 </div>
-                <p className="text-[11px] text-slate-400">已完整建立 BKT 认知基线</p>
+                <p className="text-[11px] text-slate-400">已完整建立认知状态基线</p>
               </div>
 
               {/* KPI 2: 近7天活跃学子 */}
@@ -399,7 +399,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   <span className="text-3xl font-black text-indigo-700 font-mono">
                     {(kpis.class_avg_mastery * 100).toFixed(1)}%
                   </span>
-                  <span className="text-xs text-slate-400">BKT 均值</span>
+                  <span className="text-xs text-slate-400">全班均值</span>
                 </div>
                 <p className="text-[11px] text-slate-400">全站统一达标门槛 80%</p>
               </div>
@@ -807,7 +807,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                     班级学生学情档案花名册
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    基于客观答题与 BKT 认知追踪，支持按学号/姓名检索及学情分类，坚持客观呈现与个体关怀
+                    基于客观答题与认知状态追踪，支持按学号/姓名检索及学情分类，坚持客观呈现与个体关怀
                   </p>
                 </div>
 

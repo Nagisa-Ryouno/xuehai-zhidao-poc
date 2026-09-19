@@ -153,7 +153,7 @@ export const PretestModal: React.FC<PretestModalProps> = ({
                   正在对标知识图谱进行多维学情诊断...
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  依据 BKT 认知模型与拓扑依赖重新规划自适应攻坚路线
+                  依据认知追踪模型与拓扑依赖重新规划自适应攻坚路线
                 </p>
               </div>
             </div>

@@ -22,7 +22,7 @@ export const TasksQuickNav: React.FC<TasksQuickNavProps> = ({
     },
     {
       title: '30考点掌握度全览',
-      desc: '基于 BKT 模型查看全图谱考点认知矩阵与真实演化',
+      desc: '基于认知追踪模型查看全图谱考点掌握矩阵与真实演化',
       icon: Award,
       color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
       actionLabel: '查看掌握度',

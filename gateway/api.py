@@ -287,12 +287,20 @@ def create_gateway_app() -> FastAPI:
 
     @application.get("/api/ai/health")
     def health_check() -> Dict[str, Any]:
-        """网关健康检查探针"""
+        """网关健康检查探针 (静态就绪状态，不发起外部探活网络请求)"""
+        deepseek_configured = bool(gateway_settings.deepseek_api_key and gateway_settings.deepseek_api_key.strip())
         return {
             "status": "healthy",
             "provider": gateway_settings.provider,
             "masked_key": gateway_settings.get_masked_api_key(),
             "timeout_ms": gateway_settings.timeout_ms,
+            "deepseek": {
+                "enabled": gateway_settings.deepseek_enabled,
+                "configured": deepseek_configured,
+                "model": gateway_settings.deepseek_model,
+                "base_url": gateway_settings.deepseek_base_url,
+                "reachable": "unknown",  # 默认不产生外部网络请求
+            },
         }
 
     @application.post(

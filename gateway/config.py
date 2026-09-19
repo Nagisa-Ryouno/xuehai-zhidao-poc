@@ -19,6 +19,13 @@ class GatewaySettings:
     model: str = os.getenv("AI_MODEL", "mock-companion-v1").strip()
     timeout_ms: int = int(os.getenv("AI_GATEWAY_TIMEOUT_MS", "5000"))
 
+    # Sprint 10-B: DeepSeek 官方配置基线
+    deepseek_enabled: bool = os.getenv("DEEPSEEK_ENABLED", "false").strip().lower() in ("true", "1", "yes")
+    deepseek_api_key: Optional[str] = os.getenv("DEEPSEEK_API_KEY", None)
+    deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip().rstrip("/")
+    deepseek_model: str = os.getenv("DEEPSEEK_MODEL", "deepseek-flash").strip()
+    deepseek_timeout_seconds: int = int(os.getenv("DEEPSEEK_TIMEOUT_SECONDS", "20"))
+
     def get_masked_api_key(self) -> str:
         """获取脱敏后的密钥用于日志记录，禁止明文暴露"""
         if not self.api_key:
@@ -28,11 +35,21 @@ class GatewaySettings:
             return "***"
         return f"{clean_key[:3]}...{clean_key[-4:]}"
 
+    def get_masked_deepseek_api_key(self) -> str:
+        """获取脱敏后的 DeepSeek API 密钥，禁止明文暴露"""
+        if not self.deepseek_api_key:
+            return "<UNSET>"
+        clean_key = self.deepseek_api_key.strip()
+        if len(clean_key) <= 8:
+            return "***"
+        return f"{clean_key[:3]}...{clean_key[-4:]}"
+
     def is_secret_contained(self, content: str) -> bool:
         """安全检验函数：确保给定字符串中不包含真实密钥（若已配置有效密钥）"""
-        if not self.api_key or len(self.api_key.strip()) < 5:
-            return True
-        return self.api_key.strip() not in content
+        for secret in [self.api_key, self.deepseek_api_key]:
+            if secret and len(secret.strip()) >= 5 and secret.strip() in content:
+                return False
+        return True
 
 
 gateway_settings = GatewaySettings()

@@ -293,7 +293,10 @@ def get_provider(provider_type: Optional[str] = None) -> AIProviderAdapter:
 
     if selected_type in ("mock", "default"):
         return MockGatewayProvider()
-    elif selected_type in ("external", "openai", "deepseek"):
+    elif selected_type in ("deepseek", "deepseek-flash", "deepseek-v4-pro"):
+        from gateway.ai.deepseek import DeepSeekProvider
+        return DeepSeekProvider(name="deepseek")
+    elif selected_type in ("external", "openai"):
         return ExternalLLMProvider(name=selected_type)
     else:
         logger.warning(f"Unknown provider '{selected_type}', falling back to MockGatewayProvider")

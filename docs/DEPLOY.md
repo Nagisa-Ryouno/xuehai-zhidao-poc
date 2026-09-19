@@ -8,7 +8,13 @@
 
 1. 打开 https://render.com ，用邮箱或 GitHub 账号免费注册登录
 2. 首页点 **New → Blueprint Instance**
-3. 连接你的 GitHub 账号，选择仓库 **`Nagisa-Ryouno/xuehai-zhidao-poc`**，分支选 `feat/ui-enhancement`（或等 PR 合并后选 `main`）
+3. 连接你的 GitHub 账号，选择仓库（二选一）：
+   - **guoda-design/xuehai-zhidao-poc**（郭达的完整副本，含全部分支与最新代码，推荐）
+   - 或原仓库 `Nagisa-Ryouno/xuehai-zhidao-poc`（需要仓库所有者授权 Render 访问）
+   分支选 `feat/ui-enhancement`（或等 PR 合并后选 `main`）
+
+   > 若列表里看不到仓库：点页面右侧 GitHub 账号旁的 **Configure account**，
+   在 Render GitHub App 的 Repository access 中勾选该仓库（或选 All repositories），保存后刷新页面。
 4. Render 会自动检测到仓库根目录的 `render.yaml`，展示将创建的两个服务：
    - `xuehai-api`（后端 API，Free 计划）
    - `xuehai-app`（前端静态站，免费）

@@ -35,7 +35,9 @@ import {
 } from '../../api';
 import { ResourceCard } from './ResourceCard';
 import { ExampleReaderModal } from './ExampleReaderModal';
+import { ExternalRedirectModal } from './ExternalRedirectModal';
 import { ALL_CONCEPT_CARDS, type ConceptCardData } from './conceptCardData';
+import { isSafeChinaMoocUrl, openExternalMoocUrl } from '../../utils/externalResource';
 
 interface ResourceHubProps {
   studentId: string;
@@ -91,6 +93,9 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
   // 例题阅读模态框状态
   const [activeReadingResource, setActiveReadingResource] = useState<LearningResource | null>(null);
 
+  // Sprint 10-A: 中国大学MOOC外部跳转确认模态框状态
+  const [externalRedirectTarget, setExternalRedirectTarget] = useState<LearningResource | null>(null);
+
   // 获取当前考点名称
   const currentKnowledgeName = useMemo(() => {
     const found = ALL_CONCEPT_CARDS.find((c: ConceptCardData) => c.knowledgeId === selectedKnowledgeId);
@@ -103,6 +108,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
     setCompletionResult(null);
     setKnowledgeEffectiveness(null);
     setRetentionProfile(null);
+    setExternalRedirectTarget(null);
   }, [studentId]);
 
   // 加载当前考点学习效果与最新会话信息 (Sprint 9-D)
@@ -211,19 +217,32 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
   };
 
   // 过滤资源
+  // 过滤资源
   const filteredResources = useMemo(() => {
     return resources.filter((res) => {
       // 类型过滤
       if (activeTypeFilter !== 'ALL' && res.resource_type !== activeTypeFilter) {
         return false;
       }
-      // 搜索词过滤
+      // 搜索词过滤：支持标题、描述、摘要，以及 MOOC 院校、教师、课程与提供方元数据
       if (searchQuery.trim()) {
         const query = searchQuery.trim().toLowerCase();
         const matchesTitle = res.title.toLowerCase().includes(query);
         const matchesDesc = res.description.toLowerCase().includes(query);
         const matchesSummary = (res.summary || '').toLowerCase().includes(query);
-        if (!matchesTitle && !matchesDesc && !matchesSummary) {
+        const matchesProvider = Boolean(res.metadata?.provider && String(res.metadata.provider).toLowerCase().includes(query));
+        const matchesUniversity = Boolean(res.metadata?.university && String(res.metadata.university).toLowerCase().includes(query));
+        const matchesInstructor = Boolean(res.metadata?.instructor && String(res.metadata.instructor).toLowerCase().includes(query));
+        const matchesCourse = Boolean(res.metadata?.course && String(res.metadata.course).toLowerCase().includes(query));
+        if (
+          !matchesTitle &&
+          !matchesDesc &&
+          !matchesSummary &&
+          !matchesProvider &&
+          !matchesUniversity &&
+          !matchesInstructor &&
+          !matchesCourse
+        ) {
           return false;
         }
       }
@@ -233,7 +252,13 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
 
   // 打开具体资源
   const handleOpenResource = (res: LearningResource) => {
-    // 上报打开事件
+    // Sprint 10-A: 中国大学MOOC外部资源拦截与安全跳转提示（绝对不调起内部 Reader/Modal/Quiz）
+    if (res.is_external && res.source === 'china_mooc') {
+      setExternalRedirectTarget(res);
+      return;
+    }
+
+    // 上报内部资源打开事件
     recordResourceEvent({
       student_id: studentId,
       resource_id: res.resource_id,
@@ -263,6 +288,46 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
       onStartQuiz(res.knowledge_id, currentKnowledgeName);
     } else {
       setActiveReadingResource(res);
+    }
+  };
+
+  // 确认前往中国大学MOOC外部页面学习 (Sprint 10-A)
+  const handleConfirmExternalRedirect = (target: LearningResource) => {
+    setExternalRedirectTarget(null);
+
+    // 遥测事件上报 (RESOURCE_EXTERNAL_OPEN) - 纯辅助功能，失败绝对不能阻止学生外部跳转
+    recordResourceEvent({
+      student_id: studentId,
+      resource_id: target.resource_id,
+      knowledge_id: target.knowledge_id,
+      event_type: 'RESOURCE_EXTERNAL_OPEN',
+      metadata: {
+        source: target.source,
+        source_url: target.source_url,
+        title: target.title,
+        resource_type: target.resource_type,
+        provider: target.metadata?.provider || '中国大学MOOC',
+        university: target.metadata?.university,
+        course: target.metadata?.course,
+      },
+    }).catch((err) => {
+      console.warn('Telemetry event failed to send, but proceeding with external navigation:', err);
+    });
+
+    if (activeSession && !activeSession.completed_resource_ids.includes(target.resource_id)) {
+      setActiveSession((prev) =>
+        prev
+          ? {
+              ...prev,
+              completed_resource_ids: [...prev.completed_resource_ids, target.resource_id],
+            }
+          : null
+      );
+    }
+
+    // 经由前端安全纯函数校验后安全跳转至新标签页
+    if (target.source_url && isSafeChinaMoocUrl(target.source_url)) {
+      openExternalMoocUrl(target.source_url);
     }
   };
 
@@ -890,6 +955,13 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
         onClose={() => setActiveReadingResource(null)}
         onComplete={handleCompleteResource}
         onAskAI={handleAskAI}
+      />
+
+      {/* 中国大学MOOC外部跳转确认模态框 */}
+      <ExternalRedirectModal
+        resource={externalRedirectTarget}
+        onClose={() => setExternalRedirectTarget(null)}
+        onConfirm={handleConfirmExternalRedirect}
       />
     </div>
   );

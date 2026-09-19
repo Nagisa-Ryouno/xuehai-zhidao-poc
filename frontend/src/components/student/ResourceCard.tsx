@@ -10,6 +10,7 @@ import {
   Bot,
   ArrowRight,
   Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 import type { LearningResource, ResourceType } from '../../types';
 
@@ -83,21 +84,30 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
 }) => {
   const config = TYPE_CONFIG[resource.resource_type] || TYPE_CONFIG.CONCEPT_CARD;
   const IconComponent = config.icon;
+  const isMooc = resource.is_external && resource.source === 'china_mooc';
+  const borderClass = isMooc ? 'border-blue-200 hover:border-blue-400' : config.borderAccent;
 
   return (
     <div
-      className={`relative flex flex-col justify-between bg-white rounded-2xl border p-5 transition-all duration-200 hover:shadow-md ${config.borderAccent}`}
+      className={`relative flex flex-col justify-between bg-white rounded-2xl border p-5 transition-all duration-200 hover:shadow-md ${borderClass}`}
     >
       <div>
         {/* 顶部标签栏 */}
         <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${config.badgeBg} ${config.badgeText}`}
-            >
-              <IconComponent className="w-3.5 h-3.5" />
-              <span>{config.label}</span>
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {isMooc ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/80">
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>中国大学MOOC</span>
+              </span>
+            ) : (
+              <span
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${config.badgeBg} ${config.badgeText}`}
+              >
+                <IconComponent className="w-3.5 h-3.5" />
+                <span>{config.label}</span>
+              </span>
+            )}
             {suggestedOrder && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">
                 步骤 {suggestedOrder}
@@ -121,6 +131,22 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
         <h4 className="text-base font-bold text-slate-900 line-clamp-1 mb-1">
           {resource.title}
         </h4>
+
+        {/* MOOC 院校及主讲教师信息 */}
+        {isMooc && (resource.metadata?.university || resource.metadata?.instructor) && (
+          <div className="flex flex-wrap items-center gap-1.5 mb-2 text-xs">
+            {resource.metadata.university && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">
+                {resource.metadata.university}
+              </span>
+            )}
+            {resource.metadata.instructor && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                {resource.metadata.instructor}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* 描述 */}
         <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
@@ -163,15 +189,21 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
           type="button"
           onClick={() => onOpenResource(resource)}
           className={`flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all duration-150 cursor-pointer shadow-xs ${
-            resource.resource_type === 'PRACTICE'
+            isMooc
+              ? 'bg-blue-600 hover:bg-blue-700'
+              : resource.resource_type === 'PRACTICE'
               ? 'bg-emerald-600 hover:bg-emerald-700'
               : resource.resource_type === 'EXAMPLE'
               ? 'bg-amber-600 hover:bg-amber-700'
               : 'bg-indigo-600 hover:bg-indigo-700'
           }`}
         >
-          <span>{config.actionLabel}</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <span>{isMooc ? '前往慕课学习' : config.actionLabel}</span>
+          {isMooc ? (
+            <ExternalLink className="w-3.5 h-3.5" />
+          ) : (
+            <ArrowRight className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
     </div>

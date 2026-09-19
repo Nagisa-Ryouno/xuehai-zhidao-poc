@@ -1,0 +1,45 @@
+{
+  "sprint": "Sprint 10-A Phase 3",
+  "timestamp": "2026-09-19T10:02:24Z",
+  "console_messages": [
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [Intercepted window.open] https://www.icourse163.org/learn/PKU-1002534001",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "scenarios": {
+    "scenario_a": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint10a_01_resource_hub_landing.png"
+    },
+    "scenario_b": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint10a_02_mooc_card_displayed.png"
+    },
+    "scenario_c": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint10a_03_redirect_modal_popup.png"
+    },
+    "scenario_d": {
+      "status": "PASS",
+      "opened_url": "https://www.icourse163.org/learn/PKU-1002534001",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint10a_04_target_url_verified.png"
+    },
+    "scenario_e": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint10a_05_internal_flow_unbroken.png"
+    },
+    "scenario_f": {
+      "status": "PASS",
+      "scroll_width_375": 375,
+      "client_width_375": 375,
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint10a_06_mobile_375px_responsive.png"
+    }
+  }
+}

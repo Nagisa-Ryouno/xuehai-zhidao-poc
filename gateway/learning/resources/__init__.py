@@ -36,6 +36,18 @@ from gateway.learning.resources.events import (
     record_resource_event,
     get_student_resource_events,
 )
+from gateway.learning.resources.security import (
+    validate_external_mooc_url,
+    sanitize_and_validate_mooc_url,
+    MOOC_ALLOWED_BASE_DOMAINS,
+    MOOC_ALLOWED_HOSTNAMES,
+)
+from gateway.learning.resources.mooc_catalog import (
+    MOOC_RESOURCE_CATALOG,
+    get_mooc_resource_by_id,
+    get_mooc_resources_by_knowledge,
+    get_all_mooc_resources,
+)
 
 __all__ = [
     "ResourceType",
@@ -54,4 +66,12 @@ __all__ = [
     "default_resource_resolver",
     "record_resource_event",
     "get_student_resource_events",
+    "validate_external_mooc_url",
+    "sanitize_and_validate_mooc_url",
+    "MOOC_ALLOWED_BASE_DOMAINS",
+    "MOOC_ALLOWED_HOSTNAMES",
+    "MOOC_RESOURCE_CATALOG",
+    "get_mooc_resource_by_id",
+    "get_mooc_resources_by_knowledge",
+    "get_all_mooc_resources",
 ]

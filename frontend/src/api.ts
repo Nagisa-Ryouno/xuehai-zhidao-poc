@@ -44,6 +44,7 @@ import type {
   SessionCompleteResponse,
   EffectivenessProfileResponse,
   RetentionProfile,
+  TodayActionResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -653,3 +654,15 @@ export async function getRetentionProfile(
     `/learning/retention/${encodeURIComponent(studentId)}/${encodeURIComponent(knowledgeId)}`
   );
 }
+
+/**
+ * Sprint 9-G: 获取学生今日唯一的最佳学习行动建议
+ */
+export async function getTodayLearningAction(
+  studentId: string
+): Promise<TodayActionResponse> {
+  return request<TodayActionResponse>(
+    `/learning/today/${encodeURIComponent(studentId)}`
+  );
+}
+

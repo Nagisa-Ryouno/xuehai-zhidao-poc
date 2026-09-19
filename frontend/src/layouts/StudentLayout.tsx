@@ -29,6 +29,7 @@ import type {
   WrongAnswerReviewResponse,
   CompanionMode,
   LearningActionResultResponse,
+  TodayLearningAction,
 } from '../types';
 import { CalendarCheck, BookOpen, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
@@ -39,6 +40,7 @@ import { PretestModal } from '../components/student/PretestModal';
 import { ProgressOverview } from '../components/student/ProgressOverview';
 import { WrongAnswerReview } from '../components/student/WrongAnswerReview';
 import { ResourceHub } from '../components/student/ResourceHub';
+import { TodayActionCard } from '../components/student/TodayActionCard';
 import { getConceptCardById, type ConceptCardData } from '../components/student/conceptCardData';
 import {
   initStudent,
@@ -47,6 +49,7 @@ import {
   getStudentWrongAnswers,
   recordLearningEvent,
   postLearningActionResult,
+  getTodayLearningAction,
   type StudentInitRequest,
 } from '../api';
 
@@ -112,6 +115,10 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   // 学习行动完成与反思通知状态 (Sprint 9-B)
   const [latestActionResult, setLatestActionResult] = useState<LearningActionResultResponse | null>(null);
 
+  // 今日学习行动状态 (Sprint 9-G)
+  const [todayAction, setTodayAction] = useState<TodayLearningAction | null>(null);
+  const [isTodayActionLoading, setIsTodayActionLoading] = useState<boolean>(false);
+
   const fetchDynamicRoute = useCallback(async () => {
     try {
       const goal = dashboardData?.profile?.student?.learning_goal;
@@ -143,12 +150,34 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     }
   }, [studentId]);
 
+  const fetchTodayAction = useCallback(async () => {
+    if (!studentId) return;
+    setIsTodayActionLoading(true);
+    const reqStudentId = studentId;
+    try {
+      const res = await getTodayLearningAction(studentId);
+      if (reqStudentId === studentId) {
+        setTodayAction(res.action);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch today learning action:', err);
+      if (reqStudentId === studentId) {
+        setTodayAction(null);
+      }
+    } finally {
+      if (reqStudentId === studentId) {
+        setIsTodayActionLoading(false);
+      }
+    }
+  }, [studentId]);
+
   useEffect(() => {
     fetchDynamicRoute();
     fetchAnalyticsData();
-  }, [fetchDynamicRoute, fetchAnalyticsData]);
+    fetchTodayAction();
+  }, [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction]);
 
-  // 学生上下文切换时安全关闭微测验与速览卡片，立即清空旧生状态，杜绝上下文污染 (Sprint 3 契约约束)
+  // 学生上下文切换时安全关闭微测验与速览卡片，立即清空旧生状态，杜绝上下文污染 (Sprint 3 / Sprint 9-G 契约约束)
   useEffect(() => {
     setActiveQuiz(null);
     setActiveConceptCard(null);
@@ -157,6 +186,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     setDynamicRoute(null);
     setActiveCompanionContext(null);
     setLatestActionResult(null);
+    setTodayAction(null);
   }, [studentId]);
 
   const handleStartQuiz = useCallback(
@@ -198,7 +228,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     }
     setActiveConceptCard(null);
     fetchAnalyticsData();
-  }, [activeConceptCard, studentId, fetchAnalyticsData]);
+    fetchTodayAction();
+  }, [activeConceptCard, studentId, fetchAnalyticsData, fetchTodayAction]);
 
   const handleInitStudentSubmit = useCallback(
     async (data: StudentInitRequest) => {
@@ -233,10 +264,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     setActiveQuiz(null);
     fetchDynamicRoute();
     fetchAnalyticsData();
+    fetchTodayAction();
     if (onRefresh) {
       onRefresh();
     }
-  }, [activeQuiz, studentId, onRefresh, fetchDynamicRoute, fetchAnalyticsData]);
+  }, [activeQuiz, studentId, onRefresh, fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction]);
 
   const handleNextKnowledgePoint = useCallback(
     (nextKnowledgeId: string, nextKnowledgeName: string) => {
@@ -246,11 +278,34 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       });
       fetchDynamicRoute();
       fetchAnalyticsData();
+      fetchTodayAction();
       if (onRefresh) {
         onRefresh();
       }
     },
-    [onRefresh, fetchDynamicRoute, fetchAnalyticsData]
+    [onRefresh, fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction]
+  );
+
+  const handleTodayActionCTA = useCallback(
+    (action: TodayLearningAction) => {
+      const kid = action.knowledge_id || 'K01';
+      const kname = action.knowledge_name || '';
+
+      if (action.action_type === 'REVIEW_RETENTION') {
+        if (action.cta_label === '重新学习' || action.suggested_action === 'REVIEW_CONCEPT') {
+          handleViewConceptCard(kid, kname);
+        } else {
+          handleStartQuiz(kid, kname);
+        }
+      } else if (action.action_type === 'CONTINUE_LEARNING') {
+        handleViewConceptCard(kid, kname);
+      } else if (action.action_type === 'PRACTICE') {
+        handleStartQuiz(kid, kname);
+      } else if (action.action_type === 'VIEW_PROGRESS') {
+        navigate('/student/profile');
+      }
+    },
+    [handleViewConceptCard, handleStartQuiz, navigate]
   );
 
   const handleJumpToAssistant = () => {
@@ -364,6 +419,13 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
             {/* 根据当前子路由进行渲染 */}
             {subRoute === 'tasks' && (
               <>
+                {/* 0. Sprint 9-G: Today's Learning Action */}
+                <TodayActionCard
+                  action={todayAction}
+                  loading={isTodayActionLoading}
+                  onExecuteCTA={handleTodayActionCTA}
+                />
+
                 {/* 1. Hero Welcome & Personalized Goal */}
                 <HeroBanner
                   student={dashboardData.profile.student}

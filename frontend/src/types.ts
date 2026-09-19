@@ -957,3 +957,30 @@ export interface RetentionProfile {
   should_review: boolean;
   suggested_action: 'REVIEW_CONCEPT' | 'RETAKE_QUIZ' | 'VIEW_PROGRESS' | null;
 }
+
+// -----------------------------------------------------------------------------
+// Phase 5 / Sprint 9-G: Today's Learning Action Aggregation Lite
+// -----------------------------------------------------------------------------
+export type TodayActionType =
+  | 'REVIEW_RETENTION'
+  | 'CONTINUE_LEARNING'
+  | 'PRACTICE'
+  | 'VIEW_PROGRESS'
+  | 'NONE';
+
+export interface TodayLearningAction {
+  action_type: TodayActionType;
+  title: string;
+  description: string;
+  cta_label: string;
+  priority_reason: string;
+  knowledge_id?: string | null;
+  knowledge_name?: string | null;
+  suggested_action?: string | null;
+}
+
+export interface TodayActionResponse {
+  student_id: string;
+  action: TodayLearningAction;
+}
+

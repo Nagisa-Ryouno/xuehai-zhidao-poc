@@ -1,0 +1,36 @@
+{
+  "sprint": "Sprint 9-G",
+  "timestamp": "2026-09-19T08:13:59Z",
+  "console_messages": [
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "scenarios": {
+    "scenario_a": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9g_01_needs_reinforcement_card.png"
+    },
+    "scenario_b": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9g_02_due_for_review_quiz.png"
+    },
+    "scenario_c": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9g_03_practice_or_in_progress.png"
+    },
+    "scenario_d": {
+      "status": "PASS",
+      "screenshot": "C:\\Users\\XSL\\Desktop\\国创\\xuehai-zhidao-poc\\artifacts\\uat_screenshots\\sprint9g_04_student_switch_and_mobile_375px.png"
+    }
+  }
+}

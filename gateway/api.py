@@ -146,6 +146,10 @@ from gateway.learning.retention import (
     RetentionStatus,
     default_retention_analyzer,
 )
+from gateway.learning.today import (
+    TodayActionResponse,
+    default_today_action_resolver,
+)
 from gateway.content.concept_cards import CONCEPT_CARDS
 
 logger = logging.getLogger("xuehai.gateway")
@@ -1216,6 +1220,18 @@ def create_gateway_app() -> FastAPI:
             raise HTTPException(status_code=404, detail=f"找不到指定考点：{knowledge_id}")
 
         return default_retention_analyzer.analyze(student_id=student_id, knowledge_id=knowledge_id)
+
+    @application.get("/api/learning/today/{student_id}", response_model=TodayActionResponse)
+    def get_today_learning_action_endpoint(student_id: str) -> TodayActionResponse:
+        """获取指定学生今日唯一的最佳学习行动建议 (Sprint 9-G)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到学生档案：{student_id}")
+
+        try:
+            return default_today_action_resolver.resolve(student_id=student_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail=f"找不到学生档案：{student_id}")
 
     # 挂载核心业务应用为子路由兜底
     application.mount("/", app_main)

@@ -41,10 +41,9 @@ def main():
 
     remote_sha = gh(f"repos/{REPO}/git/ref/heads/{BRANCH}")["object"]["sha"]
     if remote_sha != parent_sha:
-        print(f"提示：远端 {remote_sha[:7]} 与本地父提交 {parent_sha[:7]} 不同，以远端为基线保持线性历史")
+        print(f"提示：远端 {remote_sha[:7]} 与本地父提交 {parent_sha[:7]} 不同，将强制覆盖为规范化提交")
 
-    # 以远端 head 的 tree 为基线（本地父提交与远端 head 内容一致时 tree 相同）
-    parent_tree = gh(f"repos/{REPO}/git/commits/{remote_sha}")["tree"]["sha"]
+    parent_tree = gh(f"repos/{REPO}/git/commits/{parent_sha}")["tree"]["sha"]
     changed = git("diff", "--name-only", parent_sha, local_sha).splitlines()
     print("变更文件:", len(changed))
 
@@ -65,7 +64,7 @@ def main():
     commit_payload = {
         "message": message,
         "tree": new_tree["sha"],
-        "parents": [remote_sha],
+        "parents": [parent_sha],
         "author": {"name": an, "email": ae, "date": ai},
         "committer": {"name": cn, "email": ce, "date": ci},
     }

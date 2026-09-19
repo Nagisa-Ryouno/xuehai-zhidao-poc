@@ -1,0 +1,33 @@
+{
+  "sprint": "Sprint 10-B Phase 3",
+  "timestamp": "2026-09-19T12:35:00Z",
+  "console_messages": [
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [Intercepted window.open] https://www.icourse163.org/learn/PKU-1002534001",
+    "[error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "[warning] Personalized recommendations unavailable, degrading gracefully: Error: 学海智导分析服务内部异常，请检查后端运行状态\n    at request (http://127.0.0.1:5173/src/api.ts:21:11)\n    at async loadPersonalRecommendations (http://127.0.0.1:5173/src/components/student/ResourceHub.tsx?t=1789821298193:103:18)",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "scenarios": {
+    "scenario_a": "PASS",
+    "scenario_b": "PASS",
+    "scenario_c": "PASS",
+    "scenario_d": "PASS",
+    "scenario_e": "PASS",
+    "scenario_f": "PASS",
+    "scenario_g": "PASS"
+  }
+}

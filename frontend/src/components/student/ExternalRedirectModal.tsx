@@ -35,6 +35,7 @@ export const ExternalRedirectModal: React.FC<ExternalRedirectModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
+      data-testid="external-redirect-modal"
       aria-labelledby="external-redirect-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150"
       onClick={(e) => {
@@ -120,6 +121,7 @@ export const ExternalRedirectModal: React.FC<ExternalRedirectModalProps> = ({
           </button>
           <button
             type="button"
+            data-testid="external-redirect-confirm-btn"
             onClick={() => onConfirm(resource)}
             className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-xs cursor-pointer"
           >

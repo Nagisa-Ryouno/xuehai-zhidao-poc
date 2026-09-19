@@ -984,3 +984,22 @@ export interface TodayActionResponse {
   action: TodayLearningAction;
 }
 
+// -----------------------------------------------------------------------------
+// Phase 6 / Sprint 10-B / Phase 3: AI Personalized Recommendation Types
+// -----------------------------------------------------------------------------
+export interface PersonalizedRecommendation {
+  knowledge_id: string;
+  resource_id: string;
+  reason: string;
+  title: string;
+  resource_type: string;
+  source: 'xuehai_internal' | 'china_mooc' | string;
+}
+
+export interface PersonalizedRecommendationResponse {
+  student_id: string;
+  recommendations: PersonalizedRecommendation[];
+  source: string;
+  validated: boolean;
+}
+

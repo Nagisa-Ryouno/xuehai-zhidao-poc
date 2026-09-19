@@ -14,6 +14,7 @@ import {
   Check,
   RotateCcw,
   Play,
+  ExternalLink,
 } from 'lucide-react';
 import type {
   LearningResource,
@@ -23,6 +24,7 @@ import type {
   KnowledgeEffectivenessResponse,
   SessionCompleteResponse,
   RetentionProfile,
+  PersonalizedRecommendation,
 } from '../../types';
 import {
   getResourcesByKnowledge,
@@ -32,6 +34,8 @@ import {
   completeLearningSession,
   getKnowledgeEffectiveness,
   getRetentionProfile,
+  getPersonalizedRecommendations,
+  getResourceItem,
 } from '../../api';
 import { ResourceCard } from './ResourceCard';
 import { ExampleReaderModal } from './ExampleReaderModal';
@@ -60,6 +64,23 @@ const TYPE_FILTER_TABS: Array<{ id: string; label: string; type?: ResourceType }
   { id: 'DOCUMENT', label: '精讲讲义', type: 'DOCUMENT' },
   { id: 'VIDEO', label: '导学视频', type: 'VIDEO' },
 ];
+
+const getResourceTypeBadge = (type: string): string => {
+  switch (type) {
+    case 'CONCEPT_CARD':
+      return '考点微卡';
+    case 'EXAMPLE':
+      return '典型例题';
+    case 'PRACTICE':
+      return '靶向微练';
+    case 'DOCUMENT':
+      return '精讲讲义';
+    case 'VIDEO':
+      return '导学视频';
+    default:
+      return type || '学习材料';
+  }
+};
 
 export const ResourceHub: React.FC<ResourceHubProps> = ({
   studentId,
@@ -96,6 +117,11 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
   // Sprint 10-A: 中国大学MOOC外部跳转确认模态框状态
   const [externalRedirectTarget, setExternalRedirectTarget] = useState<LearningResource | null>(null);
 
+  // Sprint 10-B Phase 3: AI 个性化推荐状态 (纯辅助候选列表，永无生产学习决策权)
+  const [personalRecommendations, setPersonalRecommendations] = useState<PersonalizedRecommendation[]>([]);
+  const [isLoadingPersonalRecs, setIsLoadingPersonalRecs] = useState<boolean>(false);
+  const [personalRecsError, setPersonalRecsError] = useState<string | null>(null);
+
   // 获取当前考点名称
   const currentKnowledgeName = useMemo(() => {
     const found = ALL_CONCEPT_CARDS.find((c: ConceptCardData) => c.knowledgeId === selectedKnowledgeId);
@@ -109,6 +135,40 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
     setKnowledgeEffectiveness(null);
     setRetentionProfile(null);
     setExternalRedirectTarget(null);
+    setPersonalRecommendations([]);
+    setPersonalRecsError(null);
+  }, [studentId]);
+
+  // Sprint 10-B Phase 3: 加载 AI 个性化推荐候选，严格以 studentId 为依赖键（单会话单次获取）
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadPersonalRecommendations = async () => {
+      setIsLoadingPersonalRecs(true);
+      setPersonalRecsError(null);
+      try {
+        const resp = await getPersonalizedRecommendations(studentId, 3);
+        if (!isCancelled) {
+          setPersonalRecommendations(resp.recommendations || []);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          console.warn('Personalized recommendations unavailable, degrading gracefully:', err);
+          setPersonalRecommendations([]);
+          setPersonalRecsError('RECOMMENDATION_UNAVAILABLE');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingPersonalRecs(false);
+        }
+      }
+    };
+
+    loadPersonalRecommendations();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [studentId]);
 
   // 加载当前考点学习效果与最新会话信息 (Sprint 9-D)
@@ -354,6 +414,44 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
             }
           : null
       );
+    }
+  };
+
+  // Sprint 10-B Phase 3: 打开 AI 个性化推荐资源 (只读辅助推荐)
+  // 红线约束：点击卡片本身绝不产生正式学习事件，不直接修改 BKT、PathState、TodayAction，所有 URL 严格来自权威资源目录
+  const handleOpenPersonalRecommendation = async (rec: PersonalizedRecommendation) => {
+    // 1. 优先从当前已加载的 resources 中查找完整权威资源
+    let targetResource = resources.find((r) => r.resource_id === rec.resource_id);
+
+    // 2. 若不在当前资源列表中，从权威单项资源接口读取（绝不使用任何 AI payload 携带的 URL）
+    if (!targetResource) {
+      try {
+        targetResource = await getResourceItem(rec.resource_id);
+      } catch (err) {
+        console.error('Failed to resolve authoritative resource item:', err);
+        return;
+      }
+    }
+
+    if (!targetResource) return;
+
+    // 3. 严格安全分流：中国大学MOOC外部资源走 ExternalRedirectModal 与安全域名校验
+    if (targetResource.is_external && targetResource.source === 'china_mooc') {
+      setExternalRedirectTarget(targetResource);
+      return;
+    }
+
+    // 4. 内部资源按既有流程进入微卡、测验或精读，由后续真实学习行为产生闭环
+    const targetKnowledgeName =
+      ALL_CONCEPT_CARDS.find((c: ConceptCardData) => c.knowledgeId === targetResource!.knowledge_id)?.knowledgeName ||
+      targetResource.knowledge_id;
+
+    if (targetResource.resource_type === 'CONCEPT_CARD') {
+      onOpenConceptCard(targetResource.knowledge_id, targetKnowledgeName);
+    } else if (targetResource.resource_type === 'PRACTICE') {
+      onStartQuiz(targetResource.knowledge_id, targetKnowledgeName);
+    } else {
+      setActiveReadingResource(targetResource);
     }
   };
 
@@ -885,6 +983,134 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
           </div>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* 4. AI 个性化推荐专区 (Sprint 10-B Phase 3: Personalized Recommendation) */}
+      {/* ========================================================================= */}
+      <div
+        data-testid="personalized-recommendation-section"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/40 border border-indigo-100 p-5 sm:p-6 shadow-xs"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-indigo-600 text-white shadow-xs shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3
+                data-testid="personalized-rec-title"
+                className="text-base sm:text-lg font-bold text-slate-900"
+              >
+                为你推荐
+              </h3>
+              <p
+                data-testid="personalized-rec-subtitle"
+                className="text-xs sm:text-sm text-slate-600 mt-0.5"
+              >
+                根据你最近的学习情况，为你推荐了这些内容。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {isLoadingPersonalRecs ? (
+          <div
+            data-testid="personalized-rec-loading"
+            className="p-8 text-center text-xs text-slate-500 flex items-center justify-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" />
+            <span>正在生成推荐……</span>
+          </div>
+        ) : personalRecsError ? (
+          <div
+            data-testid="personalized-rec-error"
+            className="py-4 px-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 text-center"
+          >
+            <span>暂时没有生成推荐，可浏览下方全部学习资源。</span>
+          </div>
+        ) : personalRecommendations.length === 0 ? (
+          <div
+            data-testid="personalized-rec-empty"
+            className="py-4 px-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 text-center"
+          >
+            <span>暂时没有适合你的推荐，可浏览下方全部学习资源。</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {personalRecommendations.map((rec) => {
+              const isMooc = rec.source === 'china_mooc';
+              return (
+                <div
+                  key={rec.resource_id}
+                  data-testid="personalized-rec-card"
+                  className="flex flex-col justify-between bg-white rounded-2xl border border-indigo-100/90 p-4 shadow-2xs hover:shadow-xs transition-shadow"
+                >
+                  <div>
+                    {/* 顶部标签行：材料类型 + 来源 */}
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span
+                        data-testid="rec-type-badge"
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100"
+                      >
+                        {getResourceTypeBadge(rec.resource_type)}
+                      </span>
+                      <span
+                        data-testid="rec-source-badge"
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                          isMooc
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {isMooc ? '中国大学 MOOC' : '学海智导'}
+                      </span>
+                    </div>
+
+                    {/* 标题 */}
+                    <h4
+                      data-testid="rec-card-title"
+                      className="text-sm font-bold text-slate-900 line-clamp-2 mb-2.5 leading-snug"
+                    >
+                      {rec.title}
+                    </h4>
+
+                    {/* 为什么推荐理由容器 */}
+                    <div
+                      data-testid="rec-reason-box"
+                      className="mb-3.5 bg-slate-50/80 p-3 rounded-xl border border-slate-100 text-left"
+                    >
+                      <div className="text-[11px] font-bold text-slate-600 mb-1 flex items-center gap-1">
+                        <span>💡 为什么推荐</span>
+                      </div>
+                      <p
+                        data-testid="rec-reason-text"
+                        className="text-xs text-slate-700 leading-relaxed font-medium"
+                      >
+                        {rec.reason}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 操作按钮 */}
+                  <button
+                    type="button"
+                    data-testid="rec-action-btn"
+                    onClick={() => handleOpenPersonalRecommendation(rec)}
+                    className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold text-white transition-all shadow-2xs cursor-pointer ${
+                      isMooc
+                        ? 'bg-rose-600 hover:bg-rose-700 active:scale-98'
+                        : 'bg-indigo-600 hover:bg-indigo-700 active:scale-98'
+                    }`}
+                  >
+                    <span>{isMooc ? '前往学习' : '开始学习'}</span>
+                    {isMooc ? <ExternalLink className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* 搜索与分类过滤器 */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">

@@ -45,6 +45,7 @@ import type {
   EffectivenessProfileResponse,
   RetentionProfile,
   TodayActionResponse,
+  PersonalizedRecommendationResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -663,6 +664,25 @@ export async function getTodayLearningAction(
 ): Promise<TodayActionResponse> {
   return request<TodayActionResponse>(
     `/learning/today/${encodeURIComponent(studentId)}`
+  );
+}
+
+/**
+ * Sprint 10-B Phase 3: 获取 AI 个性化推荐学习资源候选列表
+ * 严格遵循只读辅助原则，客户端只传递 student_id 与可选数量限制，不传递模型与决策参数
+ */
+export async function getPersonalizedRecommendations(
+  studentId: string,
+  maxRecommendations: number = 3
+): Promise<PersonalizedRecommendationResponse> {
+  return request<PersonalizedRecommendationResponse>(
+    `/ai/recommendations/${encodeURIComponent(studentId)}`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        max_recommendations: maxRecommendations,
+      }),
+    }
   );
 }
 

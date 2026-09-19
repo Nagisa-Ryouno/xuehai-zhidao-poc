@@ -41,6 +41,7 @@ import { ProgressOverview } from '../components/student/ProgressOverview';
 import { WrongAnswerReview } from '../components/student/WrongAnswerReview';
 import { ResourceHub } from '../components/student/ResourceHub';
 import { TodayActionCard } from '../components/student/TodayActionCard';
+import { PwaInstallBanner } from '../components/student/PwaInstallBanner';
 import { getConceptCardById, type ConceptCardData } from '../components/student/conceptCardData';
 import {
   initStudent,
@@ -406,6 +407,31 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       {/* Main Content Area with MobileContainer */}
       <main className="flex-1 w-full py-4 sm:py-8">
         <MobileContainer>
+          {/* PWA 安装引导横幅 (仅在支持安装且用户未忽略时呈现) */}
+          <PwaInstallBanner />
+
+          {/* 离线状态人本提示 (绝不伪造离线同步) */}
+          {!isOnline && (
+            <div
+              data-testid="pwa-offline-notice"
+              className="mb-4 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs flex items-center justify-between gap-3 shadow-2xs"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-base shrink-0">📡</span>
+                <span className="leading-relaxed">
+                  <strong>当前处于离线模式：</strong>已缓存的基础页面与内容可继续查看；涉及实时学情同步、微测验评分与 AI 伴学需恢复网络后使用。
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={onRetry}
+                className="shrink-0 px-3 py-1.5 rounded-xl bg-amber-200/80 hover:bg-amber-300 text-amber-950 font-bold text-xs transition-colors cursor-pointer"
+              >
+                重试连接
+              </button>
+            </div>
+          )}
+
         {isLoading ? (
           <LoadingSkeleton />
         ) : errorMessage ? (

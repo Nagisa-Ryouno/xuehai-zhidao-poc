@@ -48,6 +48,11 @@ from gateway.learning.resources.mooc_catalog import (
     get_mooc_resources_by_knowledge,
     get_all_mooc_resources,
 )
+from gateway.learning.resources.service import (
+    get_unified_resource_by_id,
+    get_unified_resources_by_knowledge,
+    get_all_unified_resources,
+)
 
 __all__ = [
     "ResourceType",
@@ -74,4 +79,7 @@ __all__ = [
     "get_mooc_resource_by_id",
     "get_mooc_resources_by_knowledge",
     "get_all_mooc_resources",
+    "get_unified_resource_by_id",
+    "get_unified_resources_by_knowledge",
+    "get_all_unified_resources",
 ]

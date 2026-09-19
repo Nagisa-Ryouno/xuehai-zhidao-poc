@@ -122,6 +122,8 @@ from gateway.learning.resources import (
     VALID_RESOURCE_EVENT_TYPES,
     get_resource_by_id,
     get_resources_by_knowledge,
+    get_unified_resource_by_id,
+    get_unified_resources_by_knowledge,
     default_resource_resolver,
     record_resource_event,
 )
@@ -1049,8 +1051,8 @@ def create_gateway_app() -> FastAPI:
 
     @application.get("/api/learning/resources/item/{resource_id}", response_model=LearningResource)
     def get_resource_item_endpoint(resource_id: str) -> LearningResource:
-        """获取单个学习资源详情 (Sprint 9-C)"""
-        item = get_resource_by_id(resource_id)
+        """获取单个学习资源详情（支持内部资源与中国大学MOOC外部资源）"""
+        item = get_unified_resource_by_id(resource_id)
         if not item:
             raise HTTPException(status_code=404, detail=f"找不到学习资源：{resource_id}")
         return item
@@ -1093,8 +1095,9 @@ def create_gateway_app() -> FastAPI:
     def get_knowledge_resources_endpoint(
         knowledge_id: str,
         resource_type: Optional[str] = None,
+        source: Optional[str] = None,
     ) -> ResourceListResponse:
-        """获取指定考点的全量学习材料列表 (Sprint 9-C)"""
+        """获取指定考点的全量学习材料列表（统一支持内部资源与中国大学MOOC外部资源）"""
         if knowledge_id not in CONCEPT_CARDS:
             raise HTTPException(status_code=404, detail=f"找不到指定考点：{knowledge_id}")
 
@@ -1105,7 +1108,15 @@ def create_gateway_app() -> FastAPI:
             except ValueError:
                 raise HTTPException(status_code=400, detail=f"不支持的资源类型: {resource_type}")
 
-        resources = get_resources_by_knowledge(knowledge_id, resource_type=r_type)
+        norm_source = (source or "all").strip().lower()
+        if norm_source not in ("all", "xuehai_internal", "internal", "china_mooc", "mooc"):
+            raise HTTPException(status_code=400, detail=f"不支持的资源来源: {source}")
+
+        resources = get_unified_resources_by_knowledge(
+            knowledge_id=knowledge_id,
+            resource_type=r_type,
+            source=norm_source,
+        )
         return ResourceListResponse(
             knowledge_id=knowledge_id,
             total=len(resources),

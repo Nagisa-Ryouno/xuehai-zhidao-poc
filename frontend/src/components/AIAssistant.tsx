@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { playSound } from '../soundService';
+import { TiltCard } from './decor/TiltCard';
 import {
   Bot,
   Sparkles,
@@ -734,12 +735,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                         if (act.action_type === 'REVIEW_WRONG_ANSWERS') IconComponent = RotateCw;
 
                         return (
-                          <button
-                            key={act.action_id}
-                            type="button"
-                            onClick={() => handleGuidedActionClick(act)}
-                            className="p-3 rounded-2xl glass-card hover:bg-white/70 text-left transition-all duration-300 cursor-pointer group flex flex-col justify-between"
-                          >
+                          <TiltCard key={act.action_id} maxTilt={8} innerClassName="rounded-2xl h-full">
+                            <button
+                              type="button"
+                              onClick={() => handleGuidedActionClick(act)}
+                              className="w-full h-full p-3 rounded-2xl glass-card hover:bg-white/70 text-left transition-all duration-300 cursor-pointer group flex flex-col justify-between"
+                            >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 group-hover:text-indigo-700">
                                 <IconComponent className="w-4 h-4 text-indigo-600 shrink-0" />
@@ -758,7 +759,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                               <span>立即前往</span>
                               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                             </div>
-                          </button>
+                            </button>
+                          </TiltCard>
                         );
                       })}
                     </div>

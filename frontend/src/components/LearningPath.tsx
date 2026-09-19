@@ -12,6 +12,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import type { LearningPathStep, PathState } from '../types';
+import { TiltCard } from './decor/TiltCard';
 import { resolveStepPathState } from './student/taskFocusModel';
 import { getPathStatePresentation } from './student/pathStatePresentation';
 
@@ -138,7 +139,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
 
           {/* Advancement Training Direction Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left max-w-4xl mx-auto pt-2">
-            <div className="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5">
                 <Target className="w-4 h-4" />
               </div>
@@ -148,9 +149,9 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 强化弹性与福利、税收归宿交叉大题的多步计算推导。
               </p>
-            </div>
+            </TiltCard>
 
-            <div className="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2.5">
                 <Sparkles className="w-4 h-4" />
               </div>
@@ -160,9 +161,9 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 打通供求理论与消费者最优均衡，训练宏微观联动思考。
               </p>
-            </div>
+            </TiltCard>
 
-            <div className="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-2.5">
                 <Clock className="w-4 h-4" />
               </div>
@@ -172,9 +173,9 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 针对目前答题耗时 168 秒的特征，进行高强度限时模拟训练。
               </p>
-            </div>
+            </TiltCard>
 
-            <div className="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
+            <TiltCard maxTilt={8} innerClassName="glass-card rounded-xl p-4 hover:shadow-[0_14px_30px_rgba(214,150,105,.16)] transition-all duration-300">
               <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center mb-2.5">
                 <BookMarked className="w-4 h-4" />
               </div>
@@ -184,7 +185,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 挑战完全竞争与垄断市场的长期均衡推导等深度拔高考点。
               </p>
-            </div>
+            </TiltCard>
           </div>
         </div>
       ) : (

@@ -47,6 +47,7 @@ class AIProviderRequest(BaseModel):
         description="不可逆伪匿名学生标识符，严禁包含真实邮箱、手机号等 PII",
     )
     model: Optional[str] = Field(default=None, description="可选覆盖模型名称")
+    task: Optional[str] = Field(default=None, description="任务类型显式标识符 (如 'recommendation')")
     metadata: Optional[Dict[str, Any]] = Field(default=None, description="只读元数据上下文")
 
 

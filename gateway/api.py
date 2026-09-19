@@ -153,6 +153,20 @@ from gateway.learning.today import (
     default_today_action_resolver,
 )
 from gateway.content.concept_cards import CONCEPT_CARDS
+from gateway.ai.deepseek import (
+    AuthenticationError,
+    PIIViolationError,
+    ProviderDisabledError,
+    ProviderTimeout,
+    ProviderUnavailableError,
+    RateLimitError,
+)
+from gateway.ai.recommendation import (
+    RecommendationRequest,
+    RecommendationResponse,
+    ValidationRejectedError,
+    default_recommendation_service,
+)
 
 logger = logging.getLogger("xuehai.gateway")
 
@@ -302,6 +316,91 @@ def create_gateway_app() -> FastAPI:
                 "reachable": "unknown",  # 默认不产生外部网络请求
             },
         }
+
+    @application.post(
+        "/api/ai/recommendations/{student_id}",
+        response_model=RecommendationResponse,
+        response_model_exclude_unset=True,
+    )
+    async def recommendation_endpoint(
+        student_id: str,
+        response: Response,
+        request: Optional[RecommendationRequest] = None,
+    ) -> RecommendationResponse:
+        """
+        AI 个性化学习资源推荐候选端点 (只读、安全、确定性、零学习副作用)
+        
+        红线约束：
+        1. 绝不产生 QUESTION_ATTEMPT, RESOURCE_VIEW, BKT_UPDATE, PATH_UPDATE 等业务学习事件；
+        2. 严格通过三层确定性校验，拒绝任何越权或上下文外 ID；
+        3. 客户端不可指定 model，模型配置由服务端统一收敛。
+        """
+        request_id = generate_request_id()
+        response.headers["X-Request-ID"] = request_id
+
+        req = request or RecommendationRequest(student_id=student_id)
+        if not req.student_id:
+            req = req.model_copy(update={"student_id": student_id})
+
+        try:
+            return await default_recommendation_service.get_recommendations(
+                student_id=student_id,
+                request=req,
+            )
+        except ValidationRejectedError as vre:
+            logger.warning(f"Recommendation validation rejected [{request_id}]: {vre.message}")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=f"AI 推荐候选未通过确定性安全校验: {vre.message}",
+            )
+        except PIIViolationError as pve:
+            logger.error(f"Recommendation PII violation [{request_id}]: {pve.message}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="请求或上下文包含敏感个人信息，已被安全网关拦截",
+            )
+        except ProviderDisabledError as pde:
+            logger.warning(f"Recommendation provider disabled [{request_id}]: {pde.message}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="AI 推荐服务当前已禁用 (DEEPSEEK_ENABLED=false)",
+            )
+        except ProviderTimeout as pte:
+            logger.error(f"Recommendation provider timeout [{request_id}]: {pte.message}")
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="AI 推荐服务响应超时，请稍后重试",
+            )
+        except RateLimitError as rle:
+            logger.warning(f"Recommendation rate limited [{request_id}]: {rle.message}")
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="AI 推荐服务请求过于频繁，请稍后重试",
+            )
+        except AuthenticationError as ae:
+            logger.error(f"Recommendation authentication error [{request_id}]: {ae.message}")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="AI 推荐上游服务凭证异常",
+            )
+        except ProviderUnavailableError as pue:
+            logger.error(f"Recommendation provider unavailable [{request_id}]: {pue.message}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="AI 推荐上游服务暂不可用",
+            )
+        except ProviderException as pe:
+            logger.error(f"Recommendation provider error [{request_id}]: {pe}")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"AI 推荐服务异常: {pe}",
+            )
+        except Exception as e:
+            logger.error(f"Recommendation unexpected error [{request_id}]: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="推荐服务生成发生未知异常，请稍后重试",
+            )
 
     @application.post(
         "/api/ai/companion",

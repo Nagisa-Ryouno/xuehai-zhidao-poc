@@ -483,7 +483,30 @@ class MockDeepSeekProvider(AIProviderAdapter):
             elif isinstance(request.response_format, dict) and request.response_format.get("type") == "json_object":
                 is_json = True
 
-        if is_json:
+        task = request.task or (request.metadata.get("task") if request.metadata else None)
+        if task == "recommendation":
+            mock_recs = []
+            if request.metadata and "candidate_pool" in request.metadata:
+                pool = request.metadata["candidate_pool"]
+                for item in pool[:min(2, len(pool))]:
+                    mock_recs.append({
+                        "knowledge_id": item["knowledge_id"],
+                        "resource_id": item["resource_id"],
+                        "reason": f"建议优先攻克考点 {item['knowledge_id']} 并学习对应辅导资源。",
+                    })
+            elif request.metadata and "recommendations" in request.metadata:
+                mock_recs = request.metadata["recommendations"]
+            else:
+                mock_recs = [
+                    {
+                        "knowledge_id": "K01",
+                        "resource_id": "R001",
+                        "reason": "基础核心概念，建议优先掌握以建立扎实理论认知。",
+                    }
+                ]
+            parsed = {"recommendations": mock_recs}
+            content = json.dumps(parsed, ensure_ascii=False)
+        elif is_json:
             parsed = {
                 "answer": f"这是由 MockDeepSeekProvider 为「{request.user_prompt[:20]}」生成的确定性回答。",
                 "referenced_facts": ["fact_mock_verified=true"],

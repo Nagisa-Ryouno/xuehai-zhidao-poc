@@ -1,0 +1,111 @@
+{
+  "sprint": "Sprint 11 Phase 1 Real User Pilot & State Reliability Hardening",
+  "timestamp": "2026-09-20T15:20:10Z",
+  "console_messages": [
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[log] [PWA] Content is cached for offline use.",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[log] [PWA] Service Worker registered with scope: http://127.0.0.1:5173/"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "scenarios": {
+    "scenario_a_pretest": {
+      "status": "PASS",
+      "student_id": "S004"
+    },
+    "scenario_b_today_action": {
+      "status": "PASS"
+    },
+    "scenario_c_quiz_start": {
+      "status": "PASS",
+      "quiz_opened": true
+    },
+    "scenario_d_quiz_submit": {
+      "status": "PASS"
+    },
+    "scenario_e_action_refreshed": {
+      "status": "PASS"
+    },
+    "scenario_f_resource_hub": {
+      "status": "PASS"
+    },
+    "scenario_g_recommendations": {
+      "status": "PASS"
+    },
+    "scenario_h_ai_companion": {
+      "status": "PASS"
+    },
+    "scenario_i_cold_start_recovery": {
+      "status": "PASS"
+    },
+    "scenario_j_retention": {
+      "status": "PASS"
+    },
+    "scenario_k_path_evolution": {
+      "status": "PASS"
+    },
+    "scenario_l_teacher_s004": {
+      "status": "PASS"
+    },
+    "scenario_m_student_isolation": {
+      "status": "PASS"
+    },
+    "scenario_n_error_resilience": {
+      "status": "PASS"
+    },
+    "scenario_o_humanistic_copy": {
+      "status": "PASS"
+    },
+    "scenario_p_clean_baseline": {
+      "status": "PASS",
+      "post_restore_state_matches_baseline": true
+    }
+  }
+}

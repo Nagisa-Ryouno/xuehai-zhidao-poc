@@ -1,0 +1,253 @@
+{
+  "timestamp": "2026-09-20T15:11:24.293269+00:00",
+  "sprint": "Sprint 11 / Phase 1 — Real User Pilot Hardening",
+  "steps": [
+    {
+      "step_id": "DAY0_INIT",
+      "title": "新学生注册初始化与 30 考点默认锁状态合法",
+      "simulated_day": "Simulated Day 0",
+      "initial_state": {
+        "student_id": "S004",
+        "status": "UNINITIALIZED"
+      },
+      "operation": {
+        "api": "POST /api/students/init",
+        "payload": {
+          "student_id": "S004",
+          "student_name": "赵同学",
+          "major": "经济学",
+          "grade": "大二",
+          "learning_goal": "在保持高正确率的同时压缩答题时间，适应限时考试",
+          "start_knowledge_id": "K01"
+        }
+      },
+      "response": {
+        "status_code": 200,
+        "current_knowledge_id": "K01"
+      },
+      "authoritative_state": {
+        "path_states_count": 30,
+        "K01": "in_progress",
+        "K02..K30": "locked"
+      },
+      "side_effects": {
+        "persisted_to": "data/runtime/learning_path_states.json"
+      },
+      "assertion_result": "PASS",
+      "notes": "30 考点全部初始化，首考点进入 in_progress，其余 29 个考点严格保持 locked"
+    },
+    {
+      "step_id": "DAY0_PRETEST",
+      "title": "诊断前测完全只读不变量检验",
+      "simulated_day": "Simulated Day 0",
+      "initial_state": {
+        "bkt_exists": false,
+        "events_count": 0
+      },
+      "operation": {
+        "api": "POST /api/diagnostic/pretest/submit",
+        "session_id": "pretest-S004-a8c96503"
+      },
+      "response": {
+        "status_code": 200,
+        "recommended_route_steps": 0
+      },
+      "authoritative_state": {
+        "bkt_k01": null,
+        "qa_events": 0
+      },
+      "side_effects": {
+        "delta_bkt": 0,
+        "delta_path": 0,
+        "delta_events": 0
+      },
+      "assertion_result": "PASS",
+      "notes": "前测完全产生只读诊断信号，严格做到零 BKT 变更、零路径变迁、零 QUESTION_ATTEMPT 事件"
+    },
+    {
+      "step_id": "DAY0_TODAY_ACTION",
+      "title": "首日今日学习行动确定性裁决合法",
+      "simulated_day": "Simulated Day 0",
+      "initial_state": {
+        "student_id": "S004",
+        "now": "2026-09-20T08:00:00+00:00"
+      },
+      "operation": {
+        "resolver": "TodayActionResolver.resolve",
+        "student_id": "S004"
+      },
+      "response": {
+        "action_type": "CONTINUE_LEARNING",
+        "target_knowledge_id": "K01"
+      },
+      "authoritative_state": {
+        "action_type": "CONTINUE_LEARNING"
+      },
+      "side_effects": {
+        "delta_events": 0
+      },
+      "assertion_result": "PASS",
+      "notes": "首日行动成功裁决为 CONTINUE_LEARNING，聚焦首考点 K01"
+    },
+    {
+      "step_id": "DAY1_QUIZ_MUTATION",
+      "title": "Day 1 微测验驱动权威 BKT 更新与 1:1 事件写入",
+      "simulated_day": "Simulated Day 1",
+      "initial_state": {
+        "before_bkt_k01": 0.2,
+        "before_path_k01": "IN_PROGRESS",
+        "before_events_count": 0,
+        "before_today_action": "CONTINUE_LEARNING"
+      },
+      "operation": {
+        "api": "POST /api/quiz/submit",
+        "payload": {
+          "student_id": "S004",
+          "question_id": "Q-K01-01",
+          "selected_option": "A",
+          "time_spent_ms": 25000
+        }
+      },
+      "response": {
+        "status_code": 200,
+        "is_correct": false
+      },
+      "authoritative_state": {
+        "after_bkt_k01": 0.1272727272727273,
+        "after_path_k01": "IN_PROGRESS",
+        "after_events_count": 1,
+        "after_today_action": "CONTINUE_LEARNING"
+      },
+      "side_effects": {
+        "delta_bkt": -0.0727,
+        "delta_events": 1
+      },
+      "assertion_result": "PASS",
+      "notes": "K01 掌握度从 0.2 跃迁至 0.1272727272727273，事件精确 +1"
+    },
+    {
+      "step_id": "DAY2_RESTORE",
+      "title": "模拟客户端清空后从服务端权威持久化 100% 恢复状态",
+      "simulated_day": "Simulated Day 2",
+      "initial_state": {
+        "client_cache": "CLEARED"
+      },
+      "operation": {
+        "api": "GET /api/students/S004/dashboard"
+      },
+      "response": {
+        "status_code": 200,
+        "recovered_student_id": "S004"
+      },
+      "authoritative_state": {
+        "K01_state": "IN_PROGRESS"
+      },
+      "side_effects": {
+        "delta_events": 0
+      },
+      "assertion_result": "PASS",
+      "notes": "无前端内存缓存依赖，权威学情与路径状态完整从持久化文件反序列化恢复"
+    },
+    {
+      "step_id": "DAY2_RETENTION",
+      "title": "受控时钟 T0+2d 下 Retention 衰减契约与 TodayAction 核验",
+      "simulated_day": "Simulated Day 2",
+      "initial_state": {
+        "now": "2026-09-22T08:00:00+00:00"
+      },
+      "operation": {
+        "call": "RetentionAnalyzer.analyze",
+        "knowledge_id": "K01",
+        "now": "2026-09-22T08:00:00+00:00"
+      },
+      "response": {
+        "retention_status": "INSUFFICIENT_DATA",
+        "days_since_learning": null,
+        "should_review": false
+      },
+      "authoritative_state": {
+        "today_action": "CONTINUE_LEARNING"
+      },
+      "side_effects": {
+        "delta_events": 0
+      },
+      "assertion_result": "PASS",
+      "notes": "Retention 状态评估为 INSUFFICIENT_DATA，距上次学习 None 天"
+    },
+    {
+      "step_id": "DAY3_ISOLATION",
+      "title": "多学生 6 维状态快照级深度隔离与轮换防串扰核验",
+      "simulated_day": "Simulated Day 3",
+      "initial_state": {
+        "tested_students": [
+          "S001",
+          "S002",
+          "S003"
+        ]
+      },
+      "operation": {
+        "rotation": "S001 -> S002 -> S003 -> S001"
+      },
+      "response": {
+        "s001_retained": true
+      },
+      "authoritative_state": {
+        "s001_goal": "掌握微观经济学基础并能够解决综合分析题，重点突破弹性计算薄弱环节"
+      },
+      "side_effects": {
+        "delta_events": 0
+      },
+      "assertion_result": "PASS",
+      "notes": "各学生 BKT、路径状态、今日行动与画像完全物理隔离，轮换切换后上下文零残留"
+    },
+    {
+      "step_id": "DAY3_CANONICAL_SAME_SOURCE",
+      "title": "教师中台详情与学生端看板 7 大维度同源核验",
+      "simulated_day": "Simulated Day 3",
+      "initial_state": {
+        "student_id": "S001"
+      },
+      "operation": {
+        "compare": "CanonicalStudentLearningProjection diff"
+      },
+      "response": {
+        "diff_count": 0
+      },
+      "authoritative_state": {
+        "same_source_verified": true
+      },
+      "side_effects": {
+        "delta_events": 0
+      },
+      "assertion_result": "PASS",
+      "notes": "身份、目标、总正确率、分考点掌握度、分类与历史事件 100% 同源对齐"
+    },
+    {
+      "step_id": "DAY3_AI_READONLY",
+      "title": "AI 推荐与 AI 伴学各 5 次连续调用直接权威只读不变量断言",
+      "simulated_day": "Simulated Day 3",
+      "initial_state": {
+        "bkt_count": 83,
+        "events_count": 118
+      },
+      "operation": {
+        "ai_calls": "Recommendation x 5, Companion x 5"
+      },
+      "response": {
+        "status": "All 200 OK"
+      },
+      "authoritative_state": {
+        "delta_bkt": 0,
+        "delta_path": 0,
+        "delta_events": 0
+      },
+      "side_effects": {
+        "delta_events": 0
+      },
+      "assertion_result": "PASS",
+      "notes": "严守只读边界，ΔBKT = 0, ΔPathState = 0, ΔQUESTION_ATTEMPT = 0, ΔEvents = 0 恒成立"
+    }
+  ],
+  "repeatability_pass": true,
+  "restore_pass": true
+}

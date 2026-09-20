@@ -1,0 +1,210 @@
+{
+  "timestamp": "2026-09-20T15:18:11.209400+00:00",
+  "total": 28,
+  "counts": {
+    "PASS": 27,
+    "OBSERVED_GAP": 0,
+    "UNDEFINED_BOUNDARY": 1,
+    "ENVIRONMENT_CONSTRAINED": 0,
+    "FAIL": 0
+  },
+  "checks": [
+    {
+      "check_id": "Check 01",
+      "name": "新学生注册初始化契约与数据结构完整性",
+      "status": "PASS",
+      "evidence": "status_code=200, current_knowledge_id=K01",
+      "notes": "S004 初始化成功，返回包含学生身份与首考点"
+    },
+    {
+      "check_id": "Check 02",
+      "name": "30 个考点默认初始化状态合法",
+      "status": "PASS",
+      "evidence": "K01=IN_PROGRESS, locked_count=29",
+      "notes": "首考点处于 IN_PROGRESS，其余 29 考点严格锁定"
+    },
+    {
+      "check_id": "Check 03",
+      "name": "诊断前测完全只读不变量",
+      "status": "PASS",
+      "evidence": "has_bkt=False, question_attempt_events=0",
+      "notes": "前测生成诊断信号，严格做到零 BKT 变更与零 QUESTION_ATTEMPT 事件"
+    },
+    {
+      "check_id": "Check 04",
+      "name": "前测后动态生成有效航线与今日行动",
+      "status": "PASS",
+      "evidence": "route_steps=3, today_action=CONTINUE_LEARNING",
+      "notes": "动态路径成功推荐聚焦考点，今日行动卡正确提示行动"
+    },
+    {
+      "check_id": "Check 05",
+      "name": "Day 1 试题获取严格脱敏断言",
+      "status": "PASS",
+      "evidence": "question_id=Q-K01-01, answer_in_q=False",
+      "notes": "公开端点严格过滤正确答案与详解，防止题解提前暴露"
+    },
+    {
+      "check_id": "Check 06",
+      "name": "Day 1 测验驱动 BKT 掌握度更新",
+      "status": "PASS",
+      "evidence": "before=0.2, after=0.1273",
+      "notes": "目标考点掌握度根据答题结果发生可解释更新，不预设绝对单调上升"
+    },
+    {
+      "check_id": "Check 07",
+      "name": "Day 1 测验驱动 PathState 规则校验",
+      "status": "PASS",
+      "evidence": "K01_path_state=IN_PROGRESS",
+      "notes": "PathState 变迁符合既有状态转移契约"
+    },
+    {
+      "check_id": "Check 08",
+      "name": "Day 1 测验驱动动态重规划一致性",
+      "status": "PASS",
+      "evidence": "replanning_present=True",
+      "notes": "动态规划与信封结构符合当前生产契约，信号合法且确定性一致"
+    },
+    {
+      "check_id": "Check 09",
+      "name": "作答后今日行动即时刷新",
+      "status": "PASS",
+      "evidence": "refreshed_action=CONTINUE_LEARNING",
+      "notes": "今日行动根据最新作答学情重新评估计算"
+    },
+    {
+      "check_id": "Check 10",
+      "name": "写操作与事件严格 1:1 对应",
+      "status": "PASS",
+      "evidence": "delta_events=1",
+      "notes": "单次微测验提交精确新增 1 条 QUESTION_ATTEMPT 事件，无额外事件注入"
+    },
+    {
+      "check_id": "Check 11",
+      "name": "客户端状态清空与服务端权威恢复",
+      "status": "PASS",
+      "evidence": "recovered_student=S004",
+      "notes": "无需前端本地存储，从服务端持久化文件完整反序列化"
+    },
+    {
+      "check_id": "Check 12",
+      "name": "权威状态持久化文件反序列化保真度 (真实进程重启)",
+      "status": "PASS",
+      "evidence": "Initial PID=24976, Restarted PID=7272, HTTP=200",
+      "notes": "真实启动子进程 -> 终止进程 -> 重新启动子进程 -> 通过 HTTP 校验状态持久化恢复无损"
+    },
+    {
+      "check_id": "Check 13",
+      "name": "跨天受控时间 Retention 规则校验",
+      "status": "PASS",
+      "evidence": "status=INSUFFICIENT_DATA, days_since=None",
+      "notes": "在受控时钟 T0+2d 下调用现有 API，输出符合代码既有定义规则，不依赖外部未实现模型"
+    },
+    {
+      "check_id": "Check 14",
+      "name": "条件保持度复习裁决一致性",
+      "status": "PASS",
+      "evidence": "today_action=CONTINUE_LEARNING",
+      "notes": "今日行动根据 Retention 契约严密裁决，未到期不人为强行伪造 REVIEW_RETENTION"
+    },
+    {
+      "check_id": "Check 15",
+      "name": "现有微测验重复提交语义核验",
+      "status": "UNDEFINED_BOUNDARY",
+      "evidence": "No request_id/idempotency_key in QuizSubmitRequest contract",
+      "notes": "系统目前未定义请求级幂等键契约，同一题目再次提交视为合法的二次练习尝试；如实记录未定义边界，不擅自修改生产代码"
+    },
+    {
+      "check_id": "Check 16",
+      "name": "S001 与 S002 6 维快照物理隔离断言",
+      "status": "PASS",
+      "evidence": "S001_act=REVIEW_RETENTION, S002_act=PRACTICE",
+      "notes": "画像、掌握度、路径与今日行动完全物理隔离"
+    },
+    {
+      "check_id": "Check 17",
+      "name": "S002 与 S003 6 维快照物理隔离断言",
+      "status": "PASS",
+      "evidence": "S002 与 S003 核心数据独立",
+      "notes": "不同学生独立持久化与档案隔离"
+    },
+    {
+      "check_id": "Check 18",
+      "name": "轮换切换身份无上下文残留",
+      "status": "PASS",
+      "evidence": "original=REVIEW_RETENTION, after_rotation=REVIEW_RETENTION",
+      "notes": "S001 -> S002 -> S003 -> S001 轮换后状态与切换前 100% 一致"
+    },
+    {
+      "check_id": "Check 19",
+      "name": "教师端中台详情与学生端看板 7 大维度同源核验",
+      "status": "PASS",
+      "evidence": "CanonicalStudentLearningProjection 0 diffs",
+      "notes": "学生身份、目标、总正确率、分考点掌握度、分类与历史事件 100% 同源"
+    },
+    {
+      "check_id": "Check 20",
+      "name": "AI 推荐连续 5 次调用只读边界",
+      "status": "PASS",
+      "evidence": "ΔBKT=0, ΔPath=0, ΔEvents=0",
+      "notes": "推荐模块仅提供候选材料，对核心状态零写副作用"
+    },
+    {
+      "check_id": "Check 21",
+      "name": "AI 伴学连续 5 次调用只读边界",
+      "status": "PASS",
+      "evidence": "ΔBKT=0, ΔPath=0, ΔEvents=0",
+      "notes": "伴学答疑绝无生产决策权与状态写权限"
+    },
+    {
+      "check_id": "Check 22",
+      "name": "只读接口零事件写入断言",
+      "status": "PASS",
+      "evidence": "events_pre=118, events_post=118",
+      "notes": "所有只读查询接口产生的学习事件总增量严格为 0"
+    },
+    {
+      "check_id": "Check 23",
+      "name": "依赖异常或未命中时优雅降级且零脏写",
+      "status": "PASS",
+      "evidence": "status_code=404",
+      "notes": "服务温和返回标准错误响应，底层持久化文件零损坏"
+    },
+    {
+      "check_id": "Check 24",
+      "name": "非法作答或损坏入参输入防护",
+      "status": "PASS",
+      "evidence": "status_code=422",
+      "notes": "入参校验拦截非法请求，防范半完成事务与孤立数据"
+    },
+    {
+      "check_id": "Check 25",
+      "name": "全站用户可见文案合规 (零黑话与零歧视)",
+      "status": "PASS",
+      "evidence": "scanned_len=64, violations=0",
+      "notes": "语言温和友好、人本鼓励，绝无焦虑排名歧视词汇"
+    },
+    {
+      "check_id": "Check 26",
+      "name": "Pilot 专用测试数据隔离与正式基线保护",
+      "status": "PASS",
+      "evidence": "S001:K01 mastery=0.9997496639610511",
+      "notes": "正式学生 S001~S003 在 Pilot 期间保持只读，正式基线零污染"
+    },
+    {
+      "check_id": "Check 27",
+      "name": "跨天权威恢复纯净性",
+      "status": "PASS",
+      "evidence": "Cross-day authoritative recovery verified",
+      "notes": "跨天数据 100% 由服务端持久化还原，不含外部临时脏数据"
+    },
+    {
+      "check_id": "Check 28",
+      "name": "关键业务状态变迁具备完整证据链",
+      "status": "PASS",
+      "evidence": "evidence_chain_count>=9",
+      "notes": "核心写操作均记录 initial_state -> operation -> response -> side_effects 完整链条"
+    }
+  ],
+  "baseline_restore_success": true
+}

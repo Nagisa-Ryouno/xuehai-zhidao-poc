@@ -1,0 +1,52 @@
+{
+  "sprint": "Sprint 10-C Phase 1 Student Home / Today",
+  "timestamp": "2026-09-20T17:56:59Z",
+  "console_messages": [
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "scenarios": {
+    "scenario_1_desktop_home": {
+      "status": "PASS"
+    },
+    "scenario_2_mobile_375x812": {
+      "status": "PASS",
+      "overflow": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "hasHorizontalScroll": false
+      }
+    },
+    "scenario_3_mobile_390x844": {
+      "status": "PASS"
+    },
+    "scenario_4_cta_loop": {
+      "status": "PASS",
+      "cta_text": "开始快速复测"
+    },
+    "scenario_5_none_state": {
+      "status": "PASS"
+    },
+    "scenario_6_partial_failure": {
+      "status": "PASS"
+    },
+    "scenario_7_new_student": {
+      "status": "PASS"
+    },
+    "scenario_8_long_name": {
+      "status": "PASS"
+    }
+  },
+  "final_verdict": "PASS"
+}

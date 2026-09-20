@@ -1,193 +1,139 @@
-# Sprint 10-B Phase 3 — Real DeepSeek Controlled Live Smoke Test 验收报告
+# Sprint 10-C Phase 1 — 学生端首页 (Student Home / Today) 交付验收报告
 
-**阶段定位**: 真实 DeepSeek API 受控联调与端到端验证 Sprint  
-**唯一目标**: 在不改变现有产品业务逻辑、不修改权威学习状态、不扩大 AI 权限边界的前提下，证明 Sprint 10-B Phase 1/2 建立的 `Provider → Candidate Generator → Deterministic Validator` 闭环可以安全承接一次真实 DeepSeek API 输出。  
-**核心红线**: `allow_production_decision = False` 永久成立，AI 只能产出候选，确定性校验器拥有最终仲裁权。  
-
----
-
-## 一、Phase 3 实际变更 (Files Changed)
-
-- [`scripts/sprint10b_phase3_live_smoke.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase3_live_smoke.py): 新增受控真实 DeepSeek API 联调脚本（硬上限 $\le 3$ 次，脱敏审计日志存盘，零 API Key 泄露）；
-- [`scripts/sprint10b_phase3_gate.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase3_gate.py): 新增 18 维严苛质量门禁脚本；
-- [`artifacts/phase3_live_smoke_summary.json`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/artifacts/phase3_live_smoke_summary.json): 真实调用脱敏审计工件（无明文 Key，无敏感 Prompt）；
-- [`gateway/tests/test_sprint10b_deepseek_provider.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/tests/test_sprint10b_deepseek_provider.py): 增强 `test_18` 断言兼容性，确保开发者本地配置 Key 时仍能平稳运行离线测试；
-- [`implementation_plan.md`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/implementation_plan.md) / [`walkthrough.md`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/walkthrough.md): 交付文档。
+**阶段定位**: 学生端产品化与体验重构 (Student Productization & PWA)  
+**核心目标**: 将分散的技术特性收敛为面向大学生的直觉化首页，围绕「今日学习行动 (Today Action)」建立真正解决学生核心困惑的学习闭环。  
+**核心约束**: 
+- 停止扩充 AI 基础设施（0 新增 AI 提示词与决策逻辑）；
+- 冻结目录及核心后端代码 **严格 0 diff**；
+- 严禁向学生泄露底层算法与学术技术黑话（No Jargon）；
+- 严禁伪造或推算历史进展数据（No Fake Progress）；
+- 所有行动 CTA 必须直达真实学习闭环（微测验、概念微卡、学情画像）。
 
 ---
 
-## 二、调用链路 (Invocation Flow)
+## 一、交付物与文件变更 (Files Changed)
+
+### 1. 新增前端组件与测试
+- [`frontend/src/components/student/StudentHome.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/StudentHome.tsx):
+  - 统一首页容器，渲染人本问候语（按时段动态生成「早上好/下午好/晚上好」与温和伴学副标）；
+  - 组织 TodayActionCard、CurrentFocusCard、RecentProgressCard 三大卡片，实现局部加载与错误解耦。
+- [`frontend/src/components/student/RecentProgressCard.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/RecentProgressCard.tsx):
+  - 严格仅展示后端权威接口（`/api/students/{id}/progress`）能够直接提供的 4 项指标：整体掌握度、已掌握考点、练习正确率、累计练习题数；
+  - 严禁在无历史快照情况下推算伪造「本周掌握度 +8%」等虚假数据；
+  - 具备独立加载骨架屏、独立错误容错态与重试能力，点击可下钻跳转 `/student/profile`。
+- [`frontend/test/sprint10c_student_home.test.ts`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/test/sprint10c_student_home.test.ts):
+  - 包含 10 大核心契约测试（涵盖 5 档行动类型、NONE 空状态、加载防跳动、局部容错隔离、零黑话断言等），100% 通过。
+- [`scripts/uat_sprint10c_phase1_browser.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/uat_sprint10c_phase1_browser.py):
+  - 覆盖桌面、移动两档视口、真实闭环、空状态、容错与多学生隔离的 8 大场景真实浏览器端到端自动化验收套件。
+
+### 2. 优化既有组件与容器
+- [`frontend/src/components/student/TodayActionCard.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/TodayActionCard.tsx):
+  - 新增骨架加载屏（保持最小 160px 高度与布局稳定）；
+  - 新增人本错误态与独立重试按钮；
+  - 新增人本空状态（NONE）：展示「今天暂时没有待完成的学习任务」，CTA 引导「查看学习进展」，严禁伪造任务；
+  - 强化当前考点掌握度展示（例如「当前掌握度 62%」），精准回答学生当前学到什么程度。
+- [`frontend/src/components/student/CurrentFocusCard.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/CurrentFocusCard.tsx):
+  - 彻底去除标题中生硬的 `K01`/`K08` 等技术代号，转为清晰人本的考点全称；
+  - 清理算法路线等技术黑话，保留行为语义稳定的 `data-testid="focus-start-quiz-btn"`；
+  - 提供学习上下文支撑，与 Today Action 形成互补。
+- [`frontend/src/layouts/StudentLayout.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/layouts/StudentLayout.tsx):
+  - 在 `subRoute === 'tasks'` 路由下挂载 `StudentHome`；
+  - 接入独立的 `todayActionError` 与 `analyticsError`，确保单一接口异常绝不引发整页崩溃；
+  - 完善 CTA 路由分发，点击 NONE 或查看进展平滑导航至 `/student/profile`。
+
+---
+
+## 二、架构硬红线与原则符合度核验
+
+| 规则项 | 约束标准 | 核验结论 |
+| :--- | :--- | :--- |
+| **红线 1** | `allow_production_decision = False` 永久成立 | **100% PASS**（本次零新增 AI 决策） |
+| **红线 2** | 后端冻结目录零改动（`app/`, `tests/`, `data/seeds/`, `gateway/learning/`, `gateway/api.py` 等） | **0 diff PASS**（严格零修改） |
+| **红线 3** | 全站用户可见界面绝对零技术黑话（BKT, PathState, 贝叶斯, P(L), 向量数据库, 候选仲裁等） | **100% PASS**（自动化测试全文本审计通过） |
+| **红线 4** | 严禁伪造或推算虚假学习进展（禁止无快照臆造「+8%」） | **100% PASS**（严格映射权威进展响应 4 大指标） |
+| **红线 5** | 局部失败容错（Progress 失败不得引起 Today Action 白屏或阻断核心学习） | **100% PASS**（浏览器 UAT Scenario 6 实测通过） |
+
+---
+
+## 三、质量验证结果矩阵
 
 ```
-Authoritative Learning State (BKT, PathState, Concept Cards, Resource Catalog)
-        ↓ (只读读取，零重新实现)
-Recommendation Context (脱敏上下文快照，零 PII，伪匿名 student_s001)
-        ↓
-DeepSeekCandidateGenerator (显式 task="recommendation" 任务路由)
-        ↓
-AIProvider (DeepSeekProvider + HttpLLMTransport)
-        ↓
-Transport: https://api.deepseek.com/chat/completions (model="deepseek-flash", response_format={"type": "json_object"})
-        ↓
-AI Candidate (纯候选元数据，严格 extra="forbid"，仅限 knowledge_id, resource_id, reason)
-        ↓
-Deterministic Validator (确定性三层防御、结构化去重与排序仲裁)
-        ↓
-Validated Candidates + Rejected Candidates (自包含 code/reason) + Zero Mutation Invariant
-```
-
----
-
-## 三、Live API 执行状态
-
-- **是否执行真实 API**: **YES**
-- **执行原因**: 本地已配置有效 `DEEPSEEK_API_KEY`，且通过 `--live` 显式 opt-in 触发受控联调。
-
----
-
-## 四、真实请求次数与结果 (Live Requests Execution)
-
-单次联调执行严格受到硬上限限制（最多 3 次），实际执行 **3 次**：
-
-### 1. Request #1 — Happy Path
-- **模式**: 真实模型调用（`deepseek-flash`）
-- **耗时**: 3615 ms
-- **状态**: `SUCCESS`
-- **模型候选结果**:
-  - `Validated #1`: `(K03, res_k03_concept)` - 需求价格弹性 考点精要微卡
-  - `Validated #2`: `(K03, res_k03_example)` - 需求价格弹性 典型例题精析
-  - `Rejected`: 0 项
-- **决策权**: `allow_production_decision = False`
-
-### 2. Request #2 — Context Boundary
-- **模式**: 真实模型调用（单资源受限 Context）
-- **耗时**: 2851 ms
-- **状态**: `SUCCESS`
-- **边界校验结果**:
-  - `Validated #1`: `(K03, res_k03_concept)` - 微卡
-  - `Boundary respected`: **YES**（所有候选严格属于 Context 白名单候选池，绝无外溢）
-  - `Rejected`: 0 项
-
-### 3. Request #3 — Full E2E Mutation Safety
-- **模式**: 完整 `RecommendationService.get_recommendations("S001")` 端到端调用
-- **耗时**: 3226 ms
-- **状态**: `SUCCESS`
-- **零突变断言结果**:
-  - `bkt_mutation`: 0
-  - `path_mutation`: 0
-  - `learning_event_mutation`: 0
-  - `resource_event_mutation`: 0
-  - `resource_eff_mutation`: 0
-  - `total_mutations`: **0**
-
----
-
-## 五、JSON Output 模式验证
-
-真实 `deepseek-flash` 模型调用显式携带：
-```json
-{
-  "type": "json_object"
-}
-```
-且系统 Prompt 明确包含 JSON 指令。3 次真实请求均成功解析为合法 Python `dict`，零解析截断、零语法错误。
-
----
-
-## 六、Context Boundary 验证
-
-无论模型返回何种内容，只有包含在当前 Context 白名单中的 `(knowledge_id, resource_id)` 才能被 Validator 采纳。Request #2 明确证明了 Context 候选池白名单拦截机制在真实模型输出下依然生效。
-
----
-
-## 七、业务状态零突变验证 (Zero Mutation Safety)
-
-- **BKT 掌握度状态** (`data/bkt_states.json`): **0 mutation (unchanged)**
-- **学习路径状态** (`data/learning_path_states.json`): **0 mutation (unchanged)**
-- **正式学习事件** (`data/learning_events.jsonl`): **0 lines added (unchanged)**
-- **资源消费事件** (`data/resource_events.jsonl`): **0 lines added (unchanged)**
-- **今日行动推荐** (`TodayAction`): **0 mutation (unchanged)**
-
----
-
-## 八、PII / API Key 安全防护
-
-- **PII 检查**: `assert_no_pii()` 全流程扫描，仅包含伪匿名 `student_s001`；
-- **API Key 隔离**:
-  - 密钥存放在 `.env`（受 `.gitignore` 保护）；
-  - `git grep` 严格断言源码中无实际 API Key；
-  - `artifacts/` 存盘的审计文件严格进行敏感脱敏处理；
-  - 交付报告与日志中绝对不泄露明文密钥。
-
----
-
-## 九、Phase 3 专项质量门禁 (18/18 PASS)
-
-门禁脚本：[`scripts/sprint10b_phase3_gate.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase3_gate.py)
-
-```
-============================================================================
-Sprint 10-B / Phase 3 — Real DeepSeek Live Smoke Quality Gate
-============================================================================
-[01/18] Phase 2 Baseline ........................................ PASS
-[02/18] Live Mode Explicit Opt-In ............................... PASS
-[03/18] API Key Not in Source ................................... PASS
-[04/18] API Key Not in Logs/Artifacts ........................... PASS
-[05/18] Provider Abstraction Reused ............................. PASS
-[06/18] Response Format JSON Object ............................. PASS
-[07/18] Prompt Contains JSON Instruction ........................ PASS
-[08/18] Candidate Schema Unchanged .............................. PASS
-[09/18] Validator Still Authoritative ........................... PASS
-[10/18] allow_production_decision=False ......................... PASS
-[11/18] No BKT Mutation (0 mutation) ............................ PASS
-[12/18] No PathState Mutation (0 mutation) ...................... PASS
-[13/18] No Learning Event Mutation (0 mutation) ................. PASS
-[14/18] No Resource Event Mutation (0 mutation) ................. PASS
-[15/18] No TodayAction Mutation (0 mutation) .................... PASS
-[16/18] Maximum Live Request Count <= 3 ......................... PASS
-[17/18] Live Failure Is Safe .................................... PASS
-[18/18] Frozen Areas 0 Diff ..................................... PASS
-============================================================================
-Gate Summary: 18 PASSED, 0 UNDEFINED_BOUNDARY, 0 FAILED
-============================================================================
-RESULT: PASS (All invariants held with FAIL == 0)
+======================================================================
+1. Frontend Contract Tests (Vitest)  : 330 passed (100%)
+2. Frontend Typecheck (tsc -b)        : 0 errors
+3. Frontend Build (Vite production)   : PASS (dist/ created)
+4. Backend Root Tests (pytest tests/) : 143 passed (100%)
+5. Gateway Tests (pytest gateway/)    : 558 passed, 2 skipped (100%)
+6. Student PWA Strict Gate            : 20/20 PASS
+7. Final Integration Gate             : 25/25 PASS
+8. Browser E2E UAT Suite (8/8 Scenarios): 8/8 PASS
+   - Console Errors                   : 0
+   - Page Errors                      : 0
+   - Failed Network Requests          : 0
+======================================================================
 ```
 
 ---
 
-## 十、全量回归测试汇总 (Full Regression Summary)
+## 四、真实浏览器端到端 UAT 场景证据
 
-| 测试套件 | 测试命令 | 测试结果 | 状态 |
-| :--- | :--- | :---: | :---: |
-| **Phase 3 专项质量门禁** | `python scripts/sprint10b_phase3_gate.py` | **18 PASSED, 0 FAIL** | ✅ PASS |
-| **Phase 3 受控联调** | `python scripts/sprint10b_phase3_live_smoke.py --live` | **3/3 SUCCESS, 0 Mutation** | ✅ PASS |
-| **Phase 2 专项测试套件** | `pytest gateway/tests/test_sprint10b_phase2.py -v` | **15 passed** (100%) | ✅ PASS |
-| **Gateway 整体回归** | `pytest gateway/tests/ -v` | **558 passed, 2 skipped** | ✅ PASS |
-| **Core 根目录历史回归** | `pytest tests/ -v` | **143 passed** (100%) | ✅ PASS |
-| **前端契约测试** | `npm test --prefix frontend` | **320 passed, 0 fail** (100%) | ✅ PASS |
-| **前端类型检查** | `npm run typecheck --prefix frontend` | **0 errors (tsc -b)** | ✅ PASS |
-| **前端生产构建** | `npm run build --prefix frontend` | **Built successfully** | ✅ PASS |
+本次 UAT 通过真实 Chromium 引擎加载编译产物与后端网关，完整覆盖 8 大场景并归档全维高保真截图：
+
+### 1. 桌面端核心首页 (1440x900)
+- **场景**: 学生 S001 访问首页，完整呈现「温和问候语 + 今日行动主卡 + 当前焦点卡 + 最近学情卡」。
+- **核验点**: 回答了今天学什么、为什么学、当前掌握度（如 62%）、下一步做什么、真实学习进展。
+- **截图**:
+  ![Desktop Home](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_01_desktop_home.png)
+
+### 2. 移动端 375x812 视口响应式排版 (iPhone X)
+- **场景**: 移动端窄屏视口下的排版与触控靶点核验。
+- **核验点**: `scrollWidth === clientWidth`（横向零滚动、零溢出），CTA 触控高度 $\ge 44\text{px}$，底部固定导航完好。
+- **截图**:
+  ![Mobile 375x812](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_02_mobile_375x812.png)
+
+### 3. 移动端 390x844 视口视觉呼吸感 (iPhone 12/13/14)
+- **场景**: 主流移动端视口下的卡片间距、信息密度与字体缩放。
+- **核验点**: 元素自适应撑满，卡片圆角与内边距比例协调，无横向挤压变形。
+- **截图**:
+  ![Mobile 390x844](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_03_mobile_390x844.png)
+
+### 4. 今日行动 CTA 触发真实学习闭环
+- **场景**: 点击今日行动主卡上的行动按钮（如「开始快速复测」或「继续学习」）。
+- **核验点**: 调起真实微测验弹窗或概念微卡对话框，杜绝空链接或伪交互。
+- **截图**:
+  ![CTA Learning Loop](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_04_cta_learning_loop.png)
+
+### 5. 今日行动 NONE 阶段全达标空状态
+- **场景**: 当学生当前阶段所有学习目标均已达成（action_type 为 NONE）时。
+- **核验点**: 真诚展示「今天暂时没有待完成的学习任务」，绝对不伪造假任务；点击「查看学习进展」平滑导航至个人学情中心 `/student/profile`。
+- **截图**:
+  ![Today Action NONE](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_05_today_action_none.png)
+
+### 6. 局部接口失败容错 (Progress 500)
+- **场景**: 模拟 `/api/students/{id}/progress` 接口突发 500 故障。
+- **核验点**: 首页零白屏，Today Action 与 Current Focus 仍然 100% 正常可用；学情卡单独呈现友好降级提示与独立重试按钮。
+- **截图**:
+  ![Partial Failure Resilience](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_06_partial_failure_resilience.png)
+
+### 7. 学生上下文切换与新学生状态隔离
+- **场景**: 在顶部切换学生（如从 S001 切换为 S002 李同学）。
+- **核验点**: 问候语即时响应，学情卡片立即重置为目标学生的真实权威数据，严禁产生跨学生数据串扰。
+- **截图**:
+  ![New Student Context](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_07_new_student_first_entry.png)
+
+### 8. 超长考点名称弹性折行防溢出
+- **场景**: 注入多达 30 字的超长学术考点名称（如「微观经济学中关于完全竞争市场长期均衡条件与供给价格弹性变动分析」）。
+- **核验点**: 在 375px 窄屏下优雅折行排版，不冲破卡片边界，零横向滚动条。
+- **截图**:
+  ![Long Name Resilience](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_08_long_name_resilience.png)
 
 ---
 
-## 十一、冻结区域 0 Diff 验证 (Frozen Areas 0 Diff)
+## 五、验收结论
 
-执行对比：
-```bash
-git diff -- app/ tests/ data/seeds/ gateway/learning/ gateway/ai/companion/ gateway/api.py gateway/adapter.py gateway/config.py frontend/src/ frontend/public/ frontend/index.html
-```
-**结果**: 0 行修改，100% 严格 0 diff。
-
----
-
-## 十二、未解决问题与边界声明
-
-- 无未定义边界（`UNDEFINED_BOUNDARY = 0`）；
-- 无阻断性缺陷（`FAIL = 0`）。
-
----
-
-## 十三、最终判定
-
-🏆 **Sprint 10-B Phase 3 判定: PASS**  
-Sprint 10-B 全阶段圆满封板，系统已准备好进入 **Sprint 10-C：学生端产品化 + PWA**。
+学海智导 Sprint 10-C Phase 1（学生端首页 / Today）满足设计规范与质量门禁要求：
+- 5 大问题解答完备；
+- 8 大浏览器场景全绿且控制台 0 报错；
+- 全量单元与门禁测试 100% 通过；
+- 后端冻结目录严格 0 diff；
+- 具备进入最终 Git 提交与交付封板的完整条件。

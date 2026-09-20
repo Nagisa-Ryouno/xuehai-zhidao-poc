@@ -1,139 +1,179 @@
-# Sprint 10-B Phase 3 — Real DeepSeek Controlled Live Smoke Test 实施计划
+# Sprint 10-C Phase 1 — Student Home / Today 实施计划
 
-## 一、阶段定位与目标
+## 一、阶段定位与核心目标
 
-本阶段是 **真实 DeepSeek API 受控联调与端到端验证 Sprint**。
+本阶段是 **Sprint 10-C Phase 1: Student Home / Today（学生端首页产品化）**。
 
-### 唯一目标
-> 在不改变现有产品业务逻辑、不修改权威学习状态、不扩大 AI 权限边界的前提下，证明 Sprint 10-B Phase 1/2 建立的 `Provider → Candidate Generator → Deterministic Validator` 闭环可以安全承接一次真实 DeepSeek API 输出。
+### 1. 唯一目标
+将现有学生端功能重新组织成一个真正以「今日学习行动」为核心的学生首页。
+使第一次打开学海智导的学生能够立刻理解 **「我现在应该做什么」**：
+- **今天学什么**：权威后端解析的唯一最佳今日行动；
+- **为什么现在学它**：自然、通俗的人本原因；
+- **当前学到什么程度**：直观的当前掌握度百分比（如「当前掌握度 62%」）；
+- **接下来做什么**：明确的下一步练习或拓展行动。
 
-### 本阶段明确非目标
-- 不是 AI 推荐质量优化 Sprint；
-- 不是新的推荐算法 Sprint；
-- 不是前端/UI Sprint（后端自闭环验证，0 前端代码修改）；
-- 不是 BKT / PathState 优化 Sprint；
-- 不是 AI Judge Sprint；
-- 不是让 AI 参与生产决策的 Sprint。
-
----
-
-## 二、绝对架构红线与冻结区域 (0 Diff Invariant)
-
-### 1. 核心架构红线 (Hard Redlines)
-1. **`allow_production_decision = False` 永久成立**；
-2. DeepSeek 只能产生候选 Candidate，绝无生产决策权；
-3. DeepSeek 不能直接决定：下一学习节点、BKT、PathState、TodayAction、Mastery、学习路径、正式学习事件；
-4. 所有真实 AI Candidate 必须经过现有 Deterministic Validator 仲裁；
-5. Validator 对 AI 输出拥有最终仲裁权；
-6. AI 输出的 `rank`, `priority`, `score` 绝不能参与权威排序或生产决策；
-7. 真实 API 调用失败、超时、空内容、非法 JSON、非法 Candidate 等情况均必须安全失败，不能产生生产学习状态变更；
-8. 不得为了适配真实 DeepSeek 而修改既有业务逻辑。
-
-### 2. 绝对冻结路径 (100% 0 Diff)
-- `app/`
-- `tests/`
-- `data/seeds/`
-- `gateway/learning/`
-- `gateway/ai/companion/`
-- `gateway/api.py`
-- `gateway/adapter.py`
-- `gateway/config.py`
-- `frontend/src/`
-- `frontend/public/`
-- `frontend/index.html`
-
-### 3. 允许修改/新增范围
-- `gateway/ai/recommendation/`（候选生成器模型解析优化，保持只读）
-- `gateway/tests/`（测试用例）
-- `scripts/`（`scripts/sprint10b_phase3_live_smoke.py`, `scripts/sprint10b_phase3_gate.py`）
-- `artifacts/`（脱敏后的受控联调审计报告）
-- `implementation_plan.md` / `walkthrough.md`
+### 2. 架构红线与严格约束
+- **AI 基础设施扩充全面停止**：不新增任何 DeepSeek / AI 新功能或 Prompt 变动；
+- **权威后端 0 变更**：后端学习状态（BKT、PathState、TodayActionResolver、Events）0 变更，只复用既有 API：
+  - `GET /api/learning/today/{student_id}`
+  - `GET /students/{student_id}/progress`
+  - `GET /students/{student_id}/wrong-answers`
+  - `GET /api/learning/path/{student_id}/dynamic`
+- **冻结目录 0 diff**：
+  - `app/` (0 diff)
+  - `tests/` (0 diff)
+  - `data/seeds/` (0 diff)
+  - `gateway/learning/` (0 diff)
+  - `gateway/ai/companion/` (0 diff)
+  - `gateway/api.py` (0 diff)
+  - `gateway/adapter.py` (0 diff)
+  - `gateway/config.py` (0 diff)
+- **绝对杜绝底层技术黑话与学术术语**：
+  - 严禁在学生端首页出现：`BKT`、`PathState`、`mastery_probability`、`Knowledge ID (如 K01)`、`Resource ID (如 R01)`、`Candidate`、`Validator`、`自适应算法`、`智能推荐引擎` 等；
+- **全链路真实可用**：所有 CTA 均连接真实学习闭环（调起概念微卡、启动微测验、跳转学情档案或知识图谱），严禁假链接、假页面或 `alert()`。
 
 ---
 
-## 三、真实 API Key 安全防护规则
+## 二、首页信息架构设计
 
-1. **零密钥泄漏防线**:
-   - 绝不要求用户把 API Key 粘贴到代码或对话中；
-   - 绝不将 API Key 写入源码、测试 fixture、prompt、日志、artifacts、walkthrough、Git 或交付报告；
-   - 本地密钥存储在已处于 `.gitignore` 的 `.env` 文件中，并通过 `dotenv.load_dotenv()` 安全载入环境；
-2. **环境未就绪降级机制**:
-   - 若本地未检测到有效 Key，安全停止真实调用，报告 `LIVE_API_KEY_NOT_CONFIGURED`（定义为受控的 `UNDEFINED_BOUNDARY`），绝不伪造虚假通过；
-   - 离线回归测试不受影响。
+根据规范，学生端首页在子路由 `/student/tasks` 下统一呈现为以下流式层级：
+
+```
+Student Home
+│
+├── 1. Greeting (问候区)
+│   ├── 时段人本问候 (早上好 / 下午好 / 晚上好，{student_name})
+│   └── 鼓励副标题 ("今天也学一点吧")
+│
+├── 2. Today Action (今日学习行动卡片)
+│   ├── 标签与类别 ("今日学习" · "继续学习" / "建议再巩固一下" / "该复习一下了" / "做一道小练习")
+│   ├── 知识点名称 ({knowledge_name}，无技术 ID 前缀)
+│   ├── 当前掌握度 ("当前掌握度 62%")
+│   ├── 人本行动解释 (如 "建议继续学习这个知识点" / "已有考点复习未稳固，先重新看看概念，再试一次。")
+│   ├── 核心主 CTA ([继续学习] / [重新学习] / [开始快速复测] / [开始练习] / [查看进展])
+│   ├── Empty 状态 (NONE: "今天暂时没有待完成的学习任务" · [查看学习进展])
+│   ├── Loading 状态 (高度防跳动骨架屏)
+│   └── Error 状态 ("暂时无法获取今日学习安排" · [重新加载])
+│
+├── 3. Next Suggested Action (接下来 / 当前焦点)
+│   ├── 行动类别 ("再做一道针对性练习" / "深入拓展学习")
+│   ├── 核心考点与简述 ("学完核心考点后，通过针对性小练习检验理解")
+│   ├── 针对性 CTA ([开始练习] / [微测验突破])
+│   └── 兼容规范 (保留 data-testid="current-focus-card" 与 "突破"/"测验" 语义，无缝兼容既有 UAT)
+│
+├── 4. Recent Progress (最近进展)
+│   ├── 近期掌握度演进 (如 "本周掌握度 +8%" 或 "当前整体掌握度 68%")
+│   ├── 轻量学习沉淀 ("已达标掌握 12 个核心考点" / "练习正确率 82%")
+│   └── 学情直通链接 ("查看完整学情档案 →")
+│
+└── 5. Bottom Navigation (底部固定导航)
+    ├── 首页 (/student/tasks)
+    ├── 学习 (/student/graph)
+    ├── 进度 (/student/profile)
+    └── AI (/student/assistant)
+```
 
 ---
 
-## 四、受控真实 API 请求设计 (最多 3 次硬上限)
+## 三、用户审查确认项 (User Review Required)
 
-### Request #1 — Happy Path
-- **输入**: 准备最小、脱敏的标准 Recommendation Context（使用内部伪匿名 `student_id = student_s001`，包含 `K03` 权威考点与候选资源 `res_k03_concept`, `res_k03_example`）；
-- **执行**: `Recommendation Context → DeepSeekCandidateGenerator → HttpLLMTransport → api.deepseek.com → Deterministic Validator`；
-- **验证**:
-  - 请求成功响应 (HTTP 200)；
-  - 成功解析为合法 JSON 字典；
-  - 候选进入 Candidate Validator，通过校验并注入权威元数据；
-  - 验证 `allow_production_decision = False`；
-  - 确认底层状态 0 mutation。
-
-### Request #2 — Context Boundary
-- **输入**: 严格限定 Context 仅包含 `K03 -> res_k03_concept` 和 `K04 -> res_k04_practice`；
-- **验证**:
-  - 观察真实模型输出候选；
-  - 无论 AI 输出什么候选，凡是不在当前 Context 候选池内的资源（即使存在于全局资源库），均被 Validator 确定性拦截（`RESOURCE_NOT_IN_CONTEXT`）；
-  - 若模型输出完全合规，验证均属于 Context 候选池；
-  - 核心证明：“**无论 AI 返回什么，最终结果绝不能突破 Context 白名单**”。
-
-### Request #3 — Full E2E Mutation Safety
-- **前置**: 记录完整的权威持久化状态快照（`bkt_states.json`, `learning_path_states.json`, `learning_events.jsonl`, `resource_events.jsonl`, `resource_effectiveness_events.jsonl`, `TodayAction`）；
-- **执行**: 调用完整 `RecommendationService.get_recommendations(student_id="S001")`；
-- **后置对比**: 逐项验证所有状态文件与今日行动 100% 字节一致、0 增量、0 变动；
-- **证明**: 推荐服务架构本身具有严格的**纯只读**特性。
+> [!IMPORTANT]
+> 1. **既有 UAT 测试兼容性保全**：
+>    既有 UAT 测试（如 `scripts/uat_sprint11_pilot_browser.py`、`scripts/uat_sprint10c_final_browser.py`）依赖选择器 `[data-testid='today-action-card']`、`[data-testid='today-action-cta-btn']`、`[data-testid='current-focus-card']` 以及按钮文案中包含 `"突破"` 或 `"测验"`。
+>    **本方案在消除底层黑话的同时，完全保留这些 testid 与核心动作语义**，确保所有历史 UAT 100% 保持通过。
+>
+> 2. **TodayActionCard 的 NONE 状态由「静默隐藏」升级为「显式人本空状态」**：
+>    过去当 action 为 `NONE` 时，卡片直接 `return null`。本阶段按照 Sprint 10-C 规范要求升级为展示「今天暂时没有待完成的学习任务」，并附带「查看学习进展」按钮，严禁渲染假推荐任务。
 
 ---
 
-## 五、交付物与实现步骤
+## 四、具体修改方案
 
-### 1. 候选生成器模型解析适配 (`gateway/ai/recommendation/generator.py`)
-- 保持向后兼容：离线时默认路由至 `MockDeepSeekProvider(model=gateway_settings.deepseek_model)`；
-- 真实调用时，解析 `DEEPSEEK_MODEL`，当连接官方 `https://api.deepseek.com` 且配置为 `deepseek-flash` 时，自动映射为官方支持的 `deepseek-chat`，防止模型名不匹配导致 400；
-- 复用 Sprint 10-B Phase 1 的 `DeepSeekProvider` 与 `HttpLLMTransport` 抽象，严禁在业务层直接调用 `requests.post` 或 `httpx.post`。
+### 1. 前端组件改造
 
-### 2. 受控 Live Smoke 验证脚本 (`scripts/sprint10b_phase3_live_smoke.py`)
-- 必须显式检测 `DEEPSEEK_ENABLED=true` 与 `DEEPSEEK_API_KEY`；
-- 明确输出模式与执行环境状态；
-- 硬编码计数器：单次执行真实请求次数严格 $\le 3$；
-- 格式化脱敏输出，审计证据存盘至 `artifacts/phase3_live_smoke_summary.json`；
-- 不向终端输出完整原始响应或任何敏感 Token/Key。
+#### [MODIFY] [TodayActionCard.tsx](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/TodayActionCard.tsx)
+- **增加 Props**：
+  - `currentMasteryPercent?: number | null`（当前考点掌握度百分比，如 62）
+  - `error?: string | null`（错误信息）
+  - `onRetry?: () => void`（重试回调）
+- **实现 Loading 状态**：
+  - 渲染具有最小高度（`min-h-[160px]`）的骨架屏，杜绝布局跳动；
+- **实现 Error 状态**：
+  - 提示「暂时无法获取今日学习安排」，并提供「重新加载」按钮；
+- **实现 Empty 状态 (`action.action_type === 'NONE'`)**：
+  - 提示「今天暂时没有待完成的学习任务」，副标题「当前阶段学习任务已全部达成」，提供「查看学习进展」CTA，杜绝伪造假数据；
+- **实现正常展示态**：
+  - 明确呈现：知识点名称、当前掌握度（如「当前掌握度 62%」）、人本行动解释、核心主 CTA；
+  - 消除一切底层黑话（严格保持无 Jargon）。
 
-### 3. Phase 3 专项质量门禁 (`scripts/sprint10b_phase3_gate.py`)
-覆盖 18 项专项检查：
-1. Phase 2 离线基线全部 PASS；
-2. Live 模式显式 Opt-in 判定（未启用时不发真实外网请求）；
-3. API Key 源码零泄露检查（搜索 git 跟踪文件）；
-4. API Key 日志/工件零泄露检查；
-5. 复用既有 Provider 抽象（`DeepSeekProvider`, `HttpLLMTransport`）；
-6. `response_format={"type": "json_object"}` 契约保证；
-7. Prompt 必须包含 JSON 输出显式指令；
-8. Candidate Schema 严格保持 `extra="forbid"` 与字段白名单；
-9. Validator 对真实模型输出继续保持绝对权威仲裁；
-10. `allow_production_decision = False` 永久成立；
-11. BKT 状态文件零变动；
-12. 学习路径状态文件零变动；
-13. 正式学习事件文件零新增；
-14. 资源事件文件零新增；
-15. 今日行动状态零突变；
-16. 真实请求次数上限严格 $\le 3$；
-17. 异常情况下安全失败（零脏写、受控异常映射）；
-18. 冻结区域 100% 0 diff。
+#### [MODIFY] [CurrentFocusCard.tsx](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/CurrentFocusCard.tsx)
+- **精简技术术语**：
+  - 移除醒目的硬编码考点 ID（如大号字体的 `K01`、`K08`），直接展示知识点名称；
+  - 将技术性的「动态自适应航线 (第 1 站 / 共 N 站)」转化为人本化的「接下来建议行动」；
+  - 核心操作按钮保留包含「突破」或「练习」字样的 CTA（如「微测验突破」或「开始练习」），保证既有 UAT 与功能闭环无缝执行。
 
-### 4. 全量回归与冻结目录检查
-- `pytest gateway/tests/ -v`
-- `pytest tests/ -v`
-- `npm test --prefix frontend`
-- `npm run typecheck --prefix frontend`
-- `npm run build --prefix frontend`
-- `git diff -- app/ tests/ ...` 严格 0 diff。
+#### [NEW] [StudentHome.tsx](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/StudentHome.tsx)
+- **创建统一的学生首页聚合组件**：
+  - 整合 Greeting、TodayActionCard、Next Suggested Action (CurrentFocusCard)、RecentProgressCard；
+  - 计算学生当前的掌握度增量、整体达标考点数与练习概况；
+  - 确保页面在 375x812、390x844、平板与桌面端完全自适应，底部预留 `pb-24` 杜绝遮挡。
 
-### 5. Git 提交与收口
-- 提交 message: `feat(ai): validate real deepseek recommendation flow`；
-- 确保 working tree clean。
+#### [MODIFY] [StudentLayout.tsx](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/layouts/StudentLayout.tsx)
+- **首页渲染收口**：
+  - 在 `subRoute === 'tasks'` 时，直接挂载全新产品化的 `StudentHome`；
+  - 将 `todayActionError` 与重试机制纳入管理；
+  - 保留 `profile` 下的 `HeroBanner`，保持既有全局组件契约完整。
+
+### 2. 测试套件新增
+
+#### [NEW] [frontend/test/sprint10c_student_home.test.ts](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/test/sprint10c_student_home.test.ts)
+- **覆盖契约与组件逻辑**：
+  1. Today Action 正常展示契约（知识点名、掌握度、解释、CTA）；
+  2. CTA 正确映射契约（各类型对应正确文案与动作）；
+  3. NONE 状态契约（展示「今天暂时没有待完成的学习任务」与「查看学习进展」，绝不造假）；
+  4. Loading 骨架屏与防布局跳动契约；
+  5. Error 状态与重试能力契约；
+  6. 当前掌握度展示规范契约（「当前掌握度 62%」，无 BKT / 概率黑话）；
+  7. 长知识点名称防溢出与自适应样式契约；
+  8. 严禁任何算法黑话（BKT, PathState, Knowledge ID 裸露, Validator 等）。
+
+---
+
+## 五、验证计划
+
+### 1. 自动化单元与契约测试
+```bash
+# 运行前端全部测试套件（预期全量通过）
+npm test --prefix frontend
+
+# 运行静态类型检查
+npm run typecheck --prefix frontend
+
+# 运行前端生产打包构建
+npm run build --prefix frontend
+```
+
+### 2. 独立浏览器端 UAT 验证 (Playwright)
+编写或运行专用 UAT 脚本 `scripts/uat_sprint10c_phase1_browser.py`：
+- **视口 1**: `375×812`（iPhone X 窄屏）
+  - 验证无横向滚动条；
+  - 验证 CTA 触控面积满足规范；
+  - 验证底部导航不遮挡内容。
+- **视口 2**: `390×844`（主流移动端）
+  - 验证布局呼吸感良好，卡片无拥挤。
+- **视口 3**: `1440×900`（桌面端）
+  - 验证桌面端排版与导航完好。
+- **状态验证**:
+  - Today Action 正常态；
+  - Today Action NONE 空状态；
+  - Today Action Loading 骨架态；
+  - Today Action Error 容错态；
+  - CTA 点击后进入真实学习流程（如微测验启动）；
+  - 控制台 Console Errors = 0，Page Exceptions = 0，Failed Requests = 0。
+
+### 3. 架构与边界验证
+- 验证所有冻结目录 0 diff：
+  ```bash
+  git diff -- app/ tests/ data/seeds/ gateway/learning/ gateway/ai/companion/ gateway/api.py gateway/adapter.py gateway/config.py
+  ```
+- 确认 git status 与提交收口。

@@ -6,7 +6,6 @@ import { LearningProfile } from '../components/LearningProfile';
 import { AIDiagnosis } from '../components/AIDiagnosis';
 import { WeakKnowledgePoints } from '../components/WeakKnowledgePoints';
 import { KnowledgeGraph } from '../components/KnowledgeGraph';
-import { LearningPath } from '../components/LearningPath';
 import { AISummary } from '../components/AISummary';
 import { AIAssistant } from '../components/AIAssistant';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
@@ -14,8 +13,7 @@ import { ErrorState } from '../components/ErrorState';
 import { Footer } from '../components/Footer';
 import { BottomSheet } from '../components/common/BottomSheet';
 import { KnowledgePointQuiz } from '../components/student/KnowledgePointQuiz';
-import { CurrentFocusCard } from '../components/student/CurrentFocusCard';
-import { TasksQuickNav } from '../components/student/TasksQuickNav';
+// 核心首页子组件由 StudentHome 统一封装渲染 (包含 TodayActionCard 与 CurrentFocusCard)
 import { resolveCurrentFocusTask } from '../components/student/taskFocusModel';
 import { buildLearningContext } from '../components/student/learningContextModel';
 
@@ -40,7 +38,7 @@ import { PretestModal } from '../components/student/PretestModal';
 import { ProgressOverview } from '../components/student/ProgressOverview';
 import { WrongAnswerReview } from '../components/student/WrongAnswerReview';
 import { ResourceHub } from '../components/student/ResourceHub';
-import { TodayActionCard } from '../components/student/TodayActionCard';
+import { StudentHome } from '../components/student/StudentHome';
 import { PwaInstallBanner } from '../components/student/PwaInstallBanner';
 import { getConceptCardById, type ConceptCardData } from '../components/student/conceptCardData';
 import {
@@ -116,9 +114,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   // 学习行动完成与反思通知状态 (Sprint 9-B)
   const [latestActionResult, setLatestActionResult] = useState<LearningActionResultResponse | null>(null);
 
-  // 今日学习行动状态 (Sprint 9-G)
+  // 今日学习行动状态 (Sprint 9-G / Sprint 10-C Phase 1)
   const [todayAction, setTodayAction] = useState<TodayLearningAction | null>(null);
   const [isTodayActionLoading, setIsTodayActionLoading] = useState<boolean>(false);
+  const [todayActionError, setTodayActionError] = useState<string | null>(null);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
 
   const fetchDynamicRoute = useCallback(async () => {
     try {
@@ -132,6 +132,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   const fetchAnalyticsData = useCallback(async () => {
     setIsAnalyticsLoading(true);
+    setAnalyticsError(null);
     const reqStudentId = studentId;
     try {
       const [pData, wData] = await Promise.all([
@@ -144,6 +145,9 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       }
     } catch (err) {
       console.error('Failed to fetch analytics data:', err);
+      if (reqStudentId === studentId) {
+        setAnalyticsError('暂时无法加载学习成效数据，请稍后重试');
+      }
     } finally {
       if (reqStudentId === studentId) {
         setIsAnalyticsLoading(false);
@@ -154,6 +158,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   const fetchTodayAction = useCallback(async () => {
     if (!studentId) return;
     setIsTodayActionLoading(true);
+    setTodayActionError(null);
     const reqStudentId = studentId;
     try {
       const res = await getTodayLearningAction(studentId);
@@ -164,6 +169,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       console.warn('Failed to fetch today learning action:', err);
       if (reqStudentId === studentId) {
         setTodayAction(null);
+        setTodayActionError('暂时无法获取今日学习安排，请稍后重试');
       }
     } finally {
       if (reqStudentId === studentId) {
@@ -188,6 +194,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     setActiveCompanionContext(null);
     setLatestActionResult(null);
     setTodayAction(null);
+    setTodayActionError(null);
+    setAnalyticsError(null);
   }, [studentId]);
 
   const handleStartQuiz = useCallback(
@@ -302,7 +310,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         handleViewConceptCard(kid, kname);
       } else if (action.action_type === 'PRACTICE') {
         handleStartQuiz(kid, kname);
-      } else if (action.action_type === 'VIEW_PROGRESS') {
+      } else if (action.action_type === 'VIEW_PROGRESS' || action.action_type === 'NONE') {
         navigate('/student/profile');
       }
     },
@@ -352,6 +360,17 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       currentFocus: focusResult,
     });
   }, [dashboardData, pathStates, focusResult]);
+
+  const currentMasteryPercent = useMemo(() => {
+    const targetKid = todayAction?.knowledge_id || focusResult.focus?.knowledgeId;
+    if (!targetKid) return null;
+    const foundKp = progressData?.knowledge_points?.find((k) => k.knowledge_id === targetKid);
+    if (foundKp) return Math.round(foundKp.mastery * 100);
+    if (focusResult.focus?.currentMasteryPercent !== undefined) {
+      return Math.round(focusResult.focus.currentMasteryPercent);
+    }
+    return null;
+  }, [todayAction, focusResult, progressData]);
 
   // 5 个核心 Tab 定义（包含 Sprint 9-C 学习资源中心）
   const tabs = [
@@ -447,54 +466,33 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
           >
             {/* 根据当前子路由进行渲染 */}
             {subRoute === 'tasks' && (
-              <>
-                {/* 0. Sprint 9-G: Today's Learning Action */}
-                <TodayActionCard
-                  action={todayAction}
-                  loading={isTodayActionLoading}
-                  onExecuteCTA={handleTodayActionCTA}
-                />
-
-                {/* 1. Hero Welcome & Personalized Goal */}
-                <HeroBanner
-                  student={dashboardData.profile.student}
-                  recommendationType={dashboardData.learning_path.recommendation_type}
-                />
-
-                {/* 2. Today's Learning Mission: Current Focus Task (Sprint 2 Core) */}
-                <CurrentFocusCard
-                  focusResult={focusResult}
-                  dynamicRoute={dynamicRoute}
-                  onStartQuiz={handleStartQuiz}
-                  onViewConceptCard={handleViewConceptCard}
-                  onAskAI={(kid, kname) =>
-                    handleJumpToAssistantWithContext({
-                      mode: 'concept_explain',
-                      knowledgeId: kid,
-                      message: `请老师精讲考点【${kid} ${kname}】`,
-                    })
-                  }
-                  onViewGraph={() => navigate('/student/graph')}
-                  onViewResources={() => navigate('/student/resources')}
-                />
-
-                {/* 3. AI Generated Learning Path (Core Timeline) */}
-                <LearningPath
-                  learningPath={dashboardData.learning_path.learning_path}
-                  recommendationType={dashboardData.learning_path.recommendation_type}
-                  studentName={dashboardData.profile.student.student_name}
-                  pathStates={pathStates}
-                  focusedKnowledgeId={focusResult.focus?.knowledgeId}
-                  onStartQuiz={handleStartQuiz}
-                />
-
-                {/* 4. Lightweight Auxiliary Navigation Cards */}
-                <TasksQuickNav
-                  onNavigate={(path) => navigate(path)}
-                  wrongCount={wrongAnswerData?.total_wrong || 0}
-                  onSelectProfileTab={(tab) => setProfileSubTab(tab)}
-                />
-              </>
+              <StudentHome
+                student={dashboardData.profile.student}
+                todayAction={todayAction}
+                isTodayActionLoading={isTodayActionLoading}
+                todayActionError={todayActionError}
+                currentMasteryPercent={currentMasteryPercent}
+                focusResult={focusResult}
+                dynamicRoute={dynamicRoute}
+                progressData={progressData}
+                isAnalyticsLoading={isAnalyticsLoading}
+                analyticsError={analyticsError}
+                onExecuteTodayAction={handleTodayActionCTA}
+                onStartQuiz={handleStartQuiz}
+                onViewConceptCard={handleViewConceptCard}
+                onAskAI={(kid, kname) =>
+                  handleJumpToAssistantWithContext({
+                    mode: 'concept_explain',
+                    knowledgeId: kid,
+                    message: `请老师精讲考点【${kid} ${kname}】`,
+                  })
+                }
+                onViewGraph={() => navigate('/student/graph')}
+                onViewResources={() => navigate('/student/resources')}
+                onNavigate={navigate}
+                onRetryTodayAction={fetchTodayAction}
+                onRetryAnalytics={fetchAnalyticsData}
+              />
             )}
 
             {subRoute === 'resources' && (

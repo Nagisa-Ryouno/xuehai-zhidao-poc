@@ -21,31 +21,88 @@ import {
 } from './adaptiveLearningModel.ts';
 import type { DynamicLearningRoute } from '../../types';
 
-interface CurrentFocusCardProps {
+export interface CurrentFocusCardProps {
   focusResult: CurrentFocusResult;
+  loading?: boolean;
+  error?: string | null;
   dynamicRoute?: DynamicLearningRoute | null;
   onStartQuiz: (knowledgeId: string, knowledgeName: string) => void;
   onViewConceptCard?: (knowledgeId: string, knowledgeName: string) => void;
   onAskAI?: (knowledgeId: string, knowledgeName: string) => void;
   onViewGraph?: () => void;
   onViewResources?: (knowledgeId: string) => void;
+  onRetry?: () => void;
 }
 
 export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   focusResult,
+  loading = false,
+  error = null,
   dynamicRoute,
   onStartQuiz,
   onViewConceptCard,
   onAskAI,
   onViewGraph,
   onViewResources,
+  onRetry,
 }) => {
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
 
-  // 1. 全部已完成状态
+  // 1. Loading 骨架态
+  if (loading) {
+    return (
+      <div
+        data-testid="current-focus-card"
+        className="min-h-[180px] rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-xs animate-pulse flex flex-col justify-between space-y-4"
+      >
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-28 bg-slate-200 rounded-full" />
+          <div className="h-5 w-20 bg-slate-200 rounded-full" />
+        </div>
+        <div className="space-y-2">
+          <div className="h-7 w-2/5 bg-slate-200 rounded-lg" />
+          <div className="h-4 w-4/5 bg-slate-200 rounded-lg" />
+        </div>
+        <div className="h-11 w-40 bg-slate-200 rounded-xl self-end" />
+      </div>
+    );
+  }
+
+  // 2. Error 容错态
+  if (error) {
+    return (
+      <div
+        data-testid="current-focus-card"
+        className="min-h-[140px] rounded-2xl border border-rose-200 bg-rose-50/50 p-5 sm:p-7 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+      >
+        <div className="space-y-1">
+          <h3 className="text-base font-bold text-rose-900">
+            暂时无法加载当前学习焦点
+          </h3>
+          <p className="text-xs sm:text-sm text-rose-700">
+            {error || '网络或数据加载异常，请尝试重新加载。'}
+          </p>
+        </div>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-colors cursor-pointer shrink-0"
+          >
+            重新加载
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // 3. 全部已完成状态
   if (focusResult.status === 'ALL_COMPLETED') {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/10 via-white to-teal-500/10 border border-emerald-200 p-6 sm:p-8 shadow-xs">
+      <div
+        data-testid="current-focus-card"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/10 via-white to-teal-500/10 border border-emerald-200 p-6 sm:p-8 shadow-xs"
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-emerald-100 text-emerald-700">
@@ -78,10 +135,13 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
     );
   }
 
-  // 2. 全部锁定状态
+  // 4. 全部锁定状态
   if (focusResult.status === 'ALL_LOCKED') {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-amber-50/70 border border-amber-200 p-6 sm:p-8 shadow-xs">
+      <div
+        data-testid="current-focus-card"
+        className="relative overflow-hidden rounded-2xl bg-amber-50/70 border border-amber-200 p-6 sm:p-8 shadow-xs"
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-amber-100 text-amber-700">
@@ -114,10 +174,13 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
     );
   }
 
-  // 3. 空路径状态
+  // 5. 空路径状态
   if (focusResult.status === 'EMPTY' || !focusResult.focus) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 text-center space-y-3 shadow-xs">
+      <div
+        data-testid="current-focus-card"
+        className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 text-center space-y-3 shadow-xs"
+      >
         <div className="w-12 h-12 mx-auto rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
           <Sparkles className="w-6 h-6" />
         </div>
@@ -160,22 +223,22 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
   return (
     <div
       data-testid="current-focus-card"
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50/25 to-violet-50/20 border-2 border-indigo-200/90 p-5 sm:p-7 shadow-sm transition-all hover:shadow-md"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50/25 to-violet-50/20 border-2 border-indigo-200/90 p-5 sm:p-7 shadow-xs transition-all hover:shadow-sm"
     >
       {/* 顶部标签行 */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs">
+          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-2xs">
             <Flame className="w-4 h-4" />
           </div>
           <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-700">
-            今日核心重点任务
+            当前学习焦点
           </span>
           <span className="text-xs text-slate-400">|</span>
           <span className="text-xs font-medium text-slate-500">{focus.chapter}</span>
           {dynamicRoute && dynamicRoute.steps.length > 0 && (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              <span>🧭 动态自适应航线 (第 1 站 / 共 {dynamicRoute.route_length} 站)</span>
+              <span>当前规划航线 · 第 1 站 / 共 {dynamicRoute.route_length} 站</span>
             </span>
           )}
         </div>
@@ -186,19 +249,16 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
       <div className="py-4 space-y-4">
         <div>
           <div className="flex items-baseline gap-2.5">
-            <span className="font-mono text-base sm:text-lg font-black text-indigo-600">
-              {focus.knowledgeId}
-            </span>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight break-words">
               {focus.knowledgeName}
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed max-w-3xl">
+          <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed max-w-3xl break-words">
             {focus.reason}
           </p>
         </div>
 
-        {/* 掌握度可视化进度对比 */}
+        {/* 掌握度进度条对比 */}
         <div className="p-4 bg-white/95 backdrop-blur-xs rounded-xl border border-slate-200/90 shadow-2xs space-y-2.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-700 flex items-center gap-1.5">
@@ -241,7 +301,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
           </div>
         </div>
 
-        {/* 自适应推荐依据折叠面板 */}
+        {/* 学习依据折叠面板 */}
         <div className="space-y-2">
           <button
             type="button"
@@ -267,12 +327,12 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
               className="p-4 rounded-xl bg-white/95 border border-indigo-100 shadow-2xs space-y-2.5 animate-in fade-in duration-200"
             >
               <div className="text-xs text-slate-700 leading-relaxed font-medium">
-                <strong className="text-indigo-950 font-bold">核心推荐依据：</strong>
+                <strong className="text-indigo-950 font-bold">学习建议说明：</strong>
                 <span>{explanation.reason}</span>
               </div>
               <div className="pt-2 border-t border-slate-100 space-y-1.5">
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  推导事实依据（Evidence-Based）：
+                  主要考虑因素：
                 </span>
                 <ul className="space-y-1.5 text-xs text-slate-600">
                   {explanation.factors.map((factor, idx) => (
@@ -291,16 +351,16 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
       {/* 底部行动按钮行 */}
       <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100">
         <div className="text-xs text-slate-500 flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>完成该考点微测验，即可实时更新掌握度并自适应规划后续学习路线</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+          <span>完成微测验后即可巩固掌握并开启下一步学习安排</span>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           {onViewConceptCard && (
             <button
               type="button"
               onClick={() => onViewConceptCard(focus.knowledgeId, focus.knowledgeName)}
-              className="flex-1 sm:flex-none py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-indigo-200 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 transition-all cursor-pointer min-h-[44px]"
+              className="flex-1 sm:flex-none py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-indigo-200 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 transition-all cursor-pointer min-h-[44px]"
             >
               <BookOpen className="w-4 h-4 text-indigo-600" />
               <span>📖 考点精要速览</span>
@@ -311,7 +371,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
             <button
               type="button"
               onClick={() => onViewResources(focus.knowledgeId)}
-              className="flex-1 sm:flex-none py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-amber-200 bg-amber-50/80 text-amber-800 hover:bg-amber-100 hover:text-amber-950 transition-all cursor-pointer min-h-[44px]"
+              className="flex-1 sm:flex-none py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-amber-200 bg-amber-50/80 text-amber-800 hover:bg-amber-100 hover:text-amber-950 transition-all cursor-pointer min-h-[44px]"
             >
               <Sparkles className="w-4 h-4 text-amber-600" />
               <span>📚 推荐学习材料</span>
@@ -322,7 +382,7 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
             <button
               type="button"
               onClick={() => onAskAI(focus.knowledgeId, focus.knowledgeName)}
-              className="flex-1 sm:flex-none py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-purple-200 bg-purple-50/80 text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all cursor-pointer min-h-[44px]"
+              className="flex-1 sm:flex-none py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-purple-200 bg-purple-50/80 text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all cursor-pointer min-h-[44px]"
             >
               <Bot className="w-4 h-4 text-purple-600" />
               <span>🤖 问问 AI</span>
@@ -331,10 +391,11 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
 
           <button
             type="button"
+            data-testid="focus-start-quiz-btn"
             disabled={presentation.disabled}
             onClick={() => onStartQuiz(focus.knowledgeId, focus.knowledgeName)}
             aria-label={presentation.ariaLabel}
-            className={`flex-1 sm:flex-none py-3.5 px-6 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-all min-h-[44px] ${presentation.buttonClass}`}
+            className={`flex-1 sm:flex-none py-3 px-6 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-xs transition-all min-h-[44px] cursor-pointer ${presentation.buttonClass}`}
           >
             <PlayCircle className="w-4 h-4" />
             <span>{focus.actionLabel || presentation.buttonText}</span>

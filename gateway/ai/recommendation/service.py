@@ -16,18 +16,21 @@ gateway.ai.recommendation.service
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from gateway.adapter import AIProviderAdapter, get_provider
 from gateway.ai.deepseek import DeepSeekProvider, MockDeepSeekProvider
 from gateway.ai.models import AIProviderRequest
 from gateway.config import gateway_settings
 from gateway.ai.recommendation.context import RecommendationContextBuilder
+from gateway.ai.recommendation.generator import DeepSeekCandidateGenerator
 from gateway.ai.recommendation.models import (
+    CandidateValidationResult,
     RecommendationCandidate,
     RecommendationContext,
     RecommendationRequest,
     RecommendationResponse,
+    RejectedCandidate,
     ValidatedRecommendation,
 )
 from gateway.ai.recommendation.prompt import build_recommendation_prompt
@@ -47,10 +50,14 @@ class RecommendationService:
         provider: Optional[AIProviderAdapter] = None,
         validator: Optional[Any] = None,
         context_builder: Optional[Any] = None,
+        generator: Optional[Any] = None,
+        raise_on_rejection: bool = True,
     ):
         self._provider = provider
         self._validator = validator or RecommendationValidator
         self._context_builder = context_builder or RecommendationContextBuilder
+        self._generator = generator or DeepSeekCandidateGenerator(provider=provider)
+        self._raise_on_rejection = raise_on_rejection
 
     def _resolve_provider(self, override_provider: Optional[AIProviderAdapter] = None) -> AIProviderAdapter:
         """解析获取适用的 AI Provider 实例"""
@@ -71,6 +78,7 @@ class RecommendationService:
         student_id: str,
         request: Optional[RecommendationRequest] = None,
         provider_override: Optional[AIProviderAdapter] = None,
+        raise_on_rejection: Optional[bool] = None,
     ) -> RecommendationResponse:
         """
         根据学生当前权威学习状态，生成并校验个性化学习资源推荐。
@@ -85,50 +93,44 @@ class RecommendationService:
             focus_override=focus_override,
         )
 
-        # 2. 构建提示词对 (system_prompt, user_prompt)
-        sys_prompt, usr_prompt = build_recommendation_prompt(context)
-
-        # 3. 准备候选池元数据（供离线确定性 Mock Provider 使用，严格避免文本字符串猜词）
-        candidate_pool = [
-            {"knowledge_id": r.knowledge_id, "resource_id": r.resource_id}
-            for r in context.resources
-        ]
-
-        # 4. 组装标准统一 AI 请求契约
-        ai_req = AIProviderRequest(
-            system_prompt=sys_prompt,
-            user_prompt=usr_prompt,
-            response_format="json_object",
-            max_tokens=1024,
-            temperature=0.0,
-            user_id=context.student_id,
-            task="recommendation",  # 显式任务契约声明
-            metadata={
-                "task": "recommendation",
-                "candidate_pool": candidate_pool,
-            },
+        # 2. 调用生成器生成原始候选响应
+        active_provider = provider_override or self._provider
+        raw_payload, provider_name = await self._generator.generate_raw_candidates(
+            context=context,
+            max_candidates=max_recs,
+            provider_override=active_provider,
         )
 
-        # 5. 调用 Provider 获取模型响应
-        provider = self._resolve_provider(provider_override)
-        ai_resp = await provider.complete(ai_req)
-
-        # 6. 提取原始响应输出 (优先 parsed_json，次之 content)
-        raw_payload = ai_resp.parsed_json if ai_resp.parsed_json is not None else ai_resp.content
-
-        # 7. 执行确定性三层校验与权威元数据补全
-        validated_list: List[ValidatedRecommendation] = self._validator.validate(
+        # 3. 执行确定性三层校验与权威元数据补全
+        validation_result: CandidateValidationResult = self._validator.validate_candidates_detailed(
             raw_output=raw_payload,
             context=context,
             max_allowed=max_recs,
         )
 
-        # 8. 组装标准响应契约并返回
+        # 4. 判断是否需要抛出校验异常 (网关端点默认阻断模式)
+        should_raise = self._raise_on_rejection if raise_on_rejection is None else raise_on_rejection
+        if should_raise and validation_result.rejected_candidates:
+            first_rej = validation_result.rejected_candidates[0]
+            raise ValidationRejectedError(first_rej.reason, first_rej.code)
+
+        # 5. 提取 AI 生成的原始候选对象列表 (若是标准结构)
+        ai_cands: Optional[List[Dict[str, Any]]] = None
+        if isinstance(raw_payload, dict) and isinstance(raw_payload.get("recommendations"), list):
+            ai_cands = [item for item in raw_payload["recommendations"] if isinstance(item, dict)]
+        elif isinstance(raw_payload, list):
+            ai_cands = [item for item in raw_payload if isinstance(item, dict)]
+
+        # 6. 组装标准响应契约并返回 (包含结构化拒绝与确定性排序推荐)
         return RecommendationResponse(
             student_id=context.student_id,
-            recommendations=validated_list,
-            source=provider.provider_name,
-            validated=True,
+            recommendations=validation_result.validated_candidates,
+            source=provider_name,
+            validated=len(validation_result.rejected_candidates) == 0,
+            ai_candidates=ai_cands,
+            validated_candidates=validation_result.validated_candidates,
+            rejected_candidates=validation_result.rejected_candidates,
+            validation_reasons=validation_result.validation_reasons,
         )
 
 

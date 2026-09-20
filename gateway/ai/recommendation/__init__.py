@@ -8,11 +8,13 @@ AI 个性化推荐引擎领域模块包
 
 from gateway.ai.recommendation.models import (
     RECOMMENDATION_FORBIDDEN_FIELDS,
+    CandidateValidationResult,
     KnowledgeStateSnapshot,
     RecommendationCandidate,
     RecommendationContext,
     RecommendationRequest,
     RecommendationResponse,
+    RejectedCandidate,
     ResourceCandidateSnapshot,
     ValidatedRecommendation,
 )
@@ -24,6 +26,7 @@ from gateway.ai.recommendation.prompt import (
     RECOMMENDATION_SYSTEM_PROMPT,
     build_recommendation_prompt,
 )
+from gateway.ai.recommendation.generator import DeepSeekCandidateGenerator
 from gateway.ai.recommendation.validator import (
     RecommendationValidator,
     ValidationRejectedError,
@@ -35,17 +38,20 @@ from gateway.ai.recommendation.service import (
 
 __all__ = [
     "RECOMMENDATION_FORBIDDEN_FIELDS",
+    "CandidateValidationResult",
     "KnowledgeStateSnapshot",
     "RecommendationCandidate",
     "RecommendationContext",
     "RecommendationRequest",
     "RecommendationResponse",
+    "RejectedCandidate",
     "ResourceCandidateSnapshot",
     "ValidatedRecommendation",
     "RecommendationContextBuilder",
     "resolve_authoritative_focus_knowledge",
     "RECOMMENDATION_SYSTEM_PROMPT",
     "build_recommendation_prompt",
+    "DeepSeekCandidateGenerator",
     "RecommendationValidator",
     "ValidationRejectedError",
     "RecommendationService",

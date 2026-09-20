@@ -125,9 +125,40 @@ class RecommendationRequest(BaseModel):
     max_recommendations: int = Field(default=3, ge=1, le=3, description="最大推荐候选数量 (上限 3)")
 
 
+class RejectedCandidate(BaseModel):
+    """
+    确定性校验拦截的候选对象与结构化原因自包含实体
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    candidate: Dict[str, Any] = Field(..., description="未通过校验的原始候选载荷")
+    code: str = Field(..., description="标准校验拒绝码 (如 UNKNOWN_KNOWLEDGE_ID, DUPLICATE_CANDIDATE 等)")
+    reason: str = Field(..., description="详细拒绝原因说明")
+
+
+class CandidateValidationResult(BaseModel):
+    """
+    候选校验完整结果集合
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    validated_candidates: List[ValidatedRecommendation] = Field(
+        default_factory=list,
+        description="通过校验并注入权威元数据的推荐列表",
+    )
+    rejected_candidates: List[RejectedCandidate] = Field(
+        default_factory=list,
+        description="未通过校验的结构化拒绝项列表",
+    )
+    validation_reasons: List[str] = Field(
+        default_factory=list,
+        description="拒绝原因派生汇总列表 (供日志与遥测监控使用)",
+    )
+
+
 class RecommendationResponse(BaseModel):
     """
-    推荐生成统一响应契约
+    推荐生成统一响应契约 (增量 additive 扩展，完全向后兼容)
     """
     model_config = ConfigDict(extra="forbid")
 
@@ -135,3 +166,19 @@ class RecommendationResponse(BaseModel):
     recommendations: List[ValidatedRecommendation] = Field(..., description="已通过确定性校验的推荐项列表")
     source: str = Field(default="deepseek", description="推荐候选提供商")
     validated: bool = Field(default=True, description="确定性校验通过标记")
+    ai_candidates: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="AI 生成的原始候选列表",
+    )
+    validated_candidates: Optional[List[ValidatedRecommendation]] = Field(
+        default=None,
+        description="通过确定性校验的结构化推荐列表 (等同于 recommendations)",
+    )
+    rejected_candidates: Optional[List[RejectedCandidate]] = Field(
+        default=None,
+        description="未通过确定性校验的结构化拒绝项列表",
+    )
+    validation_reasons: Optional[List[str]] = Field(
+        default=None,
+        description="拒绝原因派生汇总列表",
+    )

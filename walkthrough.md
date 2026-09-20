@@ -1,127 +1,193 @@
-# Sprint 10-B Phase 2 — DeepSeek Candidate Recommendation & Deterministic Validation 验收报告
+# Sprint 10-B Phase 3 — Real DeepSeek Controlled Live Smoke Test 验收报告
 
-**阶段定位**: `AI Candidate Generation + Deterministic Validation`（后端自闭环验证，绝非 AI 决策 Sprint）  
-**核心原则**: AI 只能提出候选推荐，系统通过三层确定性校验器进行仲裁；AI 永远不是生产决策者 (`allow_production_decision = False`)  
-**冻结保障**: 绝对冻结区域 100% 0 diff（`app/`, `tests/`, `data/seeds/`, `gateway/learning/`, `gateway/ai/companion/`, `gateway/api.py`, `gateway/adapter.py`, `gateway/config.py`, `frontend/src/`, `frontend/public/`, `frontend/index.html`）  
+**阶段定位**: 真实 DeepSeek API 受控联调与端到端验证 Sprint  
+**唯一目标**: 在不改变现有产品业务逻辑、不修改权威学习状态、不扩大 AI 权限边界的前提下，证明 Sprint 10-B Phase 1/2 建立的 `Provider → Candidate Generator → Deterministic Validator` 闭环可以安全承接一次真实 DeepSeek API 输出。  
+**核心红线**: `allow_production_decision = False` 永久成立，AI 只能产出候选，确定性校验器拥有最终仲裁权。  
 
 ---
 
-## 一、核心架构闭环 (Architecture)
+## 一、Phase 3 实际变更 (Files Changed)
+
+- [`scripts/sprint10b_phase3_live_smoke.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase3_live_smoke.py): 新增受控真实 DeepSeek API 联调脚本（硬上限 $\le 3$ 次，脱敏审计日志存盘，零 API Key 泄露）；
+- [`scripts/sprint10b_phase3_gate.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase3_gate.py): 新增 18 维严苛质量门禁脚本；
+- [`artifacts/phase3_live_smoke_summary.json`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/artifacts/phase3_live_smoke_summary.json): 真实调用脱敏审计工件（无明文 Key，无敏感 Prompt）；
+- [`gateway/tests/test_sprint10b_deepseek_provider.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/tests/test_sprint10b_deepseek_provider.py): 增强 `test_18` 断言兼容性，确保开发者本地配置 Key 时仍能平稳运行离线测试；
+- [`implementation_plan.md`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/implementation_plan.md) / [`walkthrough.md`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/walkthrough.md): 交付文档。
+
+---
+
+## 二、调用链路 (Invocation Flow)
 
 ```
 Authoritative Learning State (BKT, PathState, Concept Cards, Resource Catalog)
-        ↓ (纯只读读取，零重新实现)
-Recommendation Context (脱敏上下文快照，零 PII，伪匿名 student_id)
+        ↓ (只读读取，零重新实现)
+Recommendation Context (脱敏上下文快照，零 PII，伪匿名 student_s001)
         ↓
-DeepSeek Candidate Generator (显式 task="recommendation" 契约路由)
+DeepSeekCandidateGenerator (显式 task="recommendation" 任务路由)
+        ↓
+AIProvider (DeepSeekProvider + HttpLLMTransport)
+        ↓
+Transport: https://api.deepseek.com/chat/completions (model="deepseek-flash", response_format={"type": "json_object"})
         ↓
 AI Candidate (纯候选元数据，严格 extra="forbid"，仅限 knowledge_id, resource_id, reason)
         ↓
 Deterministic Validator (确定性三层防御、结构化去重与排序仲裁)
-        ├── Layer 1: JSON 语法与容器合法性 (截断反引号、0<=长度<=3、空列表安全)
-        ├── Layer 2: 结构安全性 (FORBIDDEN_FIELD_ROOT, FORBIDDEN_FIELD_ITEM, 命令/代码注入拦截)
-        └── Layer 3: 上下文事实锚定 (Context Grounding、候选池物理隔离、去重 DUPLICATE_CANDIDATE)
         ↓
-Deterministic Order Arbiter (按照 (knowledge_id, resource_id) 升序稳定排列，AI rank/priority/score 零参与)
-        ↓
-Validated Candidates + Rejected Candidates (自包含 code/reason) + Validation Reasons Summary
+Validated Candidates + Rejected Candidates (自包含 code/reason) + Zero Mutation Invariant
 ```
 
 ---
 
-## 二、测试与质量门禁验证结果 (Verification Results)
+## 三、Live API 执行状态
 
-### 1. Phase 2 核心质量门禁 (17/17 PASS)
+- **是否执行真实 API**: **YES**
+- **执行原因**: 本地已配置有效 `DEEPSEEK_API_KEY`，且通过 `--live` 显式 opt-in 触发受控联调。
 
-门禁脚本：[`scripts/sprint10b_phase2_gate.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase2_gate.py)
+---
+
+## 四、真实请求次数与结果 (Live Requests Execution)
+
+单次联调执行严格受到硬上限限制（最多 3 次），实际执行 **3 次**：
+
+### 1. Request #1 — Happy Path
+- **模式**: 真实模型调用（`deepseek-flash`）
+- **耗时**: 3615 ms
+- **状态**: `SUCCESS`
+- **模型候选结果**:
+  - `Validated #1`: `(K03, res_k03_concept)` - 需求价格弹性 考点精要微卡
+  - `Validated #2`: `(K03, res_k03_example)` - 需求价格弹性 典型例题精析
+  - `Rejected`: 0 项
+- **决策权**: `allow_production_decision = False`
+
+### 2. Request #2 — Context Boundary
+- **模式**: 真实模型调用（单资源受限 Context）
+- **耗时**: 2851 ms
+- **状态**: `SUCCESS`
+- **边界校验结果**:
+  - `Validated #1`: `(K03, res_k03_concept)` - 微卡
+  - `Boundary respected`: **YES**（所有候选严格属于 Context 白名单候选池，绝无外溢）
+  - `Rejected`: 0 项
+
+### 3. Request #3 — Full E2E Mutation Safety
+- **模式**: 完整 `RecommendationService.get_recommendations("S001")` 端到端调用
+- **耗时**: 3226 ms
+- **状态**: `SUCCESS`
+- **零突变断言结果**:
+  - `bkt_mutation`: 0
+  - `path_mutation`: 0
+  - `learning_event_mutation`: 0
+  - `resource_event_mutation`: 0
+  - `resource_eff_mutation`: 0
+  - `total_mutations`: **0**
+
+---
+
+## 五、JSON Output 模式验证
+
+真实 `deepseek-flash` 模型调用显式携带：
+```json
+{
+  "type": "json_object"
+}
+```
+且系统 Prompt 明确包含 JSON 指令。3 次真实请求均成功解析为合法 Python `dict`，零解析截断、零语法错误。
+
+---
+
+## 六、Context Boundary 验证
+
+无论模型返回何种内容，只有包含在当前 Context 白名单中的 `(knowledge_id, resource_id)` 才能被 Validator 采纳。Request #2 明确证明了 Context 候选池白名单拦截机制在真实模型输出下依然生效。
+
+---
+
+## 七、业务状态零突变验证 (Zero Mutation Safety)
+
+- **BKT 掌握度状态** (`data/bkt_states.json`): **0 mutation (unchanged)**
+- **学习路径状态** (`data/learning_path_states.json`): **0 mutation (unchanged)**
+- **正式学习事件** (`data/learning_events.jsonl`): **0 lines added (unchanged)**
+- **资源消费事件** (`data/resource_events.jsonl`): **0 lines added (unchanged)**
+- **今日行动推荐** (`TodayAction`): **0 mutation (unchanged)**
+
+---
+
+## 八、PII / API Key 安全防护
+
+- **PII 检查**: `assert_no_pii()` 全流程扫描，仅包含伪匿名 `student_s001`；
+- **API Key 隔离**:
+  - 密钥存放在 `.env`（受 `.gitignore` 保护）；
+  - `git grep` 严格断言源码中无实际 API Key；
+  - `artifacts/` 存盘的审计文件严格进行敏感脱敏处理；
+  - 交付报告与日志中绝对不泄露明文密钥。
+
+---
+
+## 九、Phase 3 专项质量门禁 (18/18 PASS)
+
+门禁脚本：[`scripts/sprint10b_phase3_gate.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase3_gate.py)
 
 ```
 ============================================================================
-Sprint 10-B / Phase 2 — DeepSeek Recommendation & Validation Quality Gate
+Sprint 10-B / Phase 3 — Real DeepSeek Live Smoke Quality Gate
 ============================================================================
-[01/17] Provider Contract ....................................... PASS
-[02/17] Candidate Schema ........................................ PASS
-[03/17] Valid Candidate [Case A] ................................ PASS
-[04/17] Invalid Knowledge [Case C] .............................. PASS
-[05/17] Invalid Resource [Case D] ............................... PASS
-[06/17] Invalid Relation ........................................ PASS
-[07/17] Duplicate Candidate [Case E] ............................ PASS
-[08/17] Empty Response [Case F] ................................. PASS
-[09/17] Malformed Response [Case G] ............................. PASS
-[10/17] PII Firewall ............................................ PASS
-[11/17] allow_production_decision=False ......................... PASS
-[12/17] BKT Unchanged (0 mutation) .............................. PASS
-[13/17] PathState Unchanged (0 mutation) ........................ PASS
-[14/17] Learning Events Unchanged (0 mutation) .................. PASS
-[15/17] Resource Events Unchanged (0 mutation) .................. PASS
-[16/17] Deterministic 20x Repeated Runs ......................... PASS
-[17/17] Mock Offline Guarantee .................................. PASS
+[01/18] Phase 2 Baseline ........................................ PASS
+[02/18] Live Mode Explicit Opt-In ............................... PASS
+[03/18] API Key Not in Source ................................... PASS
+[04/18] API Key Not in Logs/Artifacts ........................... PASS
+[05/18] Provider Abstraction Reused ............................. PASS
+[06/18] Response Format JSON Object ............................. PASS
+[07/18] Prompt Contains JSON Instruction ........................ PASS
+[08/18] Candidate Schema Unchanged .............................. PASS
+[09/18] Validator Still Authoritative ........................... PASS
+[10/18] allow_production_decision=False ......................... PASS
+[11/18] No BKT Mutation (0 mutation) ............................ PASS
+[12/18] No PathState Mutation (0 mutation) ...................... PASS
+[13/18] No Learning Event Mutation (0 mutation) ................. PASS
+[14/18] No Resource Event Mutation (0 mutation) ................. PASS
+[15/18] No TodayAction Mutation (0 mutation) .................... PASS
+[16/18] Maximum Live Request Count <= 3 ......................... PASS
+[17/18] Live Failure Is Safe .................................... PASS
+[18/18] Frozen Areas 0 Diff ..................................... PASS
 ============================================================================
-Gate Summary: 17 PASSED, 0 UNDEFINED_BOUNDARY, 0 FAILED
+Gate Summary: 18 PASSED, 0 UNDEFINED_BOUNDARY, 0 FAILED
 ============================================================================
 RESULT: PASS (All invariants held with FAIL == 0)
 ```
 
-### 2. 全量回归与测试套件汇总 (Full Regression Summary)
+---
 
-| 测试套件 | 测试范围 | 统计结果 | 状态 |
+## 十、全量回归测试汇总 (Full Regression Summary)
+
+| 测试套件 | 测试命令 | 测试结果 | 状态 |
 | :--- | :--- | :---: | :---: |
-| **Phase 2 专项测试套件** | [`gateway/tests/test_sprint10b_phase2.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/tests/test_sprint10b_phase2.py) | **15 passed** (100%) | ✅ PASS |
-| **既有推荐测试套件** | [`gateway/tests/test_sprint10b_recommendation.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/tests/test_sprint10b_recommendation.py) | **31 passed, 1 skipped** (100%) | ✅ PASS |
-| **Gateway 整体回归** | `pytest gateway/tests/` | **558 passed, 2 skipped** (100%) | ✅ PASS |
-| **Core 根目录回归** | `pytest tests/` | **143 passed** (100%) | ✅ PASS |
+| **Phase 3 专项质量门禁** | `python scripts/sprint10b_phase3_gate.py` | **18 PASSED, 0 FAIL** | ✅ PASS |
+| **Phase 3 受控联调** | `python scripts/sprint10b_phase3_live_smoke.py --live` | **3/3 SUCCESS, 0 Mutation** | ✅ PASS |
+| **Phase 2 专项测试套件** | `pytest gateway/tests/test_sprint10b_phase2.py -v` | **15 passed** (100%) | ✅ PASS |
+| **Gateway 整体回归** | `pytest gateway/tests/ -v` | **558 passed, 2 skipped** | ✅ PASS |
+| **Core 根目录历史回归** | `pytest tests/ -v` | **143 passed** (100%) | ✅ PASS |
 | **前端契约测试** | `npm test --prefix frontend` | **320 passed, 0 fail** (100%) | ✅ PASS |
 | **前端类型检查** | `npm run typecheck --prefix frontend` | **0 errors (tsc -b)** | ✅ PASS |
-| **前端生产构建** | `npm run build --prefix frontend` | **Built successfully (dist/)** | ✅ PASS |
+| **前端生产构建** | `npm run build --prefix frontend` | **Built successfully** | ✅ PASS |
 
 ---
 
-## 三、安全攻防与边界测试覆盖 (Cases A ~ H)
+## 十一、冻结区域 0 Diff 验证 (Frozen Areas 0 Diff)
 
-1. **Case A (Valid Candidate)**: Context 包含 `K03->res_k03_concept`，AI 输出该对 -> `ACCEPT` 并自动注入权威系统元数据（标题、资源类型、来源渠道）。
-2. **Case B (Candidate Pool Isolation)**: 【Service/集成层测试】即使全局资源库存在资源 `res_k01_concept`，但本次推荐 Context 仅提供 K03 候选池，AI 试图跨考点或跨候选池推荐时，在 Service 编排层坚决拦截并记录 `RESOURCE_NOT_IN_CONTEXT`，确立“**Global Catalog 存在 ≠ 当前 Context 合法**”。
-3. **Case C (Unknown Knowledge ID)**: AI 输出不存在于图谱的考点 `K999` -> 拦截并标记 `UNKNOWN_KNOWLEDGE_ID`。
-4. **Case D (Unknown Resource ID)**: AI 输出全库不存在的虚构资源 `res_not_exist_99` -> 拦截并标记 `UNKNOWN_RESOURCE_ID`。
-5. **Case E (Duplicate Candidate)**: AI 输出两个相同的推荐对 `(K03, res_k03_concept)` -> 第一项保留，第二项记录为 `DUPLICATE_CANDIDATE` 结构化拒绝项。
-6. **Case F (Empty Recommendations)**: AI 返回空列表 `{"recommendations": []}` -> 安全通过，返回 `validated_candidates = []`，绝不触发生产决策回退或虚假候选伪造。
-7. **Case G (Malformed Non-JSON & E2E Zero Mutation)**: 完整验证链路 `Mock Provider -> Generator -> JSON parse failure -> RejectedCandidate(INVALID_JSON_SYNTAX) -> Service Response`，并断言调用前后 BKT、PathState、Learning Events、Resource Events 绝对 0 增量、0 变动。
-8. **Case H (Forbidden Decision Fields & Rank/Priority/Score)**: AI 试图输出 `rank`, `priority`, `score`, `set_mastery`, `mutation` 等字段时，通过 `extra="forbid"` 与字段扫描统一映射为稳定业务错误码 `FORBIDDEN_FIELD_ITEM`，彻底阻断 AI rank 转化为生产优先级。
-9. **Order Determinism (排序确定性)**: Run A 输出 `[K03, K04]`，Run B 输出 `[K04, K03]`；两者经校验器排序仲裁后，最终输出的 `validated_candidates` 顺序 100% 保持为 `[("K03", "res_k03_concept"), ("K04", "res_k04_practice")]`。AI 输出顺序与打分永远不参与系统排序。
+执行对比：
+```bash
+git diff -- app/ tests/ data/seeds/ gateway/learning/ gateway/ai/companion/ gateway/api.py gateway/adapter.py gateway/config.py frontend/src/ frontend/public/ frontend/index.html
+```
+**结果**: 0 行修改，100% 严格 0 diff。
 
 ---
 
-## 四、生产状态零修改保证 (Mutation Safety Invariant)
+## 十二、未解决问题与边界声明
 
-在执行推荐请求与异常测试全流程中，系统严格只读：
-- **BKT 掌握度状态** (`data/bkt_states.json`): **0 mutation (unchanged)**
-- **学习路径状态** (`data/learning_path_states.json`): **0 mutation (unchanged)**
-- **正式学习事件** (`data/learning_events.jsonl`): **0 lines added (unchanged)**
-- **资源消费与效果事件** (`data/resource_events.jsonl`, `data/resource_effectiveness_events.jsonl`): **0 lines added (unchanged)**
-- **今日行动裁决** (`TodayAction`): **0 mutation (unchanged)**
-- **生产决策权限** (`allow_production_decision = False`): **永久保持**
+- 无未定义边界（`UNDEFINED_BOUNDARY = 0`）；
+- 无阻断性缺陷（`FAIL = 0`）。
 
 ---
 
-## 五、冻结路径 0 Diff 证据 (Frozen Areas 0 Diff Verification)
+## 十三、最终判定
 
-执行 `git diff -- app/ tests/ data/seeds/ gateway/learning/ gateway/ai/companion/ gateway/api.py gateway/adapter.py gateway/config.py frontend/src/ frontend/public/ frontend/index.html`：
-**输出为空，100% 0 diff 严格成立**。
-
-### 本 Sprint 代码变更清单 (Files Changed)
-
-- [`gateway/ai/recommendation/models.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/ai/recommendation/models.py): 新增 `RejectedCandidate`、`CandidateValidationResult` 实体；为 `RecommendationResponse` 增量扩展 `ai_candidates`, `validated_candidates`, `rejected_candidates`, `validation_reasons` 字段；
-- [`gateway/ai/recommendation/generator.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/ai/recommendation/generator.py): 新增 `DeepSeekCandidateGenerator` 候选生成器，绑定显式 `task="recommendation"` 任务契约；
-- [`gateway/ai/recommendation/validator.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/ai/recommendation/validator.py): 增强确定性三层校验器 `validate_candidates_detailed`，实现自包含结构化拒绝与确定性排序仲裁；
-- [`gateway/ai/recommendation/service.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/ai/recommendation/service.py): 编排 Generator 与详细校验器，支持网关阻断模式与结构化响应模式并存；
-- [`gateway/ai/recommendation/__init__.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/ai/recommendation/__init__.py): 导出新增模型与生成器类；
-- [`gateway/tests/test_sprint10b_phase2.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/gateway/tests/test_sprint10b_phase2.py): 新增 15 项全面测试用例套件；
-- [`scripts/sprint10b_phase2_gate.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/sprint10b_phase2_gate.py): 新增 17 项核心质量门禁；
-- `implementation_plan.md` / `walkthrough.md`: 实施计划与验收报告。
-
----
-
-## 六、离线保障说明 (Offline Guarantee)
-
-- 默认配置 `DEEPSEEK_ENABLED=false`；
-- 所有单元测试、专项测试、质量门禁均在完全离线状态下运行（使用 `MockDeepSeekProvider`）；
-- 未产生任何真实外部 DeepSeek API 网络调用。
+🏆 **Sprint 10-B Phase 3 判定: PASS**  
+Sprint 10-B 全阶段圆满封板，系统已准备好进入 **Sprint 10-C：学生端产品化 + PWA**。

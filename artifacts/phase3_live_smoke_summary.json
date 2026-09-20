@@ -1,0 +1,39 @@
+{
+  "mode": "LIVE",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "live_requests_count": 3,
+  "request_1": {
+    "status": "SUCCESS",
+    "elapsed_ms": 3615,
+    "validated_count": 2,
+    "rejected_count": 0,
+    "rejection_codes": [],
+    "allow_production_decision": false
+  },
+  "request_2": {
+    "status": "SUCCESS",
+    "elapsed_ms": 2851,
+    "validated_count": 1,
+    "rejected_count": 0,
+    "rejection_codes": [],
+    "boundary_respected": true,
+    "allow_production_decision": false
+  },
+  "request_3": {
+    "status": "SUCCESS",
+    "elapsed_ms": 3226,
+    "error": null,
+    "total_mutations": 0,
+    "allow_production_decision": false
+  },
+  "mutation_diff": {
+    "bkt_mutation": 0,
+    "path_mutation": 0,
+    "learning_event_mutation": 0,
+    "resource_event_mutation": 0,
+    "resource_eff_mutation": 0
+  },
+  "allow_production_decision": false,
+  "api_key_exposed": false
+}

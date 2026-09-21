@@ -477,7 +477,7 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
         {/* ================================================================= */}
         {/* 主体内容滚动区 */}
         {/* ================================================================= */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 text-slate-700 text-sm">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-slate-700 text-sm">
           {/* --------------------------------------------------------------- */}
           {/* STEP 1: ENTRY 导引步骤 */}
           {/* --------------------------------------------------------------- */}

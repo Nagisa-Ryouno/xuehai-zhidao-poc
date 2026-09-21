@@ -32,6 +32,7 @@ export function registerServiceWorker(): void {
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {
+        if (!registration) return;
         console.log('[PWA] Service Worker registered with scope:', registration.scope);
 
         // 监听 SW 更新

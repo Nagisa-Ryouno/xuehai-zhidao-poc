@@ -71,6 +71,17 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error('未找到对应学生的数据档案');
+      } else if (response.status === 503) {
+        let errJson: any = null;
+        try {
+          errJson = await response.json();
+        } catch {
+          // ignore
+        }
+        if (errJson?.error === 'NETWORK_UNAVAILABLE' || errJson?.is_offline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+          throw new Error('当前网络不可用，已加载的内容仍然可以查看。学习进度、测验结果等需要联网后才能同步。');
+        }
+        throw new Error(errJson?.detail || errJson?.message || '服务暂时不可用，请稍后重试');
       } else if (response.status >= 500) {
         throw new Error('学海智导分析服务内部异常，请检查后端运行状态');
       }
@@ -81,8 +92,17 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return data as T;
   } catch (err: unknown) {
     if (err instanceof Error) {
-      // 拦截底层网络异常（例如 Failed to fetch / Connection refused）
-      if (err.name === 'TypeError' || err.message.includes('fetch')) {
+      // 拦截底层网络不可用或网络连接异常
+      const isNetworkErr =
+        err.name === 'TypeError' ||
+        err.message.includes('fetch') ||
+        err.message.includes('NetworkError') ||
+        err.message.includes('Failed to fetch');
+
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        throw new Error('当前网络不可用，已加载的内容仍然可以查看。学习进度、测验结果等需要联网后才能同步。');
+      }
+      if (isNetworkErr) {
         throw new Error('暂时无法连接学习分析服务，请确认后端服务已启动');
       }
       throw err;
@@ -178,10 +198,7 @@ export async function getStudentKnowledgeGraph(
   return request<KnowledgeGraphResponse>(`/students/${studentId}/knowledge-graph`);
 }
 
-import {
-  getOfflineQuestionsByKnowledgeId,
-  getOfflineQuestionById,
-} from './components/student/quizBankData';
+import { getOfflineQuestionsByKnowledgeId } from './components/student/quizBankData';
 import { getConceptCardById } from './components/student/conceptCardData';
 
 /**
@@ -207,38 +224,15 @@ export async function getQuizQuestions(
 
 /**
  * 提交微测验单题作答，服务端权威判题并持久化 QUESTION_ATTEMPT 学习事件
+ * 严禁在前端伪造离线 BKT 计算或本地假事件
  */
 export async function submitQuizAnswer(
   data: QuizSubmitRequest
 ): Promise<QuizSubmitResponse> {
-  try {
-    return await request<QuizSubmitResponse>('/quiz/submit', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  } catch (err) {
-    const offlineQ = getOfflineQuestionById(data.question_id);
-    if (offlineQ) {
-      const isCorrect = data.selected_option === offlineQ.answer;
-      return {
-        is_correct: isCorrect,
-        correct_option: offlineQ.answer,
-        explanation: offlineQ.explanation,
-        knowledge_id: offlineQ.knowledge_id,
-        question_id: offlineQ.question_id,
-        event_id: `evt-offline-${Date.now()}`,
-        learning_state: {
-          updated: true,
-          mastery_probability: isCorrect ? 0.82 : 0.45,
-          mastery_percent: isCorrect ? 82.0 : 45.0,
-          state: isCorrect ? 'MASTERED' : 'WEAK',
-          attempts: 1,
-          consecutive_correct: isCorrect ? 1 : 0,
-        },
-      };
-    }
-    throw err;
-  }
+  return await request<QuizSubmitResponse>('/quiz/submit', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
 /**

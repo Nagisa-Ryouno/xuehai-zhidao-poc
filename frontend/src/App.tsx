@@ -92,6 +92,27 @@ const AppContent: React.FC = () => {
     }
   }, [studentId]);
 
+  // 监听浏览器原生 online / offline 事件，动态更新网络状态
+  // 红线硬约束：网络恢复 (online) 最多只能触发只读静默刷新，绝对禁止自动补发任何写操作或重放学习状态
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      handleRefreshData();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [handleRefreshData]);
+
   // 学生切换处理 (具备严格的异步竞态防御与上下文隔离)
   const handleSelectStudent = async (targetStudentId: string) => {
     if (targetStudentId === studentId && dashboardData) return;

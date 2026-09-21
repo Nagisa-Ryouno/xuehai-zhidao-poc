@@ -44,7 +44,7 @@ export const ExternalRedirectModal: React.FC<ExternalRedirectModalProps> = ({
         }
       }}
     >
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-6 overflow-hidden">
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] overflow-hidden">
         {/* 关闭按钮 */}
         <button
           type="button"
@@ -114,8 +114,9 @@ export const ExternalRedirectModal: React.FC<ExternalRedirectModalProps> = ({
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
+            data-testid="cancel-redirect-btn"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            className="px-4 py-2 min-h-[44px] inline-flex items-center justify-center text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
           >
             取消
           </button>
@@ -123,7 +124,7 @@ export const ExternalRedirectModal: React.FC<ExternalRedirectModalProps> = ({
             type="button"
             data-testid="external-redirect-confirm-btn"
             onClick={() => onConfirm(resource)}
-            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-2 min-h-[44px] text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-xs cursor-pointer"
           >
             <span>前往学习</span>
             <ExternalLink className="w-3.5 h-3.5" />

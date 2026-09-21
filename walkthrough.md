@@ -1,139 +1,213 @@
-# Sprint 10-C Phase 1 — 学生端首页 (Student Home / Today) 交付验收报告
+# Sprint 10-C Phase 2 — 学习会话产品化 (Learning Session Productization) 交付验收报告
 
-**阶段定位**: 学生端产品化与体验重构 (Student Productization & PWA)  
-**核心目标**: 将分散的技术特性收敛为面向大学生的直觉化首页，围绕「今日学习行动 (Today Action)」建立真正解决学生核心困惑的学习闭环。  
-**核心约束**: 
-- 停止扩充 AI 基础设施（0 新增 AI 提示词与决策逻辑）；
-- 冻结目录及核心后端代码 **严格 0 diff**；
-- 严禁向学生泄露底层算法与学术技术黑话（No Jargon）；
-- 严禁伪造或推算历史进展数据（No Fake Progress）；
-- 所有行动 CTA 必须直达真实学习闭环（微测验、概念微卡、学情画像）。
+**阶段定位**: 学生端产品化 (Student Productization & PWA) · 学习会话闭环构建  
+**核心目标**: 彻底解决学生「点击今日行动后，能否顺畅完成一次真正的学习」的核心问题。将原先分散的概念微卡、慕课外部资源、随堂微测、即时判题、权威 BKT 学情演进与下一步行动聚合为一条连续、人本、5–10 分钟即可闭环的统一学习会话。  
+**核心主链**: `Today Action` → `ENTRY` → `CONCEPT` → `QUIZ` → `RESULT` → `NEXT ACTION`  
+**可选分支**: `CONCEPT` 界面提供次级入口「看看学习资源」，进入 `RESOURCE` 查看推荐资料（含 MOOC 安全弹窗验证），看完可返回 `CONCEPT` 或直达 `QUIZ`，绝不强制阻塞主学习流程。
 
 ---
 
-## 一、交付物与文件变更 (Files Changed)
+## 一、架构红线与设计原则符合度核验
 
-### 1. 新增前端组件与测试
-- [`frontend/src/components/student/StudentHome.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/StudentHome.tsx):
-  - 统一首页容器，渲染人本问候语（按时段动态生成「早上好/下午好/晚上好」与温和伴学副标）；
-  - 组织 TodayActionCard、CurrentFocusCard、RecentProgressCard 三大卡片，实现局部加载与错误解耦。
-- [`frontend/src/components/student/RecentProgressCard.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/RecentProgressCard.tsx):
-  - 严格仅展示后端权威接口（`/api/students/{id}/progress`）能够直接提供的 4 项指标：整体掌握度、已掌握考点、练习正确率、累计练习题数；
-  - 严禁在无历史快照情况下推算伪造「本周掌握度 +8%」等虚假数据；
-  - 具备独立加载骨架屏、独立错误容错态与重试能力，点击可下钻跳转 `/student/profile`。
-- [`frontend/test/sprint10c_student_home.test.ts`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/test/sprint10c_student_home.test.ts):
-  - 包含 10 大核心契约测试（涵盖 5 档行动类型、NONE 空状态、加载防跳动、局部容错隔离、零黑话断言等），100% 通过。
-- [`scripts/uat_sprint10c_phase1_browser.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/uat_sprint10c_phase1_browser.py):
-  - 覆盖桌面、移动两档视口、真实闭环、空状态、容错与多学生隔离的 8 大场景真实浏览器端到端自动化验收套件。
-
-### 2. 优化既有组件与容器
-- [`frontend/src/components/student/TodayActionCard.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/TodayActionCard.tsx):
-  - 新增骨架加载屏（保持最小 160px 高度与布局稳定）；
-  - 新增人本错误态与独立重试按钮；
-  - 新增人本空状态（NONE）：展示「今天暂时没有待完成的学习任务」，CTA 引导「查看学习进展」，严禁伪造任务；
-  - 强化当前考点掌握度展示（例如「当前掌握度 62%」），精准回答学生当前学到什么程度。
-- [`frontend/src/components/student/CurrentFocusCard.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/components/student/CurrentFocusCard.tsx):
-  - 彻底去除标题中生硬的 `K01`/`K08` 等技术代号，转为清晰人本的考点全称；
-  - 清理算法路线等技术黑话，保留行为语义稳定的 `data-testid="focus-start-quiz-btn"`；
-  - 提供学习上下文支撑，与 Today Action 形成互补。
-- [`frontend/src/layouts/StudentLayout.tsx`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/frontend/src/layouts/StudentLayout.tsx):
-  - 在 `subRoute === 'tasks'` 路由下挂载 `StudentHome`；
-  - 接入独立的 `todayActionError` 与 `analyticsError`，确保单一接口异常绝不引发整页崩溃；
-  - 完善 CTA 路由分发，点击 NONE 或查看进展平滑导航至 `/student/profile`。
+| 规则项 | 约束标准 | 实测结论 | 证据/依据 |
+| :--- | :--- | :--- | :--- |
+| **红线 1** | `allow_production_decision = False` 永久成立 | **100% PASS** | 本阶段零新增 AI 提示词、零新增 AI 决策，严守基础设施冻结边界 |
+| **红线 2** | 后端冻结目录严禁任何改动（`app/`, `tests/`, `data/seeds/`, `gateway/learning/`, `gateway/ai/companion/`, `gateway/api.py`, `gateway/adapter.py`, `gateway/config.py`） | **0 diff PASS** | `git diff -- [frozen dirs]` 输出为空（0 diff） |
+| **红线 3** | 全站面向学生的用户可见界面绝对零技术黑话 | **100% PASS** | 剔除所有 `BKT`, `PathState`, `mastery_probability`, `QUESTION_ATTEMPT`, `ΔP(L)`，自动化测试全字段审计通过 |
+| **红线 4** | 掌握度与学习进展 100% 服务端权威回读，严禁前端伪造 | **100% PASS** | 作答完成后严格自判题响应的 `learning_state` 快照或 `/api/students/{id}/progress` 回读，零前端推算 |
+| **红线 5** | 慕课外链严禁直接 `window.open`，必须经过安全校验弹窗 | **100% PASS** | 必须由 `ExternalRedirectModal` 校验域名白名单与 HTTPS 协议，确认后方可跳转 |
+| **红线 6** | 测验提交必须防止连击导致重复请求，失败必须能恢复重试 | **100% PASS** | 采用 React `useRef` 同步锁即时拦截并发宏/微任务点击；失败时重置锁与按钮状态 |
+| **红线 7** | 局部失败容错（资源 API 500 不得阻断测验与闭环学习） | **100% PASS** | 资源请求失败展示友好降级提示卡与醒目「直接开始小测验」主按钮，主链保持 100% 畅通 |
 
 ---
 
-## 二、架构硬红线与原则符合度核验
+## 二、核心学习会话流程与状态机
 
-| 规则项 | 约束标准 | 核验结论 |
-| :--- | :--- | :--- |
-| **红线 1** | `allow_production_decision = False` 永久成立 | **100% PASS**（本次零新增 AI 决策） |
-| **红线 2** | 后端冻结目录零改动（`app/`, `tests/`, `data/seeds/`, `gateway/learning/`, `gateway/api.py` 等） | **0 diff PASS**（严格零修改） |
-| **红线 3** | 全站用户可见界面绝对零技术黑话（BKT, PathState, 贝叶斯, P(L), 向量数据库, 候选仲裁等） | **100% PASS**（自动化测试全文本审计通过） |
-| **红线 4** | 严禁伪造或推算虚假学习进展（禁止无快照臆造「+8%」） | **100% PASS**（严格映射权威进展响应 4 大指标） |
-| **红线 5** | 局部失败容错（Progress 失败不得引起 Today Action 白屏或阻断核心学习） | **100% PASS**（浏览器 UAT Scenario 6 实测通过） |
+学习会话状态机由轻量级纯 UI 状态驱动，无需冗余持久化，具有极高的响应速度与韧性：
 
----
-
-## 三、质量验证结果矩阵
-
-```
-======================================================================
-1. Frontend Contract Tests (Vitest)  : 330 passed (100%)
-2. Frontend Typecheck (tsc -b)        : 0 errors
-3. Frontend Build (Vite production)   : PASS (dist/ created)
-4. Backend Root Tests (pytest tests/) : 143 passed (100%)
-5. Gateway Tests (pytest gateway/)    : 558 passed, 2 skipped (100%)
-6. Student PWA Strict Gate            : 20/20 PASS
-7. Final Integration Gate             : 25/25 PASS
-8. Browser E2E UAT Suite (8/8 Scenarios): 8/8 PASS
-   - Console Errors                   : 0
-   - Page Errors                      : 0
-   - Failed Network Requests          : 0
-======================================================================
+```mermaid
+stateDiagram-v2
+    [*] --> ENTRY: 点击 Today Action CTA
+    
+    ENTRY --> CONCEPT: 主 CTA (开始概念精读)
+    ENTRY --> QUIZ: 次 CTA (直接开始小测验)
+    ENTRY --> [*]: 关闭 / 返回
+    
+    CONCEPT --> QUIZ: 主 CTA (开始小测验)
+    CONCEPT --> RESOURCE: 次 CTA (看看学习资源)
+    CONCEPT --> [*]: 关闭 / 返回
+    
+    RESOURCE --> CONCEPT: 返回概念
+    RESOURCE --> QUIZ: 主 CTA (直接开始小测验)
+    RESOURCE --> ExternalRedirectModal: 点击中国大学MOOC资源
+    ExternalRedirectModal --> RESOURCE: 返回或确认外部新窗口打开
+    
+    QUIZ --> QUIZ: 逐题作答 + 即时解析
+    QUIZ --> RESULT: 全部试题作答完成
+    
+    RESULT --> ENTRY: 点击「再练一次」
+    RESULT --> [*]: 点击「继续下一步」/「返回今日任务」
 ```
 
----
-
-## 四、真实浏览器端到端 UAT 场景证据
-
-本次 UAT 通过真实 Chromium 引擎加载编译产物与后端网关，完整覆盖 8 大场景并归档全维高保真截图：
-
-### 1. 桌面端核心首页 (1440x900)
-- **场景**: 学生 S001 访问首页，完整呈现「温和问候语 + 今日行动主卡 + 当前焦点卡 + 最近学情卡」。
-- **核验点**: 回答了今天学什么、为什么学、当前掌握度（如 62%）、下一步做什么、真实学习进展。
-- **截图**:
-  ![Desktop Home](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_01_desktop_home.png)
-
-### 2. 移动端 375x812 视口响应式排版 (iPhone X)
-- **场景**: 移动端窄屏视口下的排版与触控靶点核验。
-- **核验点**: `scrollWidth === clientWidth`（横向零滚动、零溢出），CTA 触控高度 $\ge 44\text{px}$，底部固定导航完好。
-- **截图**:
-  ![Mobile 375x812](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_02_mobile_375x812.png)
-
-### 3. 移动端 390x844 视口视觉呼吸感 (iPhone 12/13/14)
-- **场景**: 主流移动端视口下的卡片间距、信息密度与字体缩放。
-- **核验点**: 元素自适应撑满，卡片圆角与内边距比例协调，无横向挤压变形。
-- **截图**:
-  ![Mobile 390x844](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_03_mobile_390x844.png)
-
-### 4. 今日行动 CTA 触发真实学习闭环
-- **场景**: 点击今日行动主卡上的行动按钮（如「开始快速复测」或「继续学习」）。
-- **核验点**: 调起真实微测验弹窗或概念微卡对话框，杜绝空链接或伪交互。
-- **截图**:
-  ![CTA Learning Loop](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_04_cta_learning_loop.png)
-
-### 5. 今日行动 NONE 阶段全达标空状态
-- **场景**: 当学生当前阶段所有学习目标均已达成（action_type 为 NONE）时。
-- **核验点**: 真诚展示「今天暂时没有待完成的学习任务」，绝对不伪造假任务；点击「查看学习进展」平滑导航至个人学情中心 `/student/profile`。
-- **截图**:
-  ![Today Action NONE](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_05_today_action_none.png)
-
-### 6. 局部接口失败容错 (Progress 500)
-- **场景**: 模拟 `/api/students/{id}/progress` 接口突发 500 故障。
-- **核验点**: 首页零白屏，Today Action 与 Current Focus 仍然 100% 正常可用；学情卡单独呈现友好降级提示与独立重试按钮。
-- **截图**:
-  ![Partial Failure Resilience](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_06_partial_failure_resilience.png)
-
-### 7. 学生上下文切换与新学生状态隔离
-- **场景**: 在顶部切换学生（如从 S001 切换为 S002 李同学）。
-- **核验点**: 问候语即时响应，学情卡片立即重置为目标学生的真实权威数据，严禁产生跨学生数据串扰。
-- **截图**:
-  ![New Student Context](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_07_new_student_first_entry.png)
-
-### 8. 超长考点名称弹性折行防溢出
-- **场景**: 注入多达 30 字的超长学术考点名称（如「微观经济学中关于完全竞争市场长期均衡条件与供给价格弹性变动分析」）。
-- **核验点**: 在 375px 窄屏下优雅折行排版，不冲破卡片边界，零横向滚动条。
-- **截图**:
-  ![Long Name Resilience](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p1_08_long_name_resilience.png)
+### 各步骤人本化体验说明：
+1. **ENTRY (统一导引入口)**:
+   - 统一入口：所有 `Today Action`（无论是复习提醒、新知探索还是靶向巩固）均统一进入 ENTRY，杜绝生硬跳步；
+   - 人本化展示：清晰考点中文全称（如「机会成本与生产可能性边界」）、人本化说明「为什么现在学」（如已有考点到达复习间隔、薄弱环节需要突破）、初始掌握度、预计用时；
+   - 双 CTA：主 CTA 推荐「开始概念精读」，次 CTA 允许熟练学生「直接开始小测验」。
+2. **CONCEPT (考点微卡精读)**:
+   - 体系化 5 维知识切片：直觉引入、核心机制与关键原理、典型生活实例、经典常见误区陷阱、达标掌握标准；
+   - 主次分明：主 CTA 鲜明指引「开始小测验」，次级入口提供「看看学习资源 (可选)」。
+3. **RESOURCE (可选拓展资料)**:
+   - 资源层作为可选辅助分支，聚焦呈现当前考点 Top 2–3 篇精选资源；
+   - 内部平台资源一键呼出内置阅读浮层，MOOC 外部名校微课必须通过 `ExternalRedirectModal` 确认；
+   - 具备 500 容错与优雅降级兜底卡片，随时可以「直接开始小测验」。
+4. **QUIZ (随堂微测与即时反馈)**:
+   - 题数轻量化（1–3 题），作答每题后提供明确的即时温和反馈（「✓ 回答正确」或「这道题还需要再想一想」）与详细解析详解；
+   - 防连击同步锁保护（`useRef`），杜绝重复网络请求与重复记分。
+5. **RESULT (权威成果结算与出口导航)**:
+   - 正确率与答对题数统计（例如「2 / 2 正确 · 100% 正确率」）；
+   - 重新从服务端权威读取的最新掌握度状态展示（例如「当前掌握度 80% · 达标掌握」）；
+   - 根据掌握情况生成温和的建议，并提供 3 大确定性出口：「继续下一步」、「再练一次」、「返回今日任务」。
 
 ---
 
-## 五、验收结论
+## 三、关键组件与实现机制
 
-学海智导 Sprint 10-C Phase 1（学生端首页 / Today）满足设计规范与质量门禁要求：
-- 5 大问题解答完备；
-- 8 大浏览器场景全绿且控制台 0 报错；
-- 全量单元与门禁测试 100% 通过；
-- 后端冻结目录严格 0 diff；
-- 具备进入最终 Git 提交与交付封板的完整条件。
+### 1. `frontend/src/components/student/LearningSessionModal.tsx` (NEW)
+- **无黑话人本设计**: 彻底屏蔽所有算法技术名词与内部代码；
+- **同步防连击锁 (`isSubmittingLock`)**:
+  ```typescript
+  const isSubmittingLock = useRef<boolean>(false);
+  const handleSubmitAnswer = async () => {
+    if (isSubmittingLock.current || !selectedOption) return;
+    isSubmittingLock.current = true;
+    setIsSubmitting(true);
+    try {
+      const res = await submitQuizAnswer(...);
+      // ...
+    } catch (err) {
+      setSubmitError(msg);
+    } finally {
+      isSubmittingLock.current = false;
+      setIsSubmitting(false);
+    }
+  };
+  ```
+- **资源安全调用与降级**:
+  - 中国大学 MOOC 资源通过 `ExternalRedirectModal` 处理安全外链跳转；
+  - 资源加载异常时不弹报错 Alert，而是显示 `resource-fallback-box`，引导学生直接开始测试；
+- **权威掌握度回读**:
+  - 测验结束后，优先使用提交接口返回的 `learning_state.mastery_percent`；
+  - 兜底调用 `getStudentProgress(studentId)` 获取服务端最新全景掌握度，杜绝前端私自累加。
+
+### 2. `frontend/src/layouts/StudentLayout.tsx` (MODIFIED)
+- 集中挂载 `LearningSessionModal`；
+- 将 `handleTodayActionCTA`、`handleStartQuiz`、`handleViewConceptCard` 统一接入 Learning Session；
+- 会话结束触发数据静默刷新与下一步引导流转。
+
+---
+
+## 四、测试与质量验证矩阵
+
+```
+========================================================================================
+测试与验证维度                     执行指令 / 脚本                      验证结果     状态
+========================================================================================
+1. 学习会话前端契约单元测试        npm test --prefix frontend            358 passed  PASS
+2. 前端 TypeScript 类型编译        npm run typecheck --prefix frontend   0 errors    PASS
+3. 前端生产打包构建                npm run build --prefix frontend       Built OK    PASS
+4. Root 算法与领域回归测试         pytest tests/ -q                      143 passed  PASS
+5. Gateway 网关与业务回归测试      pytest gateway/tests/ -q              558 passed  PASS
+                                                                         2 skipped
+6. PWA 20项严格质量门禁            python scripts/sprint10c_pwa_gate.py  20/20 PASS  PASS
+7. 阶段整合 25 项全链路门禁        python scripts/sprint10c_final...py   25/25 PASS  PASS
+8. 真实浏览器端到端 UAT 8大场景    python scripts/uat_sprint10c...py     8/8 PASS    PASS
+9. 浏览器控制台错误率              UAT page.on('console')                0 errors    PASS
+10. 网络请求失败率                 UAT page.on('requestfailed')          0 errors    PASS
+11. 冻结目录 0 diff 核验           git diff -- app/ tests/ ...           0 diff      PASS
+========================================================================================
+```
+
+---
+
+## 五、浏览器端到端 UAT 8 大场景与截图证据
+
+通过 Playwright 自动化套件 [`scripts/uat_sprint10c_phase2_learning_session.py`](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/scripts/uat_sprint10c_phase2_learning_session.py) 对真实运行的前后端服务进行了完整的交互闭环验收：
+
+### 场景 1: Today Action → Session Entry
+- **行为**: 学生点击首页「今日学习行动」主 CTA（「开始快速复测」），呼出学习会话模态框并直达 ENTRY 引导页；
+- **验证点**: 呈现考点中文全称、人本解释、预计耗时与起点掌握度，零底层技术代号与黑话；
+- **截图**:
+  ![Today Action to Session Entry](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_01_today_to_session_entry.png)
+
+### 场景 2: Concept → Quiz 连续性
+- **行为**: 点击「开始概念精读」，阅读 5 维知识微卡，再点击主 CTA「开始小测验」；
+- **验证点**: 主次 CTA 分明，平滑推进至试题步骤，全程无白屏、无重载、无卡顿；
+- **截图**:
+  ![Concept to Quiz](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_02_concept_to_quiz.png)
+
+### 场景 3: Quiz 完整作答与成果结算
+- **行为**: 依次选择选项、提交判题，查看每题即时反馈，最后一题点击「查看本次测验结果」；
+- **验证点**: 顺利进入 RESULT 步，展示真实答对题数、正确率与从服务端权威读取的最新掌握度（当前掌握度 11%），并提供三大出口按钮；
+- **截图**:
+  ![Quiz Complete Result](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_03_quiz_complete_result.png)
+
+### 场景 4: 制造错误答案与温和解析反馈
+- **行为**: 故意选择错误选项并点击提交；
+- **验证点**: 界面展现温和的「这道题还需要再想一想」提示与完整【解析详解】，下一题按钮正常可用，杜绝卡死与死路；
+- **截图**:
+  ![Wrong Answer Feedback](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_04_wrong_answer_feedback.png)
+
+### 场景 5: 学习资源与中国大学 MOOC 安全弹窗
+- **行为**: 从 Concept 点击次级入口「看看学习资源」，在资源列表点击「前往慕课学习」；
+- **验证点**: 严格调起 `ExternalRedirectModal` 进行域名白名单与 HTTPS 安全校验，绝不静默跳转外部不受控链接；
+- **截图**:
+  ![MOOC External Redirect](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_05_mooc_external_redirect.png)
+
+### 场景 6: 局部故障容错 (资源接口 500 不阻断测验)
+- **行为**: 注入网络故障使 `/api/learning/resources/*` 接口返回 HTTP 500；
+- **验证点**: 资源区域呈现友好兜底卡片，提供显眼的「直接开始小测验」主按钮，小测验主链路 100% 畅通可用；
+- **截图**:
+  ![Resource Fault Resilience](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_06_resource_fault_resilience.png)
+
+### 场景 7: 提交防连击幂等与失败恢复
+- **行为**: 作答后瞬间连击 3 次提交按钮；
+- **验证点**: 同步锁成功拦截后续点击，实际发送 HTTP POST 请求数量严格为 1 次；异常时按钮与锁能够自动恢复以支持重试；
+- **截图**:
+  ![Submit Idempotency Retry](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_07_submit_idempotency_retry.png)
+
+### 场景 8: 移动端 375x812 视口全流程贯通
+- **行为**: 模拟 iPhone 移动设备视口（375x812），完整走通 Today Action → Entry → Concept → Quiz → Result → Home 全链路；
+- **验证点**: 全程无横向溢出滚动条（`scrollWidth <= clientWidth`），触控靶点高度均达到或超过 44px 规范，无控制台报错；
+- **截图**:
+  ![Mobile Full Session](file:///C:/Users/XSL/.gemini/antigravity/brain/acc330ec-11ad-49d0-a406-fe3e112b5cfc/screenshots/sprint10c_p2_08_mobile_375x812_full_session.png)
+
+---
+
+## 六、交付文件与变更审计
+
+```
+[NEW]    frontend/src/components/student/LearningSessionModal.tsx (1082 行，学习会话状态机容器)
+[NEW]    frontend/test/sprint10c_learning_session.test.ts (28 项契约测试)
+[NEW]    scripts/uat_sprint10c_phase2_learning_session.py (8 大场景浏览器自动化验收套件)
+[MODIFY] frontend/src/layouts/StudentLayout.tsx (挂载 LearningSessionModal 并集成交互链路)
+[MODIFY] implementation_plan.md (更新 Phase 2 设计与验收记录)
+```
+
+**冻结目录 0 diff 检查**:
+```bash
+$ git diff -- app/ tests/ data/seeds/ gateway/learning/ gateway/ai/companion/ gateway/api.py gateway/adapter.py gateway/config.py
+(Empty - Strictly 0 diff)
+```
+
+---
+
+## 七、结论与后续规划
+
+Sprint 10-C Phase 2（学习会话产品化）已圆满达成既定目标：
+1. 构建了完整且流畅的 5–10 分钟学生学习闭环；
+2. 严格满足全部 7 项架构与产品红线；
+3. 后端权威状态保持严谨一致，前端体验人本且富有韧性；
+4. 全量回归、质量门禁与端到端 UAT 测试 100% 通过。
+
+下一阶段将平滑转入 **Sprint 10-C Phase 3: PWA 体验打磨与最终交付**。

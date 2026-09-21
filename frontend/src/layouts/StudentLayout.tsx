@@ -39,14 +39,14 @@ import { ProgressOverview } from '../components/student/ProgressOverview';
 import { WrongAnswerReview } from '../components/student/WrongAnswerReview';
 import { ResourceHub } from '../components/student/ResourceHub';
 import { StudentHome } from '../components/student/StudentHome';
+import { LearningSessionModal, type SessionStep } from '../components/student/LearningSessionModal';
 import { PwaInstallBanner } from '../components/student/PwaInstallBanner';
-import { getConceptCardById, type ConceptCardData } from '../components/student/conceptCardData';
+import { type ConceptCardData } from '../components/student/conceptCardData';
 import {
   initStudent,
   getDynamicPath,
   getStudentProgress,
   getStudentWrongAnswers,
-  recordLearningEvent,
   postLearningActionResult,
   getTodayLearningAction,
   type StudentInitRequest,
@@ -88,6 +88,15 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   // 考点精要速览微卡片状态 (先学后测)
   const [activeConceptCard, setActiveConceptCard] = useState<ConceptCardData | null>(null);
+
+  // 全链路学习会话状态 (Sprint 10-C Phase 2)
+  const [learningSession, setLearningSession] = useState<{
+    isOpen: boolean;
+    action: TodayLearningAction | null;
+    knowledgeId: string;
+    knowledgeName: string;
+    initialStep?: SessionStep;
+  } | null>(null);
 
   // 学习目标设定与新学生模态框状态
   const [isInitModalOpen, setIsInitModalOpen] = useState<boolean>(false);
@@ -198,28 +207,63 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     setAnalyticsError(null);
   }, [studentId]);
 
+  const handleCloseSession = useCallback(() => {
+    setLearningSession(null);
+    fetchDynamicRoute();
+    fetchAnalyticsData();
+    fetchTodayAction();
+    if (onRefresh) {
+      onRefresh();
+    }
+  }, [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction, onRefresh]);
+
+  const handleFinishSession = useCallback(
+    (nextKnowledgeId?: string, nextKnowledgeName?: string) => {
+      fetchDynamicRoute();
+      fetchAnalyticsData();
+      fetchTodayAction();
+      if (onRefresh) {
+        onRefresh();
+      }
+      if (nextKnowledgeId) {
+        setLearningSession({
+          isOpen: true,
+          action: null,
+          knowledgeId: nextKnowledgeId,
+          knowledgeName: nextKnowledgeName || `考点 ${nextKnowledgeId}`,
+          initialStep: 'ENTRY',
+        });
+      } else {
+        setLearningSession(null);
+      }
+    },
+    [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction, onRefresh]
+  );
+
   const handleStartQuiz = useCallback(
     (knowledgeId: string, knowledgeName: string) => {
-      setActiveQuiz({ knowledgeId, knowledgeName });
+      setLearningSession({
+        isOpen: true,
+        action: null,
+        knowledgeId,
+        knowledgeName: knowledgeName || '微观经济学考点',
+        initialStep: 'QUIZ',
+      });
     },
     []
   );
 
   const handleViewConceptCard = useCallback(
-    (knowledgeId: string, _knowledgeName: string) => {
-      const card = getConceptCardById(knowledgeId);
-      if (card) {
-        setActiveConceptCard(card);
-        // 上报微卡阅读真实事件 (Sprint 8-C)
-        recordLearningEvent({
-          student_id: studentId,
-          event_type: 'CONCEPT_VIEW',
-          knowledge_id: knowledgeId,
-          payload: { knowledge_name: card.knowledgeName, chapter: card.chapter },
-        }).catch((err) => console.warn('Failed to record CONCEPT_VIEW event:', err));
-      }
+    (knowledgeId: string, knowledgeName: string) => {
+      setLearningSession({
+        isOpen: true,
+        action: null,
+        knowledgeId,
+        knowledgeName: knowledgeName || '微观经济学考点',
+        initialStep: 'CONCEPT',
+      });
     },
-    [studentId]
+    []
   );
 
   const handleCloseConceptCard = useCallback(() => {
@@ -297,24 +341,23 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
   const handleTodayActionCTA = useCallback(
     (action: TodayLearningAction) => {
-      const kid = action.knowledge_id || 'K01';
-      const kname = action.knowledge_name || '';
-
-      if (action.action_type === 'REVIEW_RETENTION') {
-        if (action.cta_label === '重新学习' || action.suggested_action === 'REVIEW_CONCEPT') {
-          handleViewConceptCard(kid, kname);
-        } else {
-          handleStartQuiz(kid, kname);
-        }
-      } else if (action.action_type === 'CONTINUE_LEARNING') {
-        handleViewConceptCard(kid, kname);
-      } else if (action.action_type === 'PRACTICE') {
-        handleStartQuiz(kid, kname);
-      } else if (action.action_type === 'VIEW_PROGRESS' || action.action_type === 'NONE') {
+      if (action.action_type === 'VIEW_PROGRESS' || action.action_type === 'NONE') {
         navigate('/student/profile');
+        return;
       }
+      const kid = action.knowledge_id || 'K01';
+      const kname = action.knowledge_name || '微观经济学核心考点';
+
+      // 所有学习类行动统一进入 Learning Session 的 ENTRY 步骤，实现统一导引与权威掌握度呈现
+      setLearningSession({
+        isOpen: true,
+        action,
+        knowledgeId: kid,
+        knowledgeName: kname,
+        initialStep: 'ENTRY',
+      });
     },
-    [handleViewConceptCard, handleStartQuiz, navigate]
+    [navigate]
   );
 
   const handleJumpToAssistant = () => {
@@ -686,6 +729,25 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
       {/* Footer */}
       <Footer />
+
+      {/* 全链路自适应学习会话模态框 (Sprint 10-C Phase 2) */}
+      {learningSession && (
+        <LearningSessionModal
+          isOpen={learningSession.isOpen}
+          studentId={studentId}
+          action={learningSession.action}
+          knowledgeId={learningSession.knowledgeId}
+          knowledgeName={learningSession.knowledgeName}
+          initialStep={learningSession.initialStep}
+          currentMasteryPercent={currentMasteryPercent}
+          onClose={handleCloseSession}
+          onFinishSession={handleFinishSession}
+          onNavigateToTasks={() => {
+            navigate('/student/tasks');
+            handleCloseSession();
+          }}
+        />
+      )}
 
       {/* 全局统一微测验模态抽屉 (Step 3: 打通全链路闭环) */}
       <BottomSheet

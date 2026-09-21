@@ -1,0 +1,345 @@
+{
+  "timestamp": "2026-09-21T12:20:46Z",
+  "viewports_tested": [
+    "375x812",
+    "390x844",
+    "1440x900"
+  ],
+  "tasks": {
+    "task_a_375": {
+      "today_card_snippet": "今日学习\n复习提醒\n机会成本与生产可能性边界\n当前掌握度 11%\n建议再巩固一下\n\n机会成本与生产可能性边界最近一次复习还不够稳定，先重新看看概念，再试一次。\n\n已有考点复习未稳固，需针对性巩固\n重新",
+      "focus_card_snippet": "当前学习焦点\n|\n第三章 弹性\n当前规划航线 · 第 1 站 / 共 3 站\n🎯 正在进行\n需求价格弹性\n\n当前正确率仅42%，属于明显薄弱知识点；该知识点是其他2个相关薄弱知识点的前置知识\n\n当前掌",
+      "visible_ctas_count": 5
+    },
+    "task_a_390": {
+      "today_card_snippet": "今日学习\n复习提醒\n机会成本与生产可能性边界\n当前掌握度 11%\n建议再巩固一下\n\n机会成本与生产可能性边界最近一次复习还不够稳定，先重新看看概念，再试一次。\n\n已有考点复习未稳固，需针对性巩固\n重新",
+      "focus_card_snippet": "当前学习焦点\n|\n第三章 弹性\n当前规划航线 · 第 1 站 / 共 3 站\n🎯 正在进行\n需求价格弹性\n\n当前正确率仅42%，属于明显薄弱知识点；该知识点是其他2个相关薄弱知识点的前置知识\n\n当前掌",
+      "visible_ctas_count": 5
+    },
+    "task_a_1440": {
+      "today_card_snippet": "今日学习\n复习提醒\n机会成本与生产可能性边界\n当前掌握度 11%\n建议再巩固一下\n\n机会成本与生产可能性边界最近一次复习还不够稳定，先重新看看概念，再试一次。\n\n已有考点复习未稳固，需针对性巩固\n重新",
+      "focus_card_snippet": "当前学习焦点\n|\n第三章 弹性\n当前规划航线 · 第 1 站 / 共 3 站\n🎯 正在进行\n需求价格弹性\n\n当前正确率仅42%，属于明显薄弱知识点；该知识点是其他2个相关薄弱知识点的前置知识\n\n当前掌",
+      "visible_ctas_count": 5
+    },
+    "task_c_ai_reasons": [
+      "建议优先攻克考点 K02 并学习对应辅导资源。"
+    ],
+    "task_d_quiz": {
+      "question_indicator": "小测验 · 第 1 题 / 2",
+      "options_count": 5,
+      "options_heights": [
+        54,
+        54,
+        54,
+        54,
+        44
+      ]
+    }
+  },
+  "touch_target_issues": [
+    {
+      "context": "Task A Home 375x812",
+      "element": "切换到学生视图 (当前学情: S001)",
+      "width": 36,
+      "height": 28
+    },
+    {
+      "context": "Task A Home 375x812",
+      "element": "切换到教师学情决策驾驶舱 (关联学生: S001)",
+      "width": 34,
+      "height": 26
+    },
+    {
+      "context": "Task A Home 375x812",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 220,
+      "height": 16
+    },
+    {
+      "context": "Task A Home 375x812",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task A Home 390x844",
+      "element": "切换到学生视图 (当前学情: S001)",
+      "width": 36,
+      "height": 28
+    },
+    {
+      "context": "Task A Home 390x844",
+      "element": "切换到教师学情决策驾驶舱 (关联学生: S001)",
+      "width": 34,
+      "height": 26
+    },
+    {
+      "context": "Task A Home 390x844",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 220,
+      "height": 16
+    },
+    {
+      "context": "Task A Home 390x844",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "学生视图",
+      "width": 94,
+      "height": 30
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "教师驾驶舱",
+      "width": 104,
+      "height": 28
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 256,
+      "height": 20
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "3题前测摸底",
+      "width": 112.9,
+      "height": 30
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "设定目标 / 新学生",
+      "width": 142.0,
+      "height": 30
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "今日任务",
+      "width": 102,
+      "height": 32
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "学习资源",
+      "width": 102,
+      "height": 32
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "知识图谱",
+      "width": 102,
+      "height": 32
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "学情档案",
+      "width": 102,
+      "height": 32
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "AI伴学",
+      "width": 87.5,
+      "height": 32
+    },
+    {
+      "context": "Task A Home 1440x900",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Entry",
+      "element": "切换到学生视图 (当前学情: S001)",
+      "width": 36,
+      "height": 28
+    },
+    {
+      "context": "Task B Session Entry",
+      "element": "切换到教师学情决策驾驶舱 (关联学生: S001)",
+      "width": 34,
+      "height": 26
+    },
+    {
+      "context": "Task B Session Entry",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 220,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Entry",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Entry",
+      "element": "关闭学习会话",
+      "width": 36,
+      "height": 36
+    },
+    {
+      "context": "Task B Session Concept",
+      "element": "切换到学生视图 (当前学情: S001)",
+      "width": 36,
+      "height": 28
+    },
+    {
+      "context": "Task B Session Concept",
+      "element": "切换到教师学情决策驾驶舱 (关联学生: S001)",
+      "width": 34,
+      "height": 26
+    },
+    {
+      "context": "Task B Session Concept",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 220,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Concept",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Concept",
+      "element": "关闭学习会话",
+      "width": 36,
+      "height": 36
+    },
+    {
+      "context": "Task B Session Resource",
+      "element": "切换到学生视图 (当前学情: S001)",
+      "width": 36,
+      "height": 28
+    },
+    {
+      "context": "Task B Session Resource",
+      "element": "切换到教师学情决策驾驶舱 (关联学生: S001)",
+      "width": 34,
+      "height": 26
+    },
+    {
+      "context": "Task B Session Resource",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 220,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Resource",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Resource",
+      "element": "关闭学习会话",
+      "width": 36,
+      "height": 36
+    },
+    {
+      "context": "Task B Session Resource",
+      "element": "返回概念微卡",
+      "width": 63.1,
+      "height": 32
+    },
+    {
+      "context": "Task B Session Quiz",
+      "element": "切换到学生视图 (当前学情: S001)",
+      "width": 36,
+      "height": 28
+    },
+    {
+      "context": "Task B Session Quiz",
+      "element": "切换到教师学情决策驾驶舱 (关联学生: S001)",
+      "width": 34,
+      "height": 26
+    },
+    {
+      "context": "Task B Session Quiz",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 220,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Quiz",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Quiz",
+      "element": "关闭学习会话",
+      "width": 36,
+      "height": 36
+    },
+    {
+      "context": "Task B Session Result",
+      "element": "切换到学生视图 (当前学情: S001)",
+      "width": 36,
+      "height": 28
+    },
+    {
+      "context": "Task B Session Result",
+      "element": "切换到教师学情决策驾驶舱 (关联学生: S001)",
+      "width": 34,
+      "height": 26
+    },
+    {
+      "context": "Task B Session Result",
+      "element": "S001 张同学 (经济学 · 正确率 80.5%)\nS00",
+      "width": 220,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Result",
+      "element": "查看完整学情档案",
+      "width": 114,
+      "height": 16
+    },
+    {
+      "context": "Task B Session Result",
+      "element": "关闭学习会话",
+      "width": 36,
+      "height": 36
+    }
+  ],
+  "overflow_issues": [],
+  "hierarchy_observations": [
+    {
+      "viewport": "375x812",
+      "visible_primary_actions_on_home": [
+        "TodayAction: 重新学习",
+        "CurrentFocus: 继续挑战微测验",
+        "CurrentFocus: 📖 考点精要速览",
+        "CurrentFocus: 📚 推荐学习材料",
+        "CurrentFocus: 🤖 问问 AI"
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "visible_primary_actions_on_home": [
+        "TodayAction: 重新学习",
+        "CurrentFocus: 继续挑战微测验",
+        "CurrentFocus: 📖 考点精要速览",
+        "CurrentFocus: 📚 推荐学习材料",
+        "CurrentFocus: 🤖 问问 AI"
+      ]
+    },
+    {
+      "viewport": "1440x900",
+      "visible_primary_actions_on_home": [
+        "TodayAction: 重新学习",
+        "CurrentFocus: 继续挑战微测验",
+        "CurrentFocus: 📖 考点精要速览",
+        "CurrentFocus: 📚 推荐学习材料",
+        "CurrentFocus: 🤖 问问 AI"
+      ]
+    }
+  ],
+  "console_errors": []
+}

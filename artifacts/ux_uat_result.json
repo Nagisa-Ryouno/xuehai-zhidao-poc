@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-09-21T13:07:35Z",
+  "checks": {
+    "UX-01": {
+      "status": "PASS",
+      "detail": "TodayActionCard 居于绝对主角，CurrentFocusCard 降权为全景上下文且辅助功能完整"
+    },
+    "UX-02": {
+      "status": "PASS",
+      "detail": "点击主任务 CTA 顺畅展开全屏学习会话"
+    },
+    "UX-03": {
+      "status": "PASS",
+      "detail": "4步流程条清晰展示，且关闭按钮触控区达到 44px"
+    },
+    "UX-04": {
+      "status": "PASS",
+      "detail": "资源步骤顺畅加载，返回概念微卡按钮触控靶点充足"
+    },
+    "UX-05": {
+      "status": "PASS",
+      "detail": "AI 推荐理由 100% 净化，无机器代码"
+    },
+    "UX-06": {
+      "status": "PASS",
+      "detail": "提交答题后反馈清晰，底部操作按钮平滑可见"
+    },
+    "UX-07": {
+      "status": "PASS",
+      "detail": "结算页按钮层级明确，无死胡同，触控高度符合 44px 规范"
+    },
+    "UX-08": {
+      "status": "PASS",
+      "detail": "移动端 4-Tab 架构稳健，资源页具备清晰面包屑与返回主任务通道"
+    },
+    "UX-09": {
+      "status": "PASS",
+      "detail": "离线提示如实呈现已缓存内容与需联网功能"
+    },
+    "UX-10": {
+      "status": "PASS",
+      "detail": "375x812 零横向溢出，所有关键触控靶点达到 40-48px 规范"
+    },
+    "UX-11": {
+      "status": "PASS",
+      "detail": "390x844 视口零横向溢出，安全区域与内边距极度舒适"
+    },
+    "UX-12": {
+      "status": "PASS",
+      "detail": "1440x900 桌面端 5-Tab 完备展示，两列网格布局工整"
+    }
+  },
+  "passed_count": 12,
+  "total_count": 12
+}

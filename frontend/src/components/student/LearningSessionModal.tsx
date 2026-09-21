@@ -54,6 +54,8 @@ export interface LearningSessionModalProps {
   onNavigateToTasks?: () => void;
 }
 
+import { sanitizeRecommendationReason, getResultCtaConfig } from './sessionUtils';
+
 export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
   isOpen,
   studentId,
@@ -271,6 +273,7 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
 
   // 同步锁：用于同步拦截浏览器的连击 (Double / Triple Click)
   const isSubmittingLock = useRef<boolean>(false);
+  const quizBottomRef = useRef<HTMLDivElement | null>(null);
 
   const loadQuiz = useCallback(async (kid: string) => {
     setIsQuizLoading(true);
@@ -331,6 +334,13 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
           explanation: res.explanation,
         },
       ]);
+
+      // 移动端视口平滑引导：提交后微距平滑滚动，使解析与下一题按钮立即可见 (UX-ISSUE-05)
+      setTimeout(() => {
+        if (quizBottomRef.current) {
+          quizBottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 150);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '提交作答失败，请检查网络后重试';
       setSubmitError(msg);
@@ -466,12 +476,55 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
 
           <button
             type="button"
+            data-testid="session-modal-close-btn"
             onClick={onClose}
             aria-label="关闭学习会话"
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* 轻量流程指示器 (符合真实步骤流：① 概念学习 ➔ ② 可选资源 ➔ ③ 随堂微测 ➔ ④ 成果结算 · 通常约 5 分钟完成) */}
+        <div data-testid="session-step-progress" className="px-5 sm:px-6 py-2 bg-slate-50/90 border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-500 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <span
+              className={`font-semibold transition-colors ${
+                currentStep === 'ENTRY' || currentStep === 'CONCEPT'
+                  ? 'text-indigo-600 font-bold'
+                  : 'text-slate-400'
+              }`}
+            >
+              ① 概念学习
+            </span>
+            <span className="text-slate-300">›</span>
+            <span
+              className={`font-semibold transition-colors ${
+                currentStep === 'RESOURCE' ? 'text-indigo-600 font-bold' : 'text-slate-400'
+              }`}
+            >
+              ② 可选资源
+            </span>
+            <span className="text-slate-300">›</span>
+            <span
+              className={`font-semibold transition-colors ${
+                currentStep === 'QUIZ' ? 'text-indigo-600 font-bold' : 'text-slate-400'
+              }`}
+            >
+              ③ 随堂微测
+            </span>
+            <span className="text-slate-300">›</span>
+            <span
+              className={`font-semibold transition-colors ${
+                currentStep === 'RESULT' ? 'text-emerald-600 font-bold' : 'text-slate-400'
+              }`}
+            >
+              ④ 成果结算
+            </span>
+          </div>
+          <span className="text-[10px] text-slate-400 font-medium ml-2 shrink-0 hidden sm:inline">
+            通常约 5 分钟完成
+          </span>
         </div>
 
         {/* ================================================================= */}
@@ -718,10 +771,11 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                 </div>
                 <button
                   type="button"
+                  data-testid="resource-back-concept-btn"
                   onClick={() => setCurrentStep('CONCEPT')}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-2 min-h-[44px] rounded-xl hover:bg-indigo-50/80 text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer transition-colors"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <ChevronLeft className="w-4 h-4" />
                   <span>返回概念微卡</span>
                 </button>
               </div>
@@ -812,7 +866,7 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                                 <span>💡 为什么推荐</span>
                               </div>
                               <p data-testid="rec-reason-text" className="text-[11px] text-slate-700 leading-relaxed font-medium">
-                                {rec.reason}
+                                {sanitizeRecommendationReason(rec.reason, displayKpName)}
                               </p>
                             </div>
                           </div>
@@ -1040,6 +1094,7 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                             <button
                               key={opt.key}
                               type="button"
+                              data-testid={`quiz-option-${opt.key}`}
                               disabled={isFeedback || isSubmitting}
                               onClick={() => handleOptionSelect(opt.key)}
                               className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 min-h-[48px] cursor-pointer disabled:cursor-default ${style}`}
@@ -1115,7 +1170,7 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                       )}
 
                       {/* 底部交互控制按钮 */}
-                      <div className="pt-2">
+                      <div ref={quizBottomRef} className="pt-2">
                         {!isFeedback ? (
                           <button
                             type="button"
@@ -1249,37 +1304,68 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                 </p>
               </div>
 
-              {/* 底部导航出口：绝无死胡同 */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
-                <button
-                  type="button"
-                  data-testid="result-next-action-btn"
-                  onClick={handleNextKnowledgeSession}
-                  className="w-full sm:flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
-                >
-                  <span>继续下一步</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+              {/* 底部导航出口：绝无死胡同，依据权威作答表现调整人本视觉主次 */}
+              {(() => {
+                const resultCta = getResultCtaConfig(accuracyPercent);
+                return (
+                  <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
+                    {resultCta.isPassing ? (
+                      <>
+                        <button
+                          type="button"
+                          data-testid="result-next-action-btn"
+                          onClick={handleNextKnowledgeSession}
+                          className="w-full sm:flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
+                        >
+                          <span>{resultCta.primaryLabel}</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
 
-                <button
-                  type="button"
-                  data-testid="result-retry-quiz-btn"
-                  onClick={handleStartQuizStep}
-                  className="w-full sm:w-auto py-3.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>再练一次</span>
-                </button>
+                        <button
+                          type="button"
+                          data-testid="result-retry-quiz-btn"
+                          onClick={handleStartQuizStep}
+                          className="w-full sm:w-auto py-3.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>{resultCta.secondaryLabel}</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          data-testid="result-retry-quiz-btn"
+                          onClick={handleStartQuizStep}
+                          className="w-full sm:flex-1 py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          <span>{resultCta.primaryLabel}</span>
+                        </button>
 
-                <button
-                  type="button"
-                  data-testid="result-back-home-btn"
-                  onClick={handleBackHome}
-                  className="w-full sm:w-auto py-3.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
-                >
-                  <span>返回今日任务</span>
-                </button>
-              </div>
+                        <button
+                          type="button"
+                          data-testid="result-next-action-btn"
+                          onClick={handleNextKnowledgeSession}
+                          className="w-full sm:w-auto py-3.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
+                        >
+                          <span>{resultCta.secondaryLabel}</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+
+                    <button
+                      type="button"
+                      data-testid="result-back-home-btn"
+                      onClick={handleBackHome}
+                      className="w-full sm:w-auto py-3.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
+                    >
+                      <span>返回今日任务</span>
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

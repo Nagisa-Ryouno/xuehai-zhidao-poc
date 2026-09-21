@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Target,
   Sparkles,
-  Flame,
   CheckCircle2,
   Lock,
   ArrowRight,
@@ -228,17 +227,17 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
       {/* 顶部标签行 */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-2xs">
-            <Flame className="w-4 h-4" />
+          <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200/80 shadow-2xs">
+            <Target className="w-4 h-4 text-indigo-600" />
           </div>
-          <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-700">
-            当前学习焦点
+          <span className="text-xs font-bold text-indigo-900 tracking-tight">
+            课程航线全景 · 当前阶段主线
           </span>
-          <span className="text-xs text-slate-400">|</span>
+          <span className="text-xs text-slate-300">|</span>
           <span className="text-xs font-medium text-slate-500">{focus.chapter}</span>
           {dynamicRoute && dynamicRoute.steps.length > 0 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              <span>当前规划航线 · 第 1 站 / 共 {dynamicRoute.route_length} 站</span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+              <span>第 1 站 / 共 {dynamicRoute.route_length} 站</span>
             </span>
           )}
         </div>
@@ -360,9 +359,9 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
             <button
               type="button"
               onClick={() => onViewConceptCard(focus.knowledgeId, focus.knowledgeName)}
-              className="flex-1 sm:flex-none py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-indigo-200 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 transition-all cursor-pointer min-h-[44px]"
+              className="flex-1 sm:flex-none py-2.5 px-3.5 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer min-h-[44px]"
             >
-              <BookOpen className="w-4 h-4 text-indigo-600" />
+              <BookOpen className="w-4 h-4 text-indigo-500" />
               <span>📖 考点精要速览</span>
             </button>
           )}
@@ -371,9 +370,9 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
             <button
               type="button"
               onClick={() => onViewResources(focus.knowledgeId)}
-              className="flex-1 sm:flex-none py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-amber-200 bg-amber-50/80 text-amber-800 hover:bg-amber-100 hover:text-amber-950 transition-all cursor-pointer min-h-[44px]"
+              className="flex-1 sm:flex-none py-2.5 px-3.5 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer min-h-[44px]"
             >
-              <Sparkles className="w-4 h-4 text-amber-600" />
+              <Sparkles className="w-4 h-4 text-amber-500" />
               <span>📚 推荐学习材料</span>
             </button>
           )}
@@ -382,9 +381,9 @@ export const CurrentFocusCard: React.FC<CurrentFocusCardProps> = ({
             <button
               type="button"
               onClick={() => onAskAI(focus.knowledgeId, focus.knowledgeName)}
-              className="flex-1 sm:flex-none py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-purple-200 bg-purple-50/80 text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all cursor-pointer min-h-[44px]"
+              className="flex-1 sm:flex-none py-2.5 px-3.5 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer min-h-[44px]"
             >
-              <Bot className="w-4 h-4 text-purple-600" />
+              <Bot className="w-4 h-4 text-purple-500" />
               <span>🤖 问问 AI</span>
             </button>
           )}

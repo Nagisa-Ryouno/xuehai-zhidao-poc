@@ -17,7 +17,7 @@ export const RoleSwitcher: React.FC = () => {
       <button
         type="button"
         onClick={() => handleSwitch('student')}
-        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+        className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 min-w-[38px] min-h-[38px] sm:min-w-0 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
           role === 'student'
             ? 'bg-white text-indigo-700 shadow-sm shadow-slate-200/60 font-bold border border-slate-200/60'
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
@@ -31,7 +31,7 @@ export const RoleSwitcher: React.FC = () => {
       <button
         type="button"
         onClick={() => handleSwitch('teacher')}
-        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+        className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 min-w-[38px] min-h-[38px] sm:min-w-0 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
           role === 'teacher'
             ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30 font-bold'
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'

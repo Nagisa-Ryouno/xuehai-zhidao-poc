@@ -179,9 +179,9 @@ export const TodayActionCard: React.FC<TodayActionCardProps> = ({
         <div className="flex-1 min-w-0 space-y-2">
           {/* 标签栏 */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow-2xs">
               <Sparkles className="w-3.5 h-3.5 text-blue-200" />
-              今日学习
+              今日学习 · 建议首选完成
             </span>
 
             {config.badgeLabel && (

@@ -22,7 +22,7 @@ export const BottomNav: React.FC = () => {
       <div className="max-w-md mx-auto flex items-center justify-around px-2 py-1">
         {STUDENT_NAV_TABS.map((tab) => {
           const Icon = ICON_MAP[tab.iconName as keyof typeof ICON_MAP] || CalendarCheck;
-          const isActive = subRoute === tab.id;
+          const isActive = tab.id === 'tasks' ? (subRoute === 'tasks' || subRoute === 'resources') : subRoute === tab.id;
 
           return (
             <button
@@ -46,7 +46,7 @@ export const BottomNav: React.FC = () => {
                   <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />
                 )}
               </div>
-              <span className="text-[11px] leading-tight tracking-tight mt-0.5 whitespace-nowrap">
+              <span className="text-[10px] sm:text-[11px] leading-tight tracking-tight mt-0.5 whitespace-nowrap">
                 {tab.label}
               </span>
             </button>

@@ -15,7 +15,9 @@ import {
   RotateCcw,
   Play,
   ExternalLink,
+  ArrowLeft,
 } from 'lucide-react';
+import { useApp } from '../../context/useApp';
 import type {
   LearningResource,
   ResourceType,
@@ -89,6 +91,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
   onStartQuiz,
   onAskAI,
 }) => {
+  const { navigate } = useApp();
   const [selectedKnowledgeId, setSelectedKnowledgeId] = useState<string>(initialKnowledgeId);
   const [activeTypeFilter, setActiveTypeFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -467,6 +470,20 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
+      {/* 移动端返回与路径面包屑 */}
+      <div className="flex items-center gap-2 md:hidden">
+        <button
+          type="button"
+          onClick={() => navigate('/student/tasks')}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 py-1.5 px-2.5 -ml-1 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 transition-colors cursor-pointer min-h-[40px]"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>返回今日任务</span>
+        </button>
+        <span className="text-slate-300">/</span>
+        <span className="text-xs text-slate-500 font-medium">学习资源中心</span>
+      </div>
+
       {/* 顶部标题区 */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

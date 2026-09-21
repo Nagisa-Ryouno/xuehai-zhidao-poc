@@ -3,7 +3,7 @@
  * 学生端移动优先 4-Tab 导航配置与规范常量
  */
 
-export type StudentTabId = 'tasks' | 'resources' | 'graph' | 'profile' | 'assistant';
+export type StudentTabId = 'tasks' | 'graph' | 'profile' | 'assistant';
 
 export interface StudentNavTab {
   id: StudentTabId;
@@ -13,8 +13,8 @@ export interface StudentNavTab {
   description: string;
 }
 
-export const RESOURCE_TAB_INFO: StudentNavTab = {
-  id: 'resources',
+export const RESOURCE_TAB_INFO = {
+  id: 'resources' as const,
   label: '学习资源',
   path: '/student/resources',
   iconName: 'BookOpen',
@@ -58,11 +58,10 @@ export const STUDENT_NAV_TABS: StudentNavTab[] = [
 export function getActiveStudentTab(pathname: string): StudentTabId {
   const clean = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
-  if (clean === '/student/resources') return 'resources';
   if (clean === '/student/graph') return 'graph';
   if (clean === '/student/profile') return 'profile';
   if (clean === '/student/assistant') return 'assistant';
-  // 默认 fallback 为 tasks
+  // 默认 fallback 为 tasks（包含 /student/resources，保持与任务主线的上下文关联）
   return 'tasks';
 }
 

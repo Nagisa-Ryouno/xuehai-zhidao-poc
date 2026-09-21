@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Student Selector Dropdown */}
           <div className="relative flex items-center gap-1.5 sm:gap-2">
-            <div className="relative flex items-center bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 border border-slate-200 transition-all cursor-pointer shadow-xs max-w-[130px] sm:max-w-none">
+            <div className="relative flex items-center bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 min-h-[40px] border border-slate-200 transition-all cursor-pointer shadow-xs max-w-[140px] sm:max-w-none">
               <User className="w-4 h-4 text-indigo-600 mr-1.5 sm:mr-2 shrink-0" />
               <select
                 aria-label="选择切换当前学习学生"
@@ -85,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
                 value={currentStudentId}
                 onChange={(e) => onSelectStudent(e.target.value)}
                 disabled={isLoading}
-                className="appearance-none bg-transparent pr-6 sm:pr-7 text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer text-slate-800 truncate"
+                className="appearance-none bg-transparent pr-6 sm:pr-7 py-1 text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer text-slate-800 truncate"
               >
                 {students.map((stu) => (
                   <option key={stu.student_id} value={stu.student_id}>

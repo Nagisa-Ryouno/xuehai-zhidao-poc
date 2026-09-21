@@ -124,7 +124,7 @@ export const RecentProgressCard: React.FC<RecentProgressCardProps> = ({
           type="button"
           data-testid="recent-progress-link"
           onClick={onViewProfile}
-          className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 min-h-[44px] rounded-lg text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50/60 transition-colors cursor-pointer"
         >
           <span>查看完整学情档案</span>
           <ArrowRight className="w-3.5 h-3.5" />

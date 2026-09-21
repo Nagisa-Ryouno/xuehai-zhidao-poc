@@ -242,6 +242,31 @@ class TeacherKnowledgeResponse(BaseModel):
     knowledge_points: List[TeacherKnowledgeItem]
 
 
+class TeacherDiagnosisStudentItem(BaseModel):
+    """教师诊断中指定考点的单生学情客观数据 (Sprint 10-D Phase 3)"""
+    student_id: str
+    student_name: str
+    major: str
+    grade: str
+    mastery: float
+    risk_level: str
+    attempts: int = 0
+    mistake_count: int = 0
+
+
+class TeacherKnowledgeDiagnosisResponse(BaseModel):
+    """教师诊断指定考点的班级学情与学生下钻聚合模型 (Sprint 10-D Phase 3)"""
+    knowledge_id: str
+    knowledge_name: str
+    chapter: str
+    average_mastery: float
+    student_count: int
+    weak_student_count: int
+    total_mistakes: int
+    urgency: str = "MEDIUM"
+    students: List[TeacherDiagnosisStudentItem]
+
+
 # 动态初始化的 Demo 学生档案注册表（内存态，支持测试与体验会话）
 DEMO_STUDENTS: Dict[str, Dict[str, Any]] = {}
 
@@ -1393,6 +1418,83 @@ def create_gateway_app() -> FastAPI:
         return TeacherKnowledgeResponse(
             total_count=len(items),
             knowledge_points=items,
+        )
+
+    @application.get(
+        "/api/teacher/knowledge/{knowledge_id}/students",
+        response_model=TeacherKnowledgeDiagnosisResponse,
+    )
+    def get_teacher_knowledge_students_endpoint(
+        knowledge_id: str,
+    ) -> TeacherKnowledgeDiagnosisResponse:
+        """获取教师端指定考点的学生学情诊断聚合列表 (Sprint 10-D Phase 3)"""
+        if knowledge_id not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"未找到考点分析数据：{knowledge_id}")
+
+        card = CONCEPT_CARDS[knowledge_id]
+        overview = default_analytics_service.get_teacher_overview()
+
+        diagnosis_students: List[TeacherDiagnosisStudentItem] = []
+        total_mistakes = 0
+
+        for st in overview.students:
+            sid = st.student_id
+            prog = default_analytics_service.get_student_progress(sid)
+            kp_item = next(
+                (
+                    k
+                    for k in (prog.knowledge_point_masteries if prog else [])
+                    if k.knowledge_id == knowledge_id
+                ),
+                None,
+            )
+            mastery = round(kp_item.mastery, 4) if kp_item else 0.0
+
+            # 统计该生在该考点的真实做题与错题数 (源自权威 EventRepository)
+            stu_events = default_event_repository.get_events_by_student(sid)
+            attempts = 0
+            mistakes = 0
+            for se in stu_events:
+                if se.knowledge_id == knowledge_id and se.event_type == "QUESTION_ATTEMPT":
+                    attempts += 1
+                    if se.payload.get("is_correct") is False:
+                        mistakes += 1
+
+            total_mistakes += mistakes
+            diagnosis_students.append(
+                TeacherDiagnosisStudentItem(
+                    student_id=st.student_id,
+                    student_name=st.student_name,
+                    major=st.major,
+                    grade=st.grade,
+                    mastery=mastery,
+                    risk_level=st.risk_level,
+                    attempts=attempts,
+                    mistake_count=mistakes,
+                )
+            )
+
+        # 确定性排序：1. 掌握度升序（薄弱优先）；2. 风险等级 (ATTENTION > NORMAL > HEALTHY)；3. 学号升序
+        risk_priority = {"ATTENTION": 0, "NORMAL": 1, "HEALTHY": 2}
+        diagnosis_students.sort(
+            key=lambda s: (s.mastery, risk_priority.get(s.risk_level, 3), s.student_id)
+        )
+
+        m_list = [s.mastery for s in diagnosis_students]
+        avg_m = round(sum(m_list) / max(1, len(m_list)), 4) if m_list else 0.0
+        weak_count = sum(1 for s in diagnosis_students if s.mastery < 0.60)
+        urgency = "HIGH" if weak_count >= 2 else ("MEDIUM" if weak_count == 1 else "LOW")
+
+        return TeacherKnowledgeDiagnosisResponse(
+            knowledge_id=knowledge_id,
+            knowledge_name=card.knowledge_name,
+            chapter=card.chapter,
+            average_mastery=avg_m,
+            student_count=len(diagnosis_students),
+            weak_student_count=weak_count,
+            total_mistakes=total_mistakes,
+            urgency=urgency,
+            students=diagnosis_students,
         )
 
     @application.get("/api/teacher/students", response_model=List[TeacherStudentSummary])

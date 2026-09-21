@@ -650,6 +650,29 @@ export interface TeacherKnowledgeResponse {
   knowledge_points: TeacherKnowledgeItem[];
 }
 
+export interface TeacherDiagnosisStudentItem {
+  student_id: string;
+  student_name: string;
+  major: string;
+  grade: string;
+  mastery: number;
+  risk_level: 'HEALTHY' | 'NORMAL' | 'ATTENTION';
+  attempts: number;
+  mistake_count: number;
+}
+
+export interface TeacherKnowledgeDiagnosisResponse {
+  knowledge_id: string;
+  knowledge_name: string;
+  chapter: string;
+  average_mastery: number;
+  student_count: number;
+  weak_student_count: number;
+  total_mistakes: number;
+  urgency: 'HIGH' | 'MEDIUM' | 'LOW';
+  students: TeacherDiagnosisStudentItem[];
+}
+
 export interface TeacherStudentDetailResponse {
   summary: TeacherStudentSummary;
   progress: StudentProgressResponse;

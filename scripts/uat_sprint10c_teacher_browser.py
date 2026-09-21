@@ -378,6 +378,68 @@ def run_uat():
         }
 
         # ---------------------------------------------------------------------
+        # Scenario M: Knowledge Diagnosis Drilldown Drawer (Sprint 10-D Phase 3)
+        # ---------------------------------------------------------------------
+        log_step("Scenario M: 考点诊断下钻抽屉 (Knowledge Diagnosis & Student Drilldown)")
+        # 切换到知识点全景 Tab
+        page.click("[data-testid='tab-teacher-knowledge']")
+        page.wait_for_selector("[data-testid='teacher-knowledge-overview']", timeout=10000)
+        page.wait_for_selector("[data-testid='teacher-knowledge-table']", timeout=10000)
+
+        # 点击 K01 诊断下钻按钮
+        page.click("[data-testid='btn-diagnose-K01']")
+        drawer = page.locator("[data-testid='teacher-diagnosis-drawer']")
+        expect(drawer).to_be_visible(timeout=10000)
+        page.wait_for_timeout(600)
+
+        # 验证抽屉标题包含 K01 考点名
+        expect(drawer.locator("text=稀缺性与经济学基本问题")).to_be_visible(timeout=5000)
+
+        # 截图 1: 默认筛选「需要进一步关注」
+        save_screenshot(page, "sprint10d_teacher_11_diagnosis_drawer.png")
+
+        # 验证「需要进一步关注」筛选学生数
+        attention_rows = drawer.locator("[data-testid^='diagnosis-student-row-']")
+        attention_count = attention_rows.count()
+        print(f"Attention students count in diagnosis drawer: {attention_count}")
+        assert attention_count > 0, "Expected at least 1 attention student for K01"
+
+        # 切换到「全部学生」
+        drawer.locator("[data-testid='btn-filter-all']").click()
+        page.wait_for_timeout(400)
+        all_rows = drawer.locator("[data-testid^='diagnosis-student-row-']")
+        all_count = all_rows.count()
+        print(f"All students count in diagnosis drawer: {all_count}")
+        assert all_count >= attention_count, f"All students ({all_count}) should >= attention ({attention_count})"
+        save_screenshot(page, "sprint10d_teacher_12_diagnosis_all_filter.png")
+
+        # 切换回「需要进一步关注」
+        drawer.locator("[data-testid='btn-filter-attention']").click()
+        page.wait_for_timeout(300)
+
+        # 测试从抽屉调起学生画像弹窗
+        first_student_id = attention_rows.first.get_attribute("data-testid").replace("diagnosis-student-row-", "")
+        print(f"Drilling down into student profile from drawer: {first_student_id}")
+        drawer.locator(f"[data-testid='btn-diagnosis-detail-{first_student_id}']").click()
+        modal = page.locator("[data-testid='teacher-student-detail-modal']")
+        expect(modal).to_be_visible(timeout=10000)
+        page.wait_for_timeout(400)
+        modal.locator("[data-testid='btn-close-student-detail-modal']").click()
+        expect(modal).not_to_be_visible(timeout=5000)
+
+        # 关闭抽屉
+        drawer.locator("[data-testid='btn-close-diagnosis-drawer']").click()
+        expect(drawer).not_to_be_visible(timeout=5000)
+        page.wait_for_timeout(300)
+
+        uat_results["scenarios"]["scenario_m_diagnosis_drawer"] = {
+            "status": "PASS",
+            "knowledge_id": "K01",
+            "attention_students_count": attention_count,
+            "all_students_count": all_count,
+        }
+
+        # ---------------------------------------------------------------------
         # Scenario K: Desktop & Tablet Responsive Layout (1440x900, 1024x768 & 768x1024)
         # ---------------------------------------------------------------------
         log_step("Scenario K: 验证桌面端与平板多分辨率适配与无横向溢出 (1440x900 & 1024x768 & 768x1024)")

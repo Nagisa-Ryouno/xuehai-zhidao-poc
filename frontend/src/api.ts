@@ -25,6 +25,7 @@ import type {
   WrongAnswerReviewResponse,
   TeacherOverviewResponse,
   TeacherKnowledgeResponse,
+  TeacherKnowledgeDiagnosisResponse,
   TeacherStudentSummary,
   TeacherStudentDetailResponse,
   CompanionStudyRequest,
@@ -437,6 +438,17 @@ export async function getTeacherOverview(): Promise<TeacherOverviewResponse> {
  */
 export async function getTeacherKnowledge(): Promise<TeacherKnowledgeResponse> {
   return request<TeacherKnowledgeResponse>('/teacher/knowledge');
+}
+
+/**
+ * Sprint 10-D / Phase 3: 获取指定考点的学生学情诊断聚合列表
+ */
+export async function getTeacherKnowledgeDiagnosis(
+  knowledgeId: string
+): Promise<TeacherKnowledgeDiagnosisResponse> {
+  return request<TeacherKnowledgeDiagnosisResponse>(
+    `/teacher/knowledge/${encodeURIComponent(knowledgeId)}/students`
+  );
 }
 
 /**

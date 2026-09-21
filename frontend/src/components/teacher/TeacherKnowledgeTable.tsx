@@ -4,6 +4,7 @@ import type { TeacherKnowledgeItem } from '../../types';
 interface TeacherKnowledgeTableProps {
   knowledgePoints: TeacherKnowledgeItem[];
   isLoading: boolean;
+  onSelectKnowledgeForDiagnosis: (knowledgeId: string) => void;
   onResetFilters?: () => void;
   hasActiveFilters?: boolean;
 }
@@ -11,13 +12,14 @@ interface TeacherKnowledgeTableProps {
 export const TeacherKnowledgeTable: React.FC<TeacherKnowledgeTableProps> = ({
   knowledgePoints,
   isLoading,
+  onSelectKnowledgeForDiagnosis,
   onResetFilters,
   hasActiveFilters = false,
 }) => {
   return (
     <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs min-w-[700px]" data-testid="teacher-knowledge-table">
+        <table className="w-full text-left text-xs min-w-[760px]" data-testid="teacher-knowledge-table">
           <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
             <tr>
               <th className="py-3.5 px-4 w-20">考点编号</th>
@@ -26,13 +28,14 @@ export const TeacherKnowledgeTable: React.FC<TeacherKnowledgeTableProps> = ({
               <th className="py-3.5 px-4 w-44">班级平均掌握度</th>
               <th className="py-3.5 px-4 w-28">薄弱学子数</th>
               <th className="py-3.5 px-4 w-24">累计错题</th>
-              <th className="py-3.5 px-4 w-32 text-right">教学建议等级</th>
+              <th className="py-3.5 px-4 w-28 text-center">教学建议等级</th>
+              <th className="py-3.5 px-4 w-28 text-right">学情诊断</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-400">
+                <td colSpan={8} className="py-12 text-center text-slate-400">
                   <div className="inline-flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
                     正在加载 30 个考点认知聚合数据...
@@ -41,7 +44,7 @@ export const TeacherKnowledgeTable: React.FC<TeacherKnowledgeTableProps> = ({
               </tr>
             ) : knowledgePoints.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8">
+                <td colSpan={8} className="py-8">
                   <div className="text-center text-slate-400 text-xs">
                     无匹配的考点记录
                   </div>
@@ -141,12 +144,24 @@ export const TeacherKnowledgeTable: React.FC<TeacherKnowledgeTableProps> = ({
                     </td>
 
                     {/* 7. 教学关注等级 */}
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-center">
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${urgencyBadge.class}`}
                       >
                         {urgencyBadge.label}
                       </span>
+                    </td>
+
+                    {/* 8. 学情诊断下钻 */}
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => onSelectKnowledgeForDiagnosis(kp.knowledge_id)}
+                        className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer transition-colors inline-flex items-center gap-1"
+                        data-testid={`btn-diagnose-${kp.knowledge_id}`}
+                      >
+                        诊断下钻
+                      </button>
                     </td>
                   </tr>
                 );

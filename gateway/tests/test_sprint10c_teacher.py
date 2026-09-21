@@ -112,6 +112,7 @@ def test_06_zero_mutation_invariant():
     # 执行全部教师端接口调用
     client.get("/api/teacher/overview")
     client.get("/api/teacher/knowledge")
+    client.get("/api/teacher/knowledge/K01/students")
     client.get("/api/teacher/students")
     client.get(f"/api/teacher/students/{student_id}")
 
@@ -131,3 +132,63 @@ def test_07_deterministic_repeatability():
     for _ in range(20):
         next_res = client.get("/api/teacher/knowledge").json()
         assert json.dumps(first_res, sort_keys=True) == json.dumps(next_res, sort_keys=True)
+
+
+def test_08_teacher_knowledge_students_happy_path():
+    """GET /api/teacher/knowledge/{knowledge_id}/students 返回完整考点学情与学生列表 (Sprint 10-D Phase 3)"""
+    res = client.get("/api/teacher/knowledge/K01/students")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["knowledge_id"] == "K01"
+    assert "knowledge_name" in data
+    assert "chapter" in data
+    assert "average_mastery" in data
+    assert data["student_count"] >= 5
+    assert "weak_student_count" in data
+    assert "total_mistakes" in data
+    assert data["urgency"] in ("HIGH", "MEDIUM", "LOW")
+    assert "students" in data
+    assert len(data["students"]) >= 5
+
+    for s in data["students"]:
+        assert "student_id" in s
+        assert "student_name" in s
+        assert "major" in s
+        assert "grade" in s
+        assert 0.0 <= s["mastery"] <= 1.0
+        assert s["risk_level"] in ("HEALTHY", "NORMAL", "ATTENTION")
+        assert s["attempts"] >= 0
+        assert s["mistake_count"] >= 0
+
+
+def test_09_teacher_knowledge_students_404_invalid_id():
+    """非法或不存在的考点 ID 严格返回 404 Not Found (Sprint 10-D Phase 3)"""
+    res = client.get("/api/teacher/knowledge/NON_EXISTENT_K999/students")
+    assert res.status_code == 404
+    assert "未找到考点分析数据" in res.json().get("detail", "")
+
+
+def test_10_teacher_knowledge_students_deterministic_ordering():
+    """验证诊断学生列表严格遵循 (掌握度升序[薄弱优先], 风险等级, 学号升序) 确定性排序 (Sprint 10-D Phase 3)"""
+    res = client.get("/api/teacher/knowledge/K01/students")
+    assert res.status_code == 200
+    students = res.json()["students"]
+
+    risk_prio = {"ATTENTION": 0, "NORMAL": 1, "HEALTHY": 2}
+    expected_order = sorted(
+        students,
+        key=lambda s: (s["mastery"], risk_prio.get(s["risk_level"], 3), s["student_id"]),
+    )
+
+    actual_ids = [s["student_id"] for s in students]
+    expected_ids = [s["student_id"] for s in expected_order]
+    assert actual_ids == expected_ids, f"排序未符合确定性规则: actual {actual_ids} vs expected {expected_ids}"
+
+
+def test_11_teacher_knowledge_students_repeatability():
+    """连续 10 次调用考点诊断接口，返回字节级绝对一致 (Sprint 10-D Phase 3)"""
+    first_res = client.get("/api/teacher/knowledge/K02/students").json()
+    for _ in range(10):
+        next_res = client.get("/api/teacher/knowledge/K02/students").json()
+        assert json.dumps(first_res, sort_keys=True) == json.dumps(next_res, sort_keys=True)
+

@@ -266,6 +266,8 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
           <TeacherKnowledgeTab
             knowledgeData={knowledgeData}
             isLoading={isLoadingKnowledge}
+            onSelectStudentForDetail={setSelectedStudentForDetail}
+            onEnterStudentView={handleEnterStudentView}
           />
         )}
 

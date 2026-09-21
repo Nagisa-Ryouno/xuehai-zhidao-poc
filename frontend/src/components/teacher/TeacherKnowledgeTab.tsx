@@ -2,15 +2,20 @@ import React, { useState, useMemo } from 'react';
 import { BookOpen, Search, Filter, ArrowUpDown, X } from 'lucide-react';
 import type { TeacherKnowledgeResponse } from '../../types';
 import { TeacherKnowledgeTable } from './TeacherKnowledgeTable';
+import { TeacherKnowledgeDiagnosisDrawer } from './TeacherKnowledgeDiagnosisDrawer';
 
 interface TeacherKnowledgeTabProps {
   knowledgeData: TeacherKnowledgeResponse | null;
   isLoading: boolean;
+  onSelectStudentForDetail: (studentId: string) => void;
+  onEnterStudentView: (studentId: string) => void;
 }
 
 export const TeacherKnowledgeTab: React.FC<TeacherKnowledgeTabProps> = ({
   knowledgeData,
   isLoading,
+  onSelectStudentForDetail,
+  onEnterStudentView,
 }) => {
   // 筛选与排序本地状态
   const [knowledgeSearchQuery, setKnowledgeSearchQuery] = useState<string>('');
@@ -18,6 +23,9 @@ export const TeacherKnowledgeTab: React.FC<TeacherKnowledgeTabProps> = ({
   const [knowledgeSortBy, setKnowledgeSortBy] = useState<
     'id' | 'mastery_asc' | 'mastery_desc' | 'weak_desc' | 'mistakes_desc'
   >('id');
+
+  // 诊断抽屉选中考点 ID
+  const [selectedKnowledgeIdForDiagnosis, setSelectedKnowledgeIdForDiagnosis] = useState<string | null>(null);
 
   // 提取章节去重列表
   const chapters = useMemo(() => {
@@ -184,8 +192,18 @@ export const TeacherKnowledgeTab: React.FC<TeacherKnowledgeTabProps> = ({
       <TeacherKnowledgeTable
         knowledgePoints={filteredKnowledgePoints}
         isLoading={isLoading}
+        onSelectKnowledgeForDiagnosis={setSelectedKnowledgeIdForDiagnosis}
         onResetFilters={handleResetFilters}
         hasActiveFilters={hasActiveFilters}
+      />
+
+      {/* 考点学生学情诊断抽屉 (Drawer) */}
+      <TeacherKnowledgeDiagnosisDrawer
+        isOpen={!!selectedKnowledgeIdForDiagnosis}
+        knowledgeId={selectedKnowledgeIdForDiagnosis}
+        onClose={() => setSelectedKnowledgeIdForDiagnosis(null)}
+        onSelectStudentForDetail={onSelectStudentForDetail}
+        onEnterStudentView={onEnterStudentView}
       />
     </div>
   );

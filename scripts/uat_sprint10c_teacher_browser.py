@@ -23,14 +23,21 @@ Teacher Web Productization 桌面端端到端全场景浏览器验收 (Scenarios
 import json
 import os
 import shutil
+import subprocess
 import sys
 import time
+import urllib.request
+from pathlib import Path
 from typing import Any, Dict
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from playwright.sync_api import sync_playwright, Page, expect
 
@@ -69,6 +76,60 @@ def save_screenshot(page: Page, filename: str):
     except Exception as e:
         print(f"Warning copying screenshot to brain dir: {e}")
     print(f"[Screenshot Saved] {filename}")
+
+
+def check_url_ready(url: str, timeout: float = 1.0) -> bool:
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "HealthCheck"})
+        with urllib.request.urlopen(req, timeout=timeout) as res:
+            return res.getcode() == 200
+    except Exception:
+        return False
+
+
+def ensure_servers_running():
+    spawned_procs = []
+    # 1. 检查后端
+    if not check_url_ready(f"{API_URL}/api/students"):
+        print(f"[Launcher] 后端未运行，启动 127.0.0.1:8011...")
+        proc_backend = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "gateway.api:create_gateway_app", "--factory", "--host", "127.0.0.1", "--port", "8011"],
+            cwd=str(PROJECT_ROOT),
+        )
+        spawned_procs.append(("backend", proc_backend))
+        for _ in range(30):
+            if check_url_ready(f"{API_URL}/api/students"):
+                print(f"[Launcher] 后端已就绪 (127.0.0.1:8011)")
+                break
+            time.sleep(0.8)
+        else:
+            raise RuntimeError("后端服务启动超时")
+    else:
+        print(f"[Launcher] 后端服务已在线 (127.0.0.1:8011)")
+
+    # 2. 检查前端
+    if not check_url_ready(f"{BASE_URL}/"):
+        print("[Launcher] 前端未运行，启动 127.0.0.1:5173...")
+        vite_env = dict(os.environ)
+        vite_env["VITE_API_TARGET"] = "http://127.0.0.1:8011"
+        proc_frontend = subprocess.Popen(
+            "npx vite --host 127.0.0.1 --port 5173",
+            shell=True,
+            cwd=str(PROJECT_ROOT / "frontend"),
+            env=vite_env,
+        )
+        spawned_procs.append(("frontend", proc_frontend))
+        for _ in range(30):
+            if check_url_ready(f"{BASE_URL}/"):
+                print("[Launcher] 前端服务已就绪！")
+                break
+            time.sleep(0.8)
+        else:
+            raise RuntimeError("前端服务启动超时")
+    else:
+        print(f"[Launcher] 前端服务已在线 ({BASE_URL})")
+
+    return spawned_procs
 
 
 def run_uat():
@@ -317,9 +378,9 @@ def run_uat():
         }
 
         # ---------------------------------------------------------------------
-        # Scenario K: Desktop Responsive Layout (1440x900 & 1024x768)
+        # Scenario K: Desktop & Tablet Responsive Layout (1440x900, 1024x768 & 768x1024)
         # ---------------------------------------------------------------------
-        log_step("Scenario K: 验证桌面端多分辨率适配与无横向溢出 (1440x900 & 1024x768)")
+        log_step("Scenario K: 验证桌面端与平板多分辨率适配与无横向溢出 (1440x900 & 1024x768 & 768x1024)")
         # 1440x900
         page.set_viewport_size({"width": 1440, "height": 900})
         page.wait_for_timeout(500)
@@ -334,10 +395,18 @@ def run_uat():
         assert no_h_overflow_1024, "Detected horizontal overflow at 1024x768"
         save_screenshot(page, "sprint10c_teacher_09_desktop_1024x768.png")
 
+        # 768x1024 Tablet
+        page.set_viewport_size({"width": 768, "height": 1024})
+        page.wait_for_timeout(500)
+        no_h_overflow_768 = page.evaluate("() => document.documentElement.scrollWidth <= document.documentElement.clientWidth")
+        assert no_h_overflow_768, "Detected horizontal overflow at 768x1024"
+        save_screenshot(page, "sprint10c_teacher_10_tablet_768x1024.png")
+
         uat_results["scenarios"]["scenario_k_desktop_responsive"] = {
             "status": "PASS",
             "1440x900_no_overflow": no_h_overflow_1440,
             "1024x768_no_overflow": no_h_overflow_1024,
+            "768x1024_no_overflow": no_h_overflow_768,
         }
 
         # ---------------------------------------------------------------------
@@ -368,4 +437,14 @@ def run_uat():
 
 
 if __name__ == "__main__":
-    run_uat()
+    spawned = ensure_servers_running()
+    try:
+        run_uat()
+    finally:
+        for name, proc in spawned:
+            print(f"[Launcher] 停止临时启动的服务: {name}")
+            try:
+                proc.terminate()
+            except Exception:
+                pass
+

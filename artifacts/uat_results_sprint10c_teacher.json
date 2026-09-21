@@ -1,6 +1,6 @@
 {
   "sprint": "Sprint 10-C Phase 2",
-  "timestamp": "2026-09-19T13:35:04Z",
+  "timestamp": "2026-09-21T15:01:42Z",
   "console_messages": [
     "[debug] [vite] connecting...",
     "[debug] [vite] connected.",
@@ -34,7 +34,7 @@
     },
     "scenario_f_knowledge_sort": {
       "status": "PASS",
-      "first_sorted_point": "teacher-knowledge-row-K01"
+      "first_sorted_point": "teacher-knowledge-row-K02"
     },
     "scenario_g_students_roster": {
       "status": "PASS",
@@ -52,7 +52,8 @@
     "scenario_k_desktop_responsive": {
       "status": "PASS",
       "1440x900_no_overflow": true,
-      "1024x768_no_overflow": true
+      "1024x768_no_overflow": true,
+      "768x1024_no_overflow": true
     },
     "scenario_l_zero_errors": {
       "status": "PASS",

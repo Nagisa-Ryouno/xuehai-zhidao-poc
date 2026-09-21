@@ -1,0 +1,85 @@
+{
+  "sprint": "Sprint 10-C Phase 3 AI Recommendation Integration",
+  "timestamp": "2026-09-21T08:46:26Z",
+  "console_messages": [
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "[warning] AI personalized recommendation unavailable, degrading gracefully: Error: 学海智导分析服务内部异常，请检查后端运行状态\n    at request (http://127.0.0.1:5173/src/api.ts:21:11)\n    at async http://127.0.0.1:5173/src/components/student/LearningSessionModal.tsx:102:17",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[error] Failed to load resource: the server responded with a status of 504 (Gateway Timeout)",
+    "[warning] AI personalized recommendation unavailable, degrading gracefully: Error: 学海智导分析服务内部异常，请检查后端运行状态\n    at request (http://127.0.0.1:5173/src/api.ts:21:11)\n    at async http://127.0.0.1:5173/src/components/student/LearningSessionModal.tsx:102:17",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[error] Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+    "[warning] AI personalized recommendation unavailable, degrading gracefully: Error: 服务请求失败 (状态码: 422)\n    at request (http://127.0.0.1:5173/src/api.ts:23:10)\n    at async http://127.0.0.1:5173/src/components/student/LearningSessionModal.tsx:102:17",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76",
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected.",
+    "[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "[warning] Service Worker registration blocked by Playwright",
+    "[warning] [PWA] Service Worker registration failed: TypeError: Cannot read properties of undefined (reading 'scope')\n    at http://127.0.0.1:5173/src/pwa.ts:28:76"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "scenarios": {
+    "scenario_0_ai_disabled_flow": {
+      "status": "PASS"
+    },
+    "scenario_1_recommendation_card_render": {
+      "status": "PASS",
+      "rec_count": 2
+    },
+    "scenario_2_internal_resource_modal": {
+      "status": "PASS"
+    },
+    "scenario_3_mooc_redirect_modal": {
+      "status": "PASS"
+    },
+    "scenario_4_ai_timeout_fallback": {
+      "status": "PASS"
+    },
+    "scenario_5_ai_422_rejection_fallback": {
+      "status": "PASS"
+    },
+    "scenario_6_non_blocking_quiz_entry": {
+      "status": "PASS"
+    },
+    "scenario_7_zero_state_mutation": {
+      "status": "PASS"
+    },
+    "scenario_8_mobile_responsive": {
+      "status": "PASS"
+    }
+  }
+}

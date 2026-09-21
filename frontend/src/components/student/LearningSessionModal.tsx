@@ -22,6 +22,7 @@ import type {
   LearningResource,
   QuizQuestionPublic,
   QuizSubmitResponse,
+  PersonalizedRecommendation,
 } from '../../types';
 import {
   getQuizQuestions,
@@ -30,6 +31,8 @@ import {
   getResourcesByKnowledge,
   getStudentProgress,
   recordResourceEvent,
+  getPersonalizedRecommendations,
+  getResourceItem,
   type ConceptCardResponse,
 } from '../../api';
 import { getConceptCardById, type ConceptCardData } from './conceptCardData';
@@ -123,6 +126,20 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
   const [resourceError, setResourceError] = useState<string | null>(null);
   const [activeMoocResource, setActiveMoocResource] = useState<LearningResource | null>(null);
 
+  // Sprint 10-C Phase 3: AI 个性化推荐状态 (纯辅助候选列表，永无生产学习决策权)
+  const [personalRecommendations, setPersonalRecommendations] = useState<PersonalizedRecommendation[]>([]);
+  const [isPersonalRecLoading, setIsPersonalRecLoading] = useState<boolean>(false);
+  const [personalRecError, setPersonalRecError] = useState<string | null>(null);
+  const fetchedRecKidRef = useRef<string | null>(null);
+
+  // 当 studentId 或 activeKid 变更时，严格重置推荐状态，保障多学生/跨考点隔离
+  useEffect(() => {
+    setPersonalRecommendations([]);
+    setPersonalRecError(null);
+    setIsPersonalRecLoading(false);
+    fetchedRecKidRef.current = null;
+  }, [studentId, activeKid]);
+
   const loadResources = useCallback(async (kid: string) => {
     setIsResourceLoading(true);
     setResourceError(null);
@@ -136,10 +153,96 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
     }
   }, []);
 
+  // 严格约束：kid 必须来自权威会话上下文 activeKid，绝对禁止外部用户篡改或随意指定
+  const loadPersonalRecommendations = useCallback(
+    async (kid: string) => {
+      setIsPersonalRecLoading(true);
+      setPersonalRecError(null);
+      try {
+        const resp = await getPersonalizedRecommendations(studentId, 3, kid);
+        setPersonalRecommendations(resp.recommendations || []);
+      } catch (err) {
+        console.warn('AI personalized recommendation unavailable, degrading gracefully:', err);
+        setPersonalRecommendations([]);
+        setPersonalRecError('暂时无法生成个性化推荐');
+      } finally {
+        setIsPersonalRecLoading(false);
+      }
+    },
+    [studentId]
+  );
+
   const handleOpenResourceStep = () => {
     setCurrentStep('RESOURCE');
     if (resources.length === 0 && !resourceError) {
       loadResources(activeKid);
+    }
+    if (fetchedRecKidRef.current !== activeKid) {
+      fetchedRecKidRef.current = activeKid;
+      loadPersonalRecommendations(activeKid);
+    }
+  };
+
+  // 若以 RESOURCE 步直接进入，自动异步触发加载
+  useEffect(() => {
+    if (isOpen && currentStep === 'RESOURCE' && activeKid) {
+      if (resources.length === 0 && !resourceError && !isResourceLoading) {
+        loadResources(activeKid);
+      }
+      if (fetchedRecKidRef.current !== activeKid) {
+        fetchedRecKidRef.current = activeKid;
+        loadPersonalRecommendations(activeKid);
+      }
+    }
+  }, [isOpen, currentStep, activeKid, loadResources, loadPersonalRecommendations, resources.length, resourceError, isResourceLoading]);
+
+  // 纯 UI 展示去重策略 (Strictly UI-level deduplication)：
+  // 1. 精选资源首屏保持原确定性顺序，不改变、不删除
+  const baselineTopResources = useMemo(() => resources.slice(0, 3), [resources]);
+  const baselineTopIds = useMemo(
+    () => new Set(baselineTopResources.map((r) => r.resource_id)),
+    [baselineTopResources]
+  );
+
+  // 2. 为你推荐仅展示 AI 推荐结果中不在当前精选资源首屏列表中的候选
+  const deduplicatedPersonalRecs = useMemo(() => {
+    return personalRecommendations.filter((rec) => !baselineTopIds.has(rec.resource_id));
+  }, [personalRecommendations, baselineTopIds]);
+
+  // 打开 AI 推荐资源：安全分流，中国大学 MOOC 严格调起 ExternalRedirectModal
+  const handleOpenRecommendedResource = async (rec: PersonalizedRecommendation) => {
+    let target = resources.find((r) => r.resource_id === rec.resource_id);
+    if (!target) {
+      try {
+        target = await getResourceItem(rec.resource_id);
+      } catch {
+        target = {
+          resource_id: rec.resource_id,
+          knowledge_id: rec.knowledge_id,
+          resource_type: (rec.resource_type || 'DOCUMENT') as any,
+          title: rec.title,
+          description: rec.reason,
+          source: rec.source,
+          source_url: rec.source === 'china_mooc' ? 'https://www.icourse163.org' : null,
+          estimated_minutes: 10,
+          difficulty: 0.5,
+          is_external: rec.source === 'china_mooc',
+          priority: 50,
+        };
+      }
+    }
+
+    if (target) {
+      if (target.is_external || target.source === 'china_mooc') {
+        setActiveMoocResource(target);
+      } else {
+        recordResourceEvent({
+          student_id: studentId,
+          resource_id: target.resource_id,
+          knowledge_id: activeKid,
+          event_type: 'RESOURCE_OPEN',
+        }).catch(() => {});
+      }
     }
   };
 
@@ -602,15 +705,15 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
           )}
 
           {/* --------------------------------------------------------------- */}
-          {/* STEP 3: RESOURCE 学习资源步骤 (可选路径) */}
+          {/* STEP 3: RESOURCE 学习资源步骤 (可选增强路径) */}
           {/* --------------------------------------------------------------- */}
           {currentStep === 'RESOURCE' && (
             <div data-testid="session-step-resource" className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">扩展学习资源</h4>
+                  <h4 className="text-sm font-bold text-slate-900">学习资源</h4>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    阅读精选讲义或观看慕课，助力透彻理解（可选）。
+                    挑选适合你的材料深入阅读或观看（可选增强，可随时开始小测验）。
                   </p>
                 </div>
                 <button
@@ -623,106 +726,229 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                 </button>
               </div>
 
-              {isResourceLoading ? (
-                <div className="py-12 flex flex-col items-center justify-center text-center space-y-2">
-                  <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-                  <p className="text-xs text-slate-500">正在加载推荐资源...</p>
-                </div>
-              ) : resourceError ? (
-                // 关键：Resource 500 异常降级，绝不阻断学习主链路
-                <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 text-center space-y-3">
-                  <div className="text-xs font-bold text-amber-900">暂时无法加载学习资源</div>
-                  <p className="text-xs text-amber-700">
-                    网络扩展资源加载异常，但这不会影响你的学习进度，你可以直接开始小测验。
-                  </p>
-                  <button
-                    type="button"
-                    data-testid="resource-fallback-start-quiz-btn"
-                    onClick={handleStartQuizStep}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs cursor-pointer min-h-[44px]"
-                  >
-                    <span>直接开始小测验</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {resources.slice(0, 3).map((res) => (
-                    <div
-                      key={res.resource_id}
-                      className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-200 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700">
-                            {res.resource_type === 'VIDEO'
-                              ? '导学视频'
-                              : res.resource_type === 'DOCUMENT'
-                              ? '精讲讲义'
-                              : res.resource_type === 'EXAMPLE'
-                              ? '典型例题'
-                              : '学习材料'}
-                          </span>
-                          {res.is_external && (
-                            <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              中国大学 MOOC
-                            </span>
-                          )}
-                        </div>
-                        <h5 className="text-xs sm:text-sm font-bold text-slate-800">{res.title}</h5>
-                        <p className="text-xs text-slate-500 line-clamp-1">{res.description}</p>
-                      </div>
-
-                      {res.is_external ? (
-                        <button
-                          type="button"
-                          data-testid={`mooc-external-btn-${res.resource_id}`}
-                          onClick={() => setActiveMoocResource(res)}
-                          className="shrink-0 inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer min-h-[44px]"
-                        >
-                          <span>前往慕课学习</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            recordResourceEvent({
-                              student_id: studentId,
-                              resource_id: res.resource_id,
-                              knowledge_id: activeKid,
-                              event_type: 'RESOURCE_OPEN',
-                            }).catch(() => {});
-                          }}
-                          className="shrink-0 inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer min-h-[44px]"
-                        >
-                          <span>在平台学习</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => setCurrentStep('CONCEPT')}
-                      className="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer min-h-[44px]"
-                    >
-                      返回概念微卡
-                    </button>
-                    <button
-                      type="button"
-                      data-testid="resource-step-start-quiz-btn"
-                      onClick={handleStartQuizStep}
-                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-xs flex items-center gap-1.5 cursor-pointer min-h-[44px]"
-                    >
-                      <span>开始小测验</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+              {/* A. 为你推荐 (AI Recommendation, 可选增强能力) */}
+              <div
+                data-testid="personalized-rec-section"
+                className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/40 border border-indigo-100 space-y-3"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-xl bg-indigo-600 text-white shadow-2xs shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h5 data-testid="personalized-rec-title" className="text-xs sm:text-sm font-bold text-slate-900">
+                      为你推荐
+                    </h5>
+                    <p data-testid="personalized-rec-subtitle" className="text-[11px] sm:text-xs text-slate-600">
+                      根据你当前的学习情况，为你挑选了几份可能有帮助的材料。
+                    </p>
                   </div>
                 </div>
-              )}
+
+                {isPersonalRecLoading ? (
+                  <div
+                    data-testid="personalized-rec-loading"
+                    className="py-4 px-3 flex items-center justify-center gap-2 text-xs text-slate-500 bg-white/80 rounded-xl border border-indigo-50"
+                  >
+                    <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+                    <span>正在为你挑选学习材料…</span>
+                  </div>
+                ) : personalRecError ? (
+                  <div
+                    data-testid="personalized-rec-error"
+                    className="py-3 px-3.5 rounded-xl bg-slate-50/80 border border-slate-200 text-xs text-slate-500 text-center"
+                  >
+                    <span>暂时无法生成个性化推荐，你仍然可以使用下方的精选学习资源。</span>
+                  </div>
+                ) : deduplicatedPersonalRecs.length === 0 ? (
+                  <div
+                    data-testid="personalized-rec-empty"
+                    className="py-3 px-3.5 rounded-xl bg-slate-50/80 border border-slate-200 text-xs text-slate-500 text-center"
+                  >
+                    <span>暂时没有找到额外的个性化推荐，下方是该考点的精选学习资源。</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {deduplicatedPersonalRecs.map((rec) => {
+                      const isMooc = rec.source === 'china_mooc';
+                      return (
+                        <div
+                          key={rec.resource_id}
+                          data-testid="personalized-rec-card"
+                          className="flex flex-col justify-between bg-white rounded-xl border border-indigo-100 p-3 shadow-2xs hover:shadow-xs transition-shadow space-y-2.5"
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-1.5">
+                              <span
+                                data-testid="rec-type-badge"
+                                className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100"
+                              >
+                                {rec.resource_type === 'VIDEO'
+                                  ? '导学视频'
+                                  : rec.resource_type === 'DOCUMENT'
+                                  ? '精讲讲义'
+                                  : rec.resource_type === 'CONCEPT_CARD'
+                                  ? '考点微卡'
+                                  : rec.resource_type === 'EXAMPLE'
+                                  ? '典型例题'
+                                  : '学习材料'}
+                              </span>
+                              <span
+                                data-testid="rec-source-badge"
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                                  isMooc
+                                    ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                    : 'bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                {isMooc ? '中国大学 MOOC' : '学海智导'}
+                              </span>
+                            </div>
+                            <h6 data-testid="rec-card-title" className="text-xs font-bold text-slate-900 line-clamp-1 leading-snug">
+                              {rec.title}
+                            </h6>
+                            <div data-testid="rec-reason-box" className="p-2 rounded-lg bg-slate-50 border border-slate-100 text-left">
+                              <div className="text-[10px] font-bold text-slate-600 mb-0.5 flex items-center gap-1">
+                                <span>💡 为什么推荐</span>
+                              </div>
+                              <p data-testid="rec-reason-text" className="text-[11px] text-slate-700 leading-relaxed font-medium">
+                                {rec.reason}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            data-testid="rec-action-btn"
+                            onClick={() => handleOpenRecommendedResource(rec)}
+                            className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold text-white transition-all shadow-2xs cursor-pointer min-h-[44px] ${
+                              isMooc
+                                ? 'bg-rose-600 hover:bg-rose-700 active:scale-98'
+                                : 'bg-indigo-600 hover:bg-indigo-700 active:scale-98'
+                            }`}
+                          >
+                            <span>{isMooc ? '前往慕课学习' : '在平台学习'}</span>
+                            {isMooc ? <ExternalLink className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* B. 精选学习资源 (Deterministic Baseline 确定性兜底) */}
+              <div className="space-y-2.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>精选学习资源</span>
+                  </h5>
+                  <span className="text-[11px] text-slate-400">平台权威收录</span>
+                </div>
+
+                {isResourceLoading ? (
+                  <div className="py-8 flex flex-col items-center justify-center text-center space-y-2">
+                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                    <p className="text-xs text-slate-500">正在加载精选资源...</p>
+                  </div>
+                ) : resourceError ? (
+                  // 关键：Resource 500 异常降级，绝不阻断学习主链路
+                  <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-center space-y-2.5">
+                    <div className="text-xs font-bold text-amber-900">暂时无法加载精选学习资源</div>
+                    <p className="text-xs text-amber-700">
+                      网络扩展资源加载异常，但这不会影响你的学习进度，你可以直接开始小测验。
+                    </p>
+                    <button
+                      type="button"
+                      data-testid="resource-fallback-start-quiz-btn"
+                      onClick={handleStartQuizStep}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs cursor-pointer min-h-[44px]"
+                    >
+                      <span>直接开始小测验</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {baselineTopResources.map((res) => (
+                      <div
+                        key={res.resource_id}
+                        className="p-3 rounded-xl border border-slate-200 bg-white hover:border-indigo-200 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">
+                              {res.resource_type === 'VIDEO'
+                                ? '导学视频'
+                                : res.resource_type === 'DOCUMENT'
+                                ? '精讲讲义'
+                                : res.resource_type === 'EXAMPLE'
+                                ? '典型例题'
+                                : '学习材料'}
+                            </span>
+                            {res.is_external && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                中国大学 MOOC
+                              </span>
+                            )}
+                          </div>
+                          <h6 className="text-xs font-bold text-slate-800">{res.title}</h6>
+                          <p className="text-[11px] text-slate-500 line-clamp-1">{res.description}</p>
+                        </div>
+
+                        {res.is_external ? (
+                          <button
+                            type="button"
+                            data-testid={`mooc-external-btn-${res.resource_id}`}
+                            onClick={() => setActiveMoocResource(res)}
+                            className="shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer min-h-[44px]"
+                          >
+                            <span>前往慕课学习</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              recordResourceEvent({
+                                student_id: studentId,
+                                resource_id: res.resource_id,
+                                knowledge_id: activeKid,
+                                event_type: 'RESOURCE_OPEN',
+                              }).catch(() => {});
+                            }}
+                            className="shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer min-h-[44px]"
+                          >
+                            <span>在平台学习</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* C. 底部操作栏 (主链小测验永远畅通可用) */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep('CONCEPT')}
+                  className="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer min-h-[44px]"
+                >
+                  返回概念微卡
+                </button>
+                <button
+                  type="button"
+                  data-testid="resource-step-start-quiz-btn"
+                  onClick={handleStartQuizStep}
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-xs flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+                >
+                  <span>开始小测验</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 

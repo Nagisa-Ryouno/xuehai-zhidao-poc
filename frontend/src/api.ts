@@ -689,15 +689,20 @@ export async function getTodayLearningAction(
  */
 export async function getPersonalizedRecommendations(
   studentId: string,
-  maxRecommendations: number = 3
+  maxRecommendations: number = 3,
+  knowledgeId?: string
 ): Promise<PersonalizedRecommendationResponse> {
+  const payload: Record<string, any> = {
+    max_recommendations: maxRecommendations,
+  };
+  if (knowledgeId) {
+    payload.knowledge_id = knowledgeId;
+  }
   return request<PersonalizedRecommendationResponse>(
     `/ai/recommendations/${encodeURIComponent(studentId)}`,
     {
       method: 'POST',
-      body: JSON.stringify({
-        max_recommendations: maxRecommendations,
-      }),
+      body: JSON.stringify(payload),
     }
   );
 }

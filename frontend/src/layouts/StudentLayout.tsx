@@ -28,6 +28,7 @@ import type {
   CompanionMode,
   LearningActionResultResponse,
   TodayLearningAction,
+  StudentRecommendationItem,
 } from '../types';
 import { CalendarCheck, BookOpen, Network, UserCheck, Bot } from 'lucide-react';
 import { BottomNav } from '../components/student/BottomNav';
@@ -40,7 +41,6 @@ import { WrongAnswerReview } from '../components/student/WrongAnswerReview';
 import { ResourceHub } from '../components/student/ResourceHub';
 import { StudentHome } from '../components/student/StudentHome';
 import { LearningSessionModal, type SessionStep } from '../components/student/LearningSessionModal';
-import { PwaInstallBanner } from '../components/student/PwaInstallBanner';
 import { type ConceptCardData } from '../components/student/conceptCardData';
 import {
   initStudent,
@@ -49,6 +49,7 @@ import {
   getStudentWrongAnswers,
   postLearningActionResult,
   getTodayLearningAction,
+  getStudentRecommendations,
   type StudentInitRequest,
 } from '../api';
 
@@ -98,6 +99,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     initialStep?: SessionStep;
   } | null>(null);
 
+  // 页面切换时重置页面滚动位置到顶部
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [subRoute]);
+
   // 学习目标设定与新学生模态框状态
   const [isInitModalOpen, setIsInitModalOpen] = useState<boolean>(false);
 
@@ -128,6 +134,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   const [isTodayActionLoading, setIsTodayActionLoading] = useState<boolean>(false);
   const [todayActionError, setTodayActionError] = useState<string | null>(null);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+
+  // 老师建议状态 (Sprint 10-D Phase 4-E)
+  const [recommendations, setRecommendations] = useState<StudentRecommendationItem[]>([]);
+  const [isRecommendationsLoading, setIsRecommendationsLoading] = useState<boolean>(false);
+  const [recommendationsError, setRecommendationsError] = useState<string | null>(null);
 
   const fetchDynamicRoute = useCallback(async () => {
     try {
@@ -187,11 +198,35 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     }
   }, [studentId]);
 
+  const fetchRecommendations = useCallback(async () => {
+    if (!studentId) return;
+    setIsRecommendationsLoading(true);
+    setRecommendationsError(null);
+    const reqStudentId = studentId;
+    try {
+      const res = await getStudentRecommendations(studentId);
+      if (reqStudentId === studentId) {
+        setRecommendations(res.recommendations || []);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch teacher recommendations:', err);
+      if (reqStudentId === studentId) {
+        setRecommendations([]);
+        setRecommendationsError('暂时无法加载老师建议');
+      }
+    } finally {
+      if (reqStudentId === studentId) {
+        setIsRecommendationsLoading(false);
+      }
+    }
+  }, [studentId]);
+
   useEffect(() => {
     fetchDynamicRoute();
     fetchAnalyticsData();
     fetchTodayAction();
-  }, [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction]);
+    fetchRecommendations();
+  }, [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction, fetchRecommendations]);
 
   // 学生上下文切换时安全关闭微测验与速览卡片，立即清空旧生状态，杜绝上下文污染 (Sprint 3 / Sprint 9-G 契约约束)
   useEffect(() => {
@@ -205,6 +240,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     setTodayAction(null);
     setTodayActionError(null);
     setAnalyticsError(null);
+    setRecommendations([]);
+    setRecommendationsError(null);
   }, [studentId]);
 
   const handleCloseSession = useCallback(() => {
@@ -212,16 +249,18 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     fetchDynamicRoute();
     fetchAnalyticsData();
     fetchTodayAction();
+    fetchRecommendations();
     if (onRefresh) {
       onRefresh();
     }
-  }, [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction, onRefresh]);
+  }, [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction, fetchRecommendations, onRefresh]);
 
   const handleFinishSession = useCallback(
     (nextKnowledgeId?: string, nextKnowledgeName?: string) => {
       fetchDynamicRoute();
       fetchAnalyticsData();
       fetchTodayAction();
+      fetchRecommendations();
       if (onRefresh) {
         onRefresh();
       }
@@ -237,7 +276,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         setLearningSession(null);
       }
     },
-    [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction, onRefresh]
+    [fetchDynamicRoute, fetchAnalyticsData, fetchTodayAction, fetchRecommendations, onRefresh]
   );
 
   const handleStartQuiz = useCallback(
@@ -472,9 +511,6 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       {/* Main Content Area with MobileContainer */}
       <main className="flex-1 w-full py-4 sm:py-8">
         <MobileContainer>
-          {/* PWA 安装引导横幅 (仅在支持安装且用户未忽略时呈现) */}
-          <PwaInstallBanner />
-
           {/* 离线状态人本提示 (绝不伪造离线同步) */}
           {!isOnline && (
             <div
@@ -520,6 +556,10 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 progressData={progressData}
                 isAnalyticsLoading={isAnalyticsLoading}
                 analyticsError={analyticsError}
+                recommendations={recommendations}
+                isRecommendationsLoading={isRecommendationsLoading}
+                recommendationsError={recommendationsError}
+                onRetryRecommendations={fetchRecommendations}
                 onExecuteTodayAction={handleTodayActionCTA}
                 onStartQuiz={handleStartQuiz}
                 onViewConceptCard={handleViewConceptCard}
@@ -531,7 +571,9 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   })
                 }
                 onViewGraph={() => navigate('/student/graph')}
-                onViewResources={() => navigate('/student/resources')}
+                onViewResources={(kid) =>
+                  navigate(`/student/resources?focus=recommended${kid ? `&kid=${kid}` : ''}`)
+                }
                 onNavigate={navigate}
                 onRetryTodayAction={fetchTodayAction}
                 onRetryAnalytics={fetchAnalyticsData}

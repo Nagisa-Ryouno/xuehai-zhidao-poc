@@ -10,6 +10,7 @@ import {
   Clock,
 } from 'lucide-react';
 import type { ConceptCardData } from './conceptCardData';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 interface ConceptCardModalProps {
   isOpen: boolean;
@@ -24,6 +25,19 @@ export const ConceptCardModal: React.FC<ConceptCardModalProps> = ({
   onClose,
   onStartQuiz,
 }) => {
+  useBodyScrollLock(isOpen && !!card);
+
+  React.useEffect(() => {
+    if (!isOpen || !card) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, card, onClose]);
+
   if (!isOpen || !card) return null;
 
   const handleStartQuiz = () => {
@@ -36,9 +50,13 @@ export const ConceptCardModal: React.FC<ConceptCardModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="concept-card-title"
+      onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
     >
-      <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200/90 overflow-hidden animate-in zoom-in-95 duration-200">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200/90 overflow-hidden animate-in zoom-in-95 duration-200"
+      >
         {/* Modal Header */}
         <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-indigo-50/70 via-white to-violet-50/70">
           <div className="space-y-1">

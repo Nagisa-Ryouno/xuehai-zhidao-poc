@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BookOpen,
   AlertCircle,
@@ -9,6 +9,11 @@ import {
   Clock,
   Filter,
   Bot,
+  ChevronDown,
+  ChevronUp,
+  LayoutList,
+  Check,
+  X,
 } from 'lucide-react';
 import type { WrongAnswerReviewResponse } from '../../types';
 
@@ -30,6 +35,41 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
   onAskAI,
 }) => {
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('ALL');
+  const [selectedKid, setSelectedKid] = useState<string>('ALL');
+  const [isCompactMode, setIsCompactMode] = useState<boolean>(false);
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+
+  const toggleCardExpanded = (qid: string) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [qid]: !prev[qid],
+    }));
+  };
+
+  const items = useMemo(() => wrongAnswerData?.wrong_answers || [], [wrongAnswerData]);
+  const totalWrong = wrongAnswerData?.total_wrong || 0;
+
+  // 提取出现错题的所有考点及分布 (Issue 13: 考点快速聚合与过滤)
+  const kpCounts = useMemo(() => {
+    const counts: Record<string, { name: string; count: number }> = {};
+    for (const it of items) {
+      if (!counts[it.knowledge_id]) {
+        counts[it.knowledge_id] = { name: it.knowledge_name, count: 0 };
+      }
+      counts[it.knowledge_id].count++;
+    }
+    return counts;
+  }, [items]);
+
+  // 双重过滤：紧迫度 + 知识点
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesPriority =
+        priorityFilter === 'ALL' || item.review_priority === priorityFilter;
+      const matchesKid = selectedKid === 'ALL' || item.knowledge_id === selectedKid;
+      return matchesPriority && matchesKid;
+    });
+  }, [items, priorityFilter, selectedKid]);
 
   if (isLoading) {
     return (
@@ -40,14 +80,6 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
       </div>
     );
   }
-
-  const items = wrongAnswerData?.wrong_answers || [];
-  const totalWrong = wrongAnswerData?.total_wrong || 0;
-
-  const filteredItems = items.filter((item) => {
-    if (priorityFilter === 'ALL') return true;
-    return item.review_priority === priorityFilter;
-  });
 
   return (
     <div className="space-y-6" data-testid="student-wrong-answers">
@@ -65,7 +97,7 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
               错误试题归纳与强化再练
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-              系统根据真实做题流水自动汇总错题。建议“先研读概念微卡，再启动专项微测验”，实现知识闭环。
+              系统根据做题流水自动汇总错题。建议“先研读微卡，再启动专项微测验”，实现知识闭环。
             </p>
           </div>
 
@@ -107,63 +139,128 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {/* 优先级过滤栏 */}
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-1.5">
-              <Filter className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-xs text-slate-500 font-semibold mr-1">复盘紧迫度:</span>
-              {(
-                [
-                  { id: 'ALL', label: `全部 (${items.length})` },
-                  { id: 'HIGH', label: '高优紧迫' },
-                  { id: 'MEDIUM', label: '中等' },
-                  { id: 'LOW', label: '已达标回顾' },
-                ] as const
-              ).map((f) => (
+          {/* 工具栏：紧迫度 + 考点芯片 + 紧凑视图切换 (Issue 13) */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-3">
+            {/* 顶层紧迫度与视图切换 */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-xs text-slate-500 font-semibold mr-1">紧迫度:</span>
+                {(
+                  [
+                    { id: 'ALL', label: `全部 (${items.length})` },
+                    { id: 'HIGH', label: '高优紧迫' },
+                    { id: 'MEDIUM', label: '中等' },
+                    { id: 'LOW', label: '已达标回顾' },
+                  ] as const
+                ).map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setPriorityFilter(f.id)}
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      priorityFilter === f.id
+                        ? 'bg-rose-600 text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
                 <button
-                  key={f.id}
                   type="button"
-                  onClick={() => setPriorityFilter(f.id)}
-                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    priorityFilter === f.id
-                      ? 'bg-rose-600 text-white shadow-2xs'
-                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  onClick={() => setIsCompactMode((v) => !v)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                    isCompactMode
+                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
                   }`}
+                  title="切换紧凑扫描与完整解析展开模式"
                 >
-                  {f.label}
+                  <LayoutList className="w-3.5 h-3.5" />
+                  <span>{isCompactMode ? '紧凑排版' : '详解排版'}</span>
                 </button>
-              ))}
+                <span className="text-xs text-slate-400">
+                  当前显示 {filteredItems.length} 道
+                </span>
+              </div>
             </div>
 
-            <span className="text-xs text-slate-400">
-              显示 {filteredItems.length} 道错题
-            </span>
+            {/* 考点过滤芯片条 (Issue 13: 解决错题多时无法按知识点快速检索的问题) */}
+            {Object.keys(kpCounts).length > 1 && (
+              <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <span className="text-[11px] text-slate-400 font-semibold shrink-0">考点:</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedKid('ALL')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                    selectedKid === 'ALL'
+                      ? 'bg-slate-900 text-white font-bold'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  全部 ({items.length})
+                </button>
+                {Object.entries(kpCounts).map(([kid, { name, count }]) => (
+                  <button
+                    key={kid}
+                    type="button"
+                    onClick={() => setSelectedKid(kid)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                      selectedKid === kid
+                        ? 'bg-indigo-600 text-white font-bold'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <span>{kid}</span>
+                    <span className="opacity-80 truncate max-w-[120px]">{name}</span>
+                    <span className="text-[10px] px-1 rounded-full bg-black/10">
+                      {count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 错题卡片列表 */}
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {filteredItems.map((item) => {
               const priorityBadge = {
-                HIGH: { label: '高危卡点 · 优先复盘', class: 'bg-rose-50 text-rose-700 border-rose-200' },
-                MEDIUM: { label: '巩固推进', class: 'bg-amber-50 text-amber-700 border-amber-200' },
-                LOW: { label: '已达标回顾', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                HIGH: {
+                  label: '高危卡点 · 优先复盘',
+                  class: 'bg-rose-50 text-rose-700 border-rose-200',
+                },
+                MEDIUM: {
+                  label: '巩固推进',
+                  class: 'bg-amber-50 text-amber-700 border-amber-200',
+                },
+                LOW: {
+                  label: '已达标回顾',
+                  class: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                },
               }[item.review_priority];
 
-              const isMastered = item.current_mastery >= 0.80;
+              const isMastered = item.current_mastery >= 0.8;
+              const isCardExpanded =
+                !isCompactMode || Boolean(expandedCards[item.question_id]);
 
               return (
                 <div
                   key={item.question_id}
-                  className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs hover:border-slate-300 transition-all space-y-4"
+                  className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs hover:border-slate-300 transition-all space-y-3"
                   data-testid={`wrong-answer-card-${item.question_id}`}
                 >
                   {/* 考点与优先级 Header */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-mono text-xs font-bold border border-indigo-200">
+                      <span className="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-mono text-xs font-bold border border-indigo-200">
                         {item.knowledge_id}
                       </span>
-                      <span className="text-sm font-bold text-slate-900">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900">
                         {item.knowledge_name}
                       </span>
                       <span className="text-xs text-slate-400">· {item.chapter}</span>
@@ -171,81 +268,116 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
 
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${priorityBadge.class}`}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${priorityBadge.class}`}
                       >
                         {priorityBadge.label}
                       </span>
                       <span
-                        className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-md ${
+                        className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${
                           isMastered
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-amber-50 text-amber-700'
                         }`}
                       >
-                        当前掌握度: {(item.current_mastery * 100).toFixed(1)}%
+                        掌握度: {(item.current_mastery * 100).toFixed(1)}%
                       </span>
                     </div>
                   </div>
 
                   {/* 题目题干 */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <div className="flex items-start gap-2">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-xs font-bold">
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-xs font-bold shrink-0">
                         {item.question_id}
                       </span>
-                      <p className="text-sm font-semibold text-slate-900 leading-relaxed">
+                      <p className="text-xs sm:text-sm font-semibold text-slate-900 leading-relaxed">
                         {item.question_prompt}
                       </p>
                     </div>
 
-                    {/* 选项比对 */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                      {Object.entries(item.options).map(([key, val]) => {
-                        const isStudent = key === item.student_answer;
-                        const isCorrect = key === item.correct_answer;
+                    {/* 紧凑答案概览 (Compact Answer Badges) */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-semibold">
+                        <X className="w-3.5 h-3.5 text-rose-600" />
+                        你的作答: <strong className="font-mono">{item.student_answer}</strong>
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        正确答案: <strong className="font-mono">{item.correct_answer}</strong>
+                      </span>
 
-                        let optionStyle = 'bg-slate-50 border-slate-200 text-slate-700';
-                        if (isCorrect) {
-                          optionStyle = 'bg-emerald-50/70 border-emerald-300 text-emerald-900 font-semibold';
-                        } else if (isStudent) {
-                          optionStyle = 'bg-rose-50/70 border-rose-300 text-rose-900 font-semibold';
-                        }
-
-                        return (
-                          <div
-                            key={key}
-                            className={`p-3 rounded-xl border text-xs flex items-start gap-2 ${optionStyle}`}
-                          >
-                            <span className="font-bold font-mono shrink-0">{key}.</span>
-                            <span className="flex-1">{val}</span>
-                            {isCorrect && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded shrink-0">
-                                <CheckCircle className="w-3 h-3" /> 正确答案
-                              </span>
-                            )}
-                            {isStudent && !isCorrect && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-100/70 px-1.5 py-0.5 rounded shrink-0">
-                                <XCircle className="w-3 h-3" /> 你的错误选择
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
+                      {isCompactMode && (
+                        <button
+                          type="button"
+                          onClick={() => toggleCardExpanded(item.question_id)}
+                          className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                        >
+                          <span>{isCardExpanded ? '收起选项与详解' : '展开选项与详解'}</span>
+                          {isCardExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* 解析说明 */}
-                  <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70 text-xs text-amber-900 space-y-1">
-                    <div className="font-bold flex items-center gap-1.5 text-amber-950">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                      官方试题详解
-                    </div>
-                    <p className="leading-relaxed text-amber-900/90">{item.explanation}</p>
-                  </div>
+                  {/* 选项比对与官方试题详解 (展开时可见) */}
+                  {isCardExpanded && (
+                    <div className="space-y-3 pt-2 border-t border-slate-100">
+                      {/* 选项组 */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {Object.entries(item.options).map(([key, val]) => {
+                          const isStudent = key === item.student_answer;
+                          const isCorrect = key === item.correct_answer;
 
-                  {/* Footer 元信息与两项核心行动 CTA */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                          let optionStyle =
+                            'bg-slate-50 border-slate-200 text-slate-700';
+                          if (isCorrect) {
+                            optionStyle =
+                              'bg-emerald-50/70 border-emerald-300 text-emerald-900 font-semibold';
+                          } else if (isStudent) {
+                            optionStyle =
+                              'bg-rose-50/70 border-rose-300 text-rose-900 font-semibold';
+                          }
+
+                          return (
+                            <div
+                              key={key}
+                              className={`p-2.5 rounded-xl border text-xs flex items-start gap-2 ${optionStyle}`}
+                            >
+                              <span className="font-bold font-mono shrink-0">{key}.</span>
+                              <span className="flex-1">{val}</span>
+                              {isCorrect && (
+                                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.2 rounded shrink-0">
+                                  <CheckCircle className="w-3 h-3" /> 正确答案
+                                </span>
+                              )}
+                              {isStudent && !isCorrect && (
+                                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-rose-700 bg-rose-100/70 px-1.5 py-0.2 rounded shrink-0">
+                                  <XCircle className="w-3 h-3" /> 你的选择
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* 解析说明 */}
+                      <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/70 text-xs text-amber-900 space-y-1">
+                        <div className="font-bold flex items-center gap-1.5 text-amber-950">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          官方试题详解
+                        </div>
+                        <p className="leading-relaxed text-amber-900/90">{item.explanation}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Footer 元信息与三项核心行动 CTA */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                    <div className="flex items-center gap-3 text-[11px] text-slate-400">
                       <span>累计做错 {item.mistake_count} 次</span>
                       <span>·</span>
                       <span className="flex items-center gap-1">
@@ -254,37 +386,41 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {/* AI 错题剖析行动 */}
                       {onAskAI && (
                         <button
                           type="button"
                           onClick={() => onAskAI(item.question_id, item.knowledge_id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/80 transition-colors cursor-pointer"
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/80 transition-colors cursor-pointer"
                         >
                           <Bot className="w-3.5 h-3.5 text-purple-600" />
-                          🤖 AI 帮我分析
+                          <span>AI 分析</span>
                         </button>
                       )}
 
                       {/* 关键行动 1: 重新学习 (ConceptCard) */}
                       <button
                         type="button"
-                        onClick={() => onViewConceptCard(item.knowledge_id, item.knowledge_name)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 transition-colors cursor-pointer"
+                        onClick={() =>
+                          onViewConceptCard(item.knowledge_id, item.knowledge_name)
+                        }
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 transition-colors cursor-pointer"
                       >
                         <BookOpen className="w-3.5 h-3.5" />
-                        📖 重新学习微卡
+                        <span>研读微卡</span>
                       </button>
 
                       {/* 关键行动 2: 再次练习 (MicroQuiz) */}
                       <button
                         type="button"
-                        onClick={() => onStartQuiz(item.knowledge_id, item.knowledge_name)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs transition-all cursor-pointer"
+                        onClick={() =>
+                          onStartQuiz(item.knowledge_id, item.knowledge_name)
+                        }
+                        className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs transition-all cursor-pointer"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        ✏️ 再次练习突破
+                        <span>再次突破</span>
                       </button>
                     </div>
                   </div>

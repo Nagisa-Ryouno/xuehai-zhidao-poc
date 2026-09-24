@@ -58,16 +58,17 @@ interface ResourceHubProps {
   ) => void;
 }
 
-const TYPE_FILTER_TABS: Array<{ id: string; label: string; type?: ResourceType }> = [
+const TYPE_FILTER_TABS: Array<{ id: string; label: string; type?: ResourceType; source?: string }> = [
   { id: 'ALL', label: '全部材料' },
   { id: 'CONCEPT_CARD', label: '考点微卡', type: 'CONCEPT_CARD' },
   { id: 'EXAMPLE', label: '典型例题', type: 'EXAMPLE' },
   { id: 'PRACTICE', label: '靶向微练', type: 'PRACTICE' },
   { id: 'DOCUMENT', label: '精讲讲义', type: 'DOCUMENT' },
-  { id: 'VIDEO', label: '导学视频', type: 'VIDEO' },
+  { id: 'MOOC', label: '中国大学MOOC', source: 'china_mooc' },
 ];
 
-const getResourceTypeBadge = (type: string): string => {
+const getResourceTypeBadge = (type: string, source?: string): string => {
+  if (source === 'china_mooc') return '中国大学MOOC';
   switch (type) {
     case 'CONCEPT_CARD':
       return '考点微卡';
@@ -77,8 +78,6 @@ const getResourceTypeBadge = (type: string): string => {
       return '靶向微练';
     case 'DOCUMENT':
       return '精讲讲义';
-    case 'VIDEO':
-      return '导学视频';
     default:
       return type || '学习材料';
   }
@@ -131,6 +130,39 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
     return found ? found.knowledgeName : selectedKnowledgeId;
   }, [selectedKnowledgeId]);
 
+  const [hubCompletedResourceIds, setHubCompletedResourceIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(`xuehai_completed_resources_${studentId}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // 处理从首页当前焦点「推荐学习材料」跳转进入时的定位 (Issue 4)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const focusTarget = urlParams.get('focus');
+    const kidParam = urlParams.get('kid');
+
+    if (kidParam && ALL_CONCEPT_CARDS.some((c: ConceptCardData) => c.knowledgeId === kidParam)) {
+      setSelectedKnowledgeId(kidParam);
+    }
+
+    // 默认进入页面置顶，建立完整页面上下文
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    if (focusTarget === 'recommended') {
+      const timer = setTimeout(() => {
+        const el = document.getElementById('adaptive-recommendation-guide');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   // 当 studentId 改变时，严格重置所有本地会话状态，保障多学生上下文隔离
   useEffect(() => {
     setActiveSession(null);
@@ -140,6 +172,12 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
     setExternalRedirectTarget(null);
     setPersonalRecommendations([]);
     setPersonalRecsError(null);
+    try {
+      const saved = localStorage.getItem(`xuehai_completed_resources_${studentId}`);
+      setHubCompletedResourceIds(saved ? JSON.parse(saved) : []);
+    } catch {
+      setHubCompletedResourceIds([]);
+    }
   }, [studentId]);
 
   // Sprint 10-B Phase 3: 加载 AI 个性化推荐候选，严格以 studentId 为依赖键（单会话单次获取）
@@ -280,12 +318,20 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
   };
 
   // 过滤资源
-  // 过滤资源
   const filteredResources = useMemo(() => {
     return resources.filter((res) => {
-      // 类型过滤
-      if (activeTypeFilter !== 'ALL' && res.resource_type !== activeTypeFilter) {
+      // 彻底排除内部虚假导学微课 (Issue 10)
+      if (!res.is_external && res.resource_type === 'VIDEO') {
         return false;
+      }
+
+      // 类型过滤
+      if (activeTypeFilter === 'MOOC') {
+        if (!res.is_external || res.source !== 'china_mooc') return false;
+      } else if (activeTypeFilter !== 'ALL') {
+        if (res.is_external || res.source === 'china_mooc' || res.resource_type !== activeTypeFilter) {
+          return false;
+        }
       }
       // 搜索词过滤：支持标题、描述、摘要，以及 MOOC 院校、教师、课程与提供方元数据
       if (searchQuery.trim()) {
@@ -394,30 +440,64 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
     }
   };
 
-  // 标记完成材料
-  const handleCompleteResource = (res: LearningResource) => {
-    recordResourceEvent({
-      student_id: studentId,
-      resource_id: res.resource_id,
-      knowledge_id: res.knowledge_id,
-      event_type: 'RESOURCE_COMPLETE',
-      duration_seconds: res.estimated_minutes * 60,
-      metadata: {
-        resource_type: res.resource_type,
-        title: res.title,
-      },
-    }).catch(() => {});
+  // 标记/取消完成材料 (支持双向 Toggle，Issue 7 & 9)
+  const handleToggleCompleteResource = (res: LearningResource, newCompleted: boolean) => {
+    if (newCompleted) {
+      recordResourceEvent({
+        student_id: studentId,
+        resource_id: res.resource_id,
+        knowledge_id: res.knowledge_id,
+        event_type: 'RESOURCE_COMPLETE',
+        duration_seconds: res.estimated_minutes * 60,
+        metadata: {
+          resource_type: res.resource_type,
+          title: res.title,
+        },
+      }).catch(() => {});
 
-    if (activeSession && !activeSession.completed_resource_ids.includes(res.resource_id)) {
-      setActiveSession((prev) =>
-        prev
-          ? {
-              ...prev,
-              completed_resource_ids: [...prev.completed_resource_ids, res.resource_id],
-            }
-          : null
-      );
+      setHubCompletedResourceIds((prev) => {
+        const next = prev.includes(res.resource_id) ? prev : [...prev, res.resource_id];
+        try {
+          localStorage.setItem(`xuehai_completed_resources_${studentId}`, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+
+      if (activeSession && !activeSession.completed_resource_ids.includes(res.resource_id)) {
+        setActiveSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                completed_resource_ids: [...prev.completed_resource_ids, res.resource_id],
+              }
+            : null
+        );
+      }
+    } else {
+      // 取消完成标记
+      setHubCompletedResourceIds((prev) => {
+        const next = prev.filter((id) => id !== res.resource_id);
+        try {
+          localStorage.setItem(`xuehai_completed_resources_${studentId}`, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+
+      if (activeSession) {
+        setActiveSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                completed_resource_ids: prev.completed_resource_ids.filter((id) => id !== res.resource_id),
+              }
+            : null
+        );
+      }
     }
+  };
+
+  const handleCompleteResource = (res: LearningResource) => {
+    handleToggleCompleteResource(res, true);
   };
 
   // Sprint 10-B Phase 3: 打开 AI 个性化推荐资源 (只读辅助推荐)
@@ -878,7 +958,7 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
       {/* 3. 自适应推荐横幅 (当无活跃会话且未展示完成卡时呈现) */}
       {/* ========================================================================= */}
       {(!activeSession || activeSession.status !== 'IN_PROGRESS') && !completionResult && recommendedData && recommendedData.recommendations.length > 0 && (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500/10 via-white to-amber-500/10 border border-indigo-200/80 p-6 shadow-xs">
+        <div id="adaptive-recommendation-guide" className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500/10 via-white to-amber-500/10 border border-indigo-200/80 p-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-2xl bg-indigo-600 text-white shadow-xs">
@@ -1195,8 +1275,15 @@ export const ResourceHub: React.FC<ResourceHubProps> = ({
       {/* 例题与讲义精读模态框 */}
       <ExampleReaderModal
         resource={activeReadingResource}
+        isCompleted={
+          activeReadingResource
+            ? hubCompletedResourceIds.includes(activeReadingResource.resource_id) ||
+              (activeSession?.completed_resource_ids.includes(activeReadingResource.resource_id) ?? false)
+            : false
+        }
         onClose={() => setActiveReadingResource(null)}
         onComplete={handleCompleteResource}
+        onToggleComplete={handleToggleCompleteResource}
         onAskAI={handleAskAI}
       />
 

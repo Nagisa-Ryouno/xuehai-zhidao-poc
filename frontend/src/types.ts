@@ -1042,3 +1042,43 @@ export interface PersonalizedRecommendationResponse {
   validated: boolean;
 }
 
+// -----------------------------------------------------------------------------
+// Sprint 10-D Phase 4: Teacher Action Loop Types
+// -----------------------------------------------------------------------------
+export type TeacherActionType = 'REVIEW_CONCEPT' | 'RETRY_PRACTICE' | 'MARK_FOLLOWED';
+
+export interface TeacherActionCreateRequest {
+  knowledge_id: string;
+  action_type: TeacherActionType;
+}
+
+export interface TeacherActionItem {
+  action_id: string;
+  teacher_id: string;
+  student_id: string;
+  knowledge_id: string;
+  knowledge_name: string;
+  action_type: TeacherActionType;
+  created_at: string;
+}
+
+export interface TeacherActionHistoryResponse {
+  student_id: string;
+  total_count: number;
+  actions: TeacherActionItem[];
+}
+
+export interface StudentRecommendationItem {
+  action_id: string;
+  knowledge_id: string;
+  knowledge_name: string;
+  action_type: 'REVIEW_CONCEPT' | 'RETRY_PRACTICE';
+  created_at: string;
+}
+
+export interface StudentRecommendationsResponse {
+  student_id: string;
+  total_count: number;
+  recommendations: StudentRecommendationItem[];
+}
+

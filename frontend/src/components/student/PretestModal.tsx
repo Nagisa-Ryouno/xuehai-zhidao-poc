@@ -8,6 +8,7 @@ import type {
   DiagnosticResult,
   DynamicLearningRoute,
 } from '../../types';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 interface PretestModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const PretestModal: React.FC<PretestModalProps> = ({
   onRouteGenerated,
   onSelectFocus,
 }) => {
+  useBodyScrollLock(isOpen);
   const [session, setSession] = useState<PretestSession | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});

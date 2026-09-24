@@ -37,7 +37,10 @@ import {
 } from '../../api';
 import { getConceptCardById, type ConceptCardData } from './conceptCardData';
 import { ExternalRedirectModal } from './ExternalRedirectModal';
+import { ExampleReaderModal } from './ExampleReaderModal';
+import { getOfflineQuestionsByKnowledgeId } from './quizBankData';
 import { openExternalMoocUrl } from '../../utils/externalResource';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 export type SessionStep = 'ENTRY' | 'CONCEPT' | 'RESOURCE' | 'QUIZ' | 'RESULT';
 
@@ -68,11 +71,14 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
   onFinishSession,
   onNavigateToTasks,
 }) => {
+  useBodyScrollLock(isOpen);
+
   // 1. Session UI 步骤管理 (严格限定为轻量 UI 步骤，绝不建立业务学习状态机)
   const [currentStep, setCurrentStep] = useState<SessionStep>(initialStep);
 
   // 考点上下文
   const [activeKid, setActiveKid] = useState<string>(knowledgeId);
+  const [activeReadingResource, setActiveReadingResource] = useState<LearningResource | null>(null);
   const [activeKname, setActiveKname] = useState<string>(initialKnowledgeName);
 
   // 当外部传入的 knowledgeId 或 initialStep 发生变化时同步
@@ -244,6 +250,14 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
           knowledge_id: activeKid,
           event_type: 'RESOURCE_OPEN',
         }).catch(() => {});
+
+        if (target.resource_type === 'CONCEPT_CARD') {
+          setCurrentStep('CONCEPT');
+        } else if (target.resource_type === 'PRACTICE') {
+          handleStartQuizStep();
+        } else {
+          setActiveReadingResource(target);
+        }
       }
     }
   };
@@ -284,10 +298,19 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
     setQuizRecords([]);
     try {
       const res = await getQuizQuestions(kid);
-      setQuizQuestions(res.questions || []);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '小测验暂时无法加载';
-      setQuizLoadError(msg);
+      if (res.questions && res.questions.length > 0) {
+        setQuizQuestions(res.questions);
+      } else {
+        const offline = getOfflineQuestionsByKnowledgeId(kid);
+        setQuizQuestions(offline);
+      }
+    } catch {
+      const offline = getOfflineQuestionsByKnowledgeId(kid);
+      if (offline.length > 0) {
+        setQuizQuestions(offline);
+      } else {
+        setQuizLoadError('小测验暂时无法加载，请重试');
+      }
     } finally {
       setIsQuizLoading(false);
     }
@@ -433,6 +456,23 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
     onClose();
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (activeReadingResource) {
+          setActiveReadingResource(null);
+        } else if (activeMoocResource) {
+          setActiveMoocResource(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, activeReadingResource, activeMoocResource, onClose]);
+
   if (!isOpen) return null;
 
   // 人本考点名称 (去除任何 K01 等生硬技术前缀)
@@ -448,9 +488,17 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
       role="dialog"
       aria-modal="true"
       data-testid="learning-session-modal"
+      onClick={() => {
+        if (!activeReadingResource && !activeMoocResource) {
+          onClose();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
     >
-      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200"
+      >
         {/* ================================================================= */}
         {/* 顶部 Header：考点人本标题与轻量步骤指示 (非后台强流程) */}
         {/* ================================================================= */}
@@ -971,6 +1019,14 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                                 knowledge_id: activeKid,
                                 event_type: 'RESOURCE_OPEN',
                               }).catch(() => {});
+
+                              if (res.resource_type === 'CONCEPT_CARD') {
+                                setCurrentStep('CONCEPT');
+                              } else if (res.resource_type === 'PRACTICE') {
+                                handleStartQuizStep();
+                              } else {
+                                setActiveReadingResource(res);
+                              }
                             }}
                             className="shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer min-h-[44px]"
                           >
@@ -1054,9 +1110,21 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                     <div className="space-y-4">
                       {/* 题目进度与小标签 */}
                       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                        <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
-                          小测验 · 第 {currentQuestionIndex + 1} 题 / {quizQuestions.length}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setCurrentStep('CONCEPT')}
+                            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+                            title="返回概念微卡学习"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                            <span>返回概念</span>
+                          </button>
+                          <span className="text-slate-300">|</span>
+                          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                            小测验 · 第 {currentQuestionIndex + 1} 题 / {quizQuestions.length}
+                          </span>
+                        </div>
                         <span className="text-xs text-amber-500 font-mono">
                           {'★'.repeat(q.difficulty || 1)}
                         </span>
@@ -1203,7 +1271,33 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
                     </div>
                   );
                 })()
-              ) : null}
+              ) : (
+                <div className="py-8 px-4 flex flex-col items-center justify-center text-center space-y-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-slate-900">暂无该考点的随堂微测题目</h4>
+                    <p className="text-xs text-slate-500">你可以先研读考点概念微卡，或直接查看精选讲义。</p>
+                  </div>
+                  <div className="flex gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => loadQuiz(activeKid)}
+                      className="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer min-h-[44px]"
+                    >
+                      重新尝试
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep('CONCEPT')}
+                      className="py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-100 transition-colors cursor-pointer min-h-[44px]"
+                    >
+                      ‹ 返回概念微卡
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1388,6 +1482,18 @@ export const LearningSessionModal: React.FC<LearningSessionModalProps> = ({
           setActiveMoocResource(null);
         }}
       />
+
+      {/* 平台内部典型例题 / 精讲讲义阅读模态框 (解决 Issue 3 Dead CTA) */}
+      {activeReadingResource && (
+        <ExampleReaderModal
+          resource={activeReadingResource}
+          onClose={() => setActiveReadingResource(null)}
+          onAskAI={() => {
+            setActiveReadingResource(null);
+            onClose();
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { ExternalLink, X, GraduationCap, ShieldCheck } from 'lucide-react';
 import type { LearningResource } from '../../types';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 interface ExternalRedirectModalProps {
   resource: LearningResource | null;
@@ -13,6 +14,8 @@ export const ExternalRedirectModal: React.FC<ExternalRedirectModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  useBodyScrollLock(!!resource);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

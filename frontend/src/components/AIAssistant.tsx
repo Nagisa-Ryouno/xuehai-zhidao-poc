@@ -17,6 +17,8 @@ import {
   TrendingUp,
   RotateCw,
   Lightbulb,
+  History,
+  Trash2,
 } from 'lucide-react';
 import {
   postCompanionStudy,
@@ -71,6 +73,15 @@ interface DisplayMessage {
   referenced_facts?: string[];
 }
 
+interface StoredSession {
+  id: string;
+  title: string;
+  timestamp: string;
+  mode: CompanionMode;
+  knowledgeId?: string | null;
+  messages: DisplayMessage[];
+}
+
 const MODE_CONFIGS: Record<
   CompanionMode,
   { label: string; icon: string; description: string; defaultMsg: string }
@@ -116,8 +127,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const [activeMode, setActiveMode] = useState<CompanionMode>(
     initialContext?.mode || 'concept_explain'
   );
-  const [activeKnowledgeId, setActiveKnowledgeId] = useState<string>(
-    initialContext?.knowledgeId || 'K01'
+  const [activeKnowledgeId, setActiveKnowledgeId] = useState<string | null>(
+    initialContext?.knowledgeId || (initialContext?.mode === 'conversation' ? null : 'K01')
   );
   const [activeQuestionId, setActiveQuestionId] = useState<string>(
     initialContext?.questionId || 'Q-K01-01'
@@ -135,16 +146,59 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const [quickCheckAnswers, setQuickCheckAnswers] = useState<Record<string, QuickCheckResponse>>({});
   const [submittingQcId, setSubmittingQcId] = useState<string | null>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+  // 本地轻量多会话历史状态 (Issue 20)
+  const [savedSessions, setSavedSessions] = useState<StoredSession[]>(() => {
+    try {
+      const raw = localStorage.getItem(`xuehai_companion_sessions_${currentStudentId}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading, scrollToBottom]);
+    try {
+      const raw = localStorage.getItem(`xuehai_companion_sessions_${currentStudentId}`);
+      setSavedSessions(raw ? JSON.parse(raw) : []);
+    } catch {
+      setSavedSessions([]);
+    }
+  }, [currentStudentId]);
+
+  const [showHistoryDropdown, setShowHistoryDropdown] = useState<boolean>(false);
+
+  // 消息容器引用 (Issue 15 & 16: 仅滚动内部消息容器，绝不触碰并跳动整个浏览器窗口)
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // 重复提交锁与初始化锁 (Issue 17: 彻底杜绝 React StrictMode 或连击造成的双重回答)
+  const inFlightLockRef = useRef<boolean>(false);
+  const initContextKeyRef = useRef<string>('');
+
+  const persistSessions = useCallback(
+    (sessions: StoredSession[]) => {
+      setSavedSessions(sessions);
+      try {
+        localStorage.setItem(
+          `xuehai_companion_sessions_${currentStudentId}`,
+          JSON.stringify(sessions)
+        );
+      } catch {
+        // ignore storage errors
+      }
+    },
+    [currentStudentId]
+  );
+
+  // 内部容器平滑滚动，不破坏外部网页视口
+  const scrollToBottom = useCallback((smooth = true) => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto',
+      });
+    }
+  }, []);
 
   // 监听外部学习行动完成 (如 Quiz 完成、微卡完成)
   useEffect(() => {
@@ -158,27 +212,36 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         guided_actions: latestActionResult.next_actions,
       };
       setMessages((prev) => [...prev, reflectionMsg]);
+      setTimeout(() => scrollToBottom(true), 60);
     }
-  }, [latestActionResult]);
+  }, [latestActionResult, scrollToBottom]);
 
-  // 发起伴学请求核心流程
+  // 发起伴学请求核心流程 (Issue 17 & 18: 防重锁 + 自由探讨不强制锁定 K01)
   const executeCompanionRequest = useCallback(
     async (
       mode: CompanionMode,
       userText?: string,
-      targetKid?: string,
+      targetKid?: string | null,
       targetQid?: string
     ) => {
-      if (isLoading) return;
-
-      const kid = targetKid || activeKnowledgeId || 'K01';
-      const qid = targetQid || activeQuestionId || 'Q-K01-01';
+      if (inFlightLockRef.current) return;
+      inFlightLockRef.current = true;
 
       // 文本长度防线 (2000 字符硬约束)
       if (userText && userText.length > 2000) {
         setErrorMsg('提问内容超过最大允许限制 (2000 字符)，请精简后重试。');
+        inFlightLockRef.current = false;
         return;
       }
+
+      const kid = targetKid !== undefined ? targetKid : activeKnowledgeId;
+      const qid = targetQid || activeQuestionId || 'Q-K01-01';
+
+      // 考点解耦：conversation 模式下若未选定考点，发送 undefined 开展全课程研讨
+      const finalKid =
+        mode === 'conversation' && !kid
+          ? undefined
+          : (kid || (mode === 'concept_explain' ? 'K01' : undefined));
 
       setErrorMsg(null);
       setIsLoading(true);
@@ -191,12 +254,13 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         mode,
       };
       setMessages((prev) => [...prev, userDisplayMsg]);
+      setTimeout(() => scrollToBottom(true), 50);
 
       try {
         const req: CompanionStudyRequest = {
           student_id: currentStudentId,
           mode,
-          knowledge_id: kid,
+          knowledge_id: finalKid,
           question_id: mode === 'wrong_answer_review' ? qid : undefined,
           message: userText || undefined,
           session_id: sessionId || undefined,
@@ -225,18 +289,31 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         };
 
         setMessages((prev) => [...prev, assistantDisplayMsg]);
+        setTimeout(() => scrollToBottom(true), 80);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '伴学服务暂时无响应，请重试';
         setErrorMsg(msg);
       } finally {
+        inFlightLockRef.current = false;
         setIsLoading(false);
       }
     },
-    [currentStudentId, activeKnowledgeId, activeQuestionId, sessionId, isLoading]
+    [
+      currentStudentId,
+      activeKnowledgeId,
+      activeQuestionId,
+      sessionId,
+      initialContext,
+      scrollToBottom,
+    ]
   );
 
-  // 初始化或切换学生时：彻底隔离状态，清空历史，并加载首发精讲
+  // 初始化或切换学生/外部上下文时：单次加载首发辅导 (防双重执行)
   useEffect(() => {
+    const currentKey = `${currentStudentId}_${initialContext?.knowledgeId || ''}_${initialContext?.mode || ''}_${initialContext?.message || ''}`;
+    if (initContextKeyRef.current === currentKey) return;
+    initContextKeyRef.current = currentKey;
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -248,7 +325,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setQuickCheckAnswers({});
 
     const initialMode = initialContext?.mode || 'concept_explain';
-    const initialKid = initialContext?.knowledgeId || 'K01';
+    const initialKid =
+      initialContext?.knowledgeId || (initialMode === 'conversation' ? null : 'K01');
     const initialQid = initialContext?.questionId || 'Q-K01-01';
 
     setActiveMode(initialMode);
@@ -268,7 +346,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         abortControllerRef.current.abort();
       }
     };
-  }, [currentStudentId]);
+  }, [currentStudentId, initialContext, executeCompanionRequest]);
 
   // 监听外部学习行动结果（微测验提交/概念微卡学习），即时生成导师反思与闭环反馈
   useEffect(() => {
@@ -304,11 +382,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   // 点击确定性引导行动 (Sprint 9-B 核心闭环)
   const handleGuidedActionClick = (action: CompanionSuggestedAction) => {
+    const targetKid = action.target_knowledge_id || activeKnowledgeId || undefined;
     // 异步记录引导行动点击辅助事件 (零生产副作用)
     recordLearningEvent({
       student_id: currentStudentId,
       event_type: 'AI_ACTION_CLICK',
-      knowledge_id: action.target_knowledge_id || activeKnowledgeId,
+      knowledge_id: targetKid,
       payload: {
         action_id: action.action_id,
         action_type: action.action_type,
@@ -316,17 +395,19 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       },
     }).catch(() => {});
 
+    const navKid = targetKid || 'K01';
+
     switch (action.action_type) {
       case 'READ_CONCEPT':
         if (onNavigateToConcept) {
-          onNavigateToConcept(action.target_knowledge_id || activeKnowledgeId);
+          onNavigateToConcept(navKid);
         } else if (onNavigateToKnowledge) {
-          onNavigateToKnowledge(action.target_knowledge_id || activeKnowledgeId);
+          onNavigateToKnowledge(navKid);
         }
         break;
       case 'TARGETED_PRACTICE':
         if (onNavigateToQuiz) {
-          onNavigateToQuiz(action.target_knowledge_id || activeKnowledgeId);
+          onNavigateToQuiz(navKid);
         }
         break;
       case 'VIEW_PROGRESS':
@@ -386,19 +467,20 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   // 手工调出微理解自测题
   const handleTriggerQuickCheck = async () => {
-    if (isLoading) return;
+    if (isLoading || inFlightLockRef.current) return;
     setIsLoading(true);
     try {
-      const qc = await getQuickCheck(activeKnowledgeId);
+      const qc = await getQuickCheck(activeKnowledgeId || 'K01');
       const qcMsg: DisplayMessage = {
         id: `qc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         role: 'assistant',
-        content: `针对「${activeContextMeta?.knowledge_name || activeKnowledgeId}」，导师为你准备了一道微理解自测题（本测验为纯理解自测，零生产副作用，不写入正式档案与成绩）：`,
+        content: `针对「${activeContextMeta?.knowledge_name || activeKnowledgeId || '核心考点'}」，导师为你准备了一道微理解自测题（本测验为纯理解自测，零生产副作用，不写入正式档案与成绩）：`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         mode: 'concept_explain',
         quick_check: qc,
       };
       setMessages((prev) => [...prev, qcMsg]);
+      setTimeout(() => scrollToBottom(true), 60);
     } catch {
       setErrorMsg('获取微理解检测题失败，请检查网络后重试');
     } finally {
@@ -406,19 +488,64 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     }
   };
 
-  // 重置当前会话
-  const handleResetSession = async () => {
-    if (isLoading) return;
+  // 开启新对话并自动归档历史会话 (Issue 20)
+  const handleNewChat = async () => {
+    if (isLoading || inFlightLockRef.current) return;
+
+    // 若当前会话存在有效交流，先归档至历史
+    if (messages.length > 1) {
+      const firstUserMsg = messages.find((m) => m.role === 'user')?.content || '微观经济学研讨';
+      const title = firstUserMsg.length > 20 ? `${firstUserMsg.slice(0, 20)}...` : firstUserMsg;
+      const newStored: StoredSession = {
+        id: sessionId || `sess_${Date.now()}`,
+        title,
+        timestamp: new Date().toLocaleDateString([], {
+          month: 'numeric',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        mode: activeMode,
+        knowledgeId: activeKnowledgeId,
+        messages,
+      };
+      const updated = [newStored, ...savedSessions.filter((s) => s.id !== newStored.id)].slice(0, 10);
+      persistSessions(updated);
+    }
+
+    setMessages([]);
+    setSessionId(null);
+    setErrorMsg(null);
+    setQuickCheckAnswers({});
+    setShowHistoryDropdown(false);
+
     try {
       await resetCompanionSession(currentStudentId);
-      setMessages([]);
-      setSessionId(null);
-      setErrorMsg(null);
-      setQuickCheckAnswers({});
-      executeCompanionRequest(activeMode, '老师好，我们重新开始讨论。');
     } catch {
-      setMessages([]);
+      // ignore
     }
+
+    executeCompanionRequest(
+      activeMode,
+      activeMode === 'conversation' ? '老师好，我们开启新的探讨。' : undefined
+    );
+  };
+
+  // 切换回历史对话
+  const handleRestoreSession = (s: StoredSession) => {
+    setMessages(s.messages);
+    setSessionId(s.id);
+    setActiveMode(s.mode);
+    setActiveKnowledgeId(s.knowledgeId || null);
+    setShowHistoryDropdown(false);
+    setTimeout(() => scrollToBottom(false), 60);
+  };
+
+  // 删除单条历史对话
+  const handleDeleteSession = (sid: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = savedSessions.filter((s) => s.id !== sid);
+    persistSessions(updated);
   };
 
   // 切换事实展开收起
@@ -429,11 +556,14 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const isOverLimit = inputMessage.length > 2000;
 
   return (
-    <div className="flex flex-col h-[780px] bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden shadow-sm" data-testid="ai-companion-assistant">
+    <div
+      className="flex flex-col h-[780px] bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden shadow-sm"
+      data-testid="ai-companion-assistant"
+    >
       {/* 顶部状态与安全隔离声明栏 */}
       <div className="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-200 shrink-0">
             <Bot className="w-6 h-6" />
           </div>
           <div>
@@ -444,13 +574,32 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 {studentName} 同学专属
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="text-xs text-slate-500">
                 当前考点：
                 <strong className="text-slate-800 ml-1">
-                  {activeContextMeta?.knowledge_id || activeKnowledgeId} {activeContextMeta?.knowledge_name || ''}
+                  {activeKnowledgeId
+                    ? `${activeKnowledgeId} ${activeContextMeta?.knowledge_name || ''}`
+                    : '微观经济学全课程探讨'}
                 </strong>
               </span>
+              {activeKnowledgeId && activeMode === 'conversation' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveKnowledgeId(null);
+                    setActiveContextMeta((prev) =>
+                      prev
+                        ? { ...prev, knowledge_id: undefined, knowledge_name: undefined }
+                        : null
+                    );
+                  }}
+                  className="text-[10px] text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-md border border-indigo-200 cursor-pointer transition-colors"
+                  title="解除当前单点考点限定，开展宏微观全课程启发研讨"
+                >
+                  切为全局讨论
+                </button>
+              )}
               {activeContextMeta?.mastery_status && (
                 <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
                   {activeContextMeta.mastery_status}
@@ -480,15 +629,77 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             <span>{isOnline ? '伴学导师在线' : '离线确定性保障'} · 零生产副作用</span>
           </div>
 
+          {/* 历史对话下拉 (Issue 20) */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowHistoryDropdown((v) => !v)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+              title="查看历史对话记录"
+            >
+              <History className="w-3.5 h-3.5" />
+              <span>历史 {savedSessions.length > 0 ? `(${savedSessions.length})` : ''}</span>
+            </button>
+            {showHistoryDropdown && (
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 p-2 space-y-1">
+                <div className="px-3 py-1.5 text-xs font-bold text-slate-500 border-b border-slate-100 flex items-center justify-between">
+                  <span>历史会话记录</span>
+                  {savedSessions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => persistSessions([])}
+                      className="text-[10px] text-rose-500 hover:underline cursor-pointer"
+                    >
+                      清空全部
+                    </button>
+                  )}
+                </div>
+                {savedSessions.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-slate-400">暂无已保存的对话</div>
+                ) : (
+                  <div className="max-h-60 overflow-y-auto space-y-1">
+                    {savedSessions.map((s) => (
+                      <div
+                        key={s.id}
+                        onClick={() => handleRestoreSession(s)}
+                        className="p-2 rounded-xl hover:bg-indigo-50/50 cursor-pointer flex items-center justify-between group transition-colors"
+                      >
+                        <div className="min-w-0 flex-1 pr-2">
+                          <div className="text-xs font-semibold text-slate-800 truncate">
+                            {s.title}
+                          </div>
+                          <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span>{s.timestamp}</span>
+                            <span>·</span>
+                            <span>{s.messages.length}条</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteSession(s.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-600 rounded transition-opacity"
+                          title="删除此会话"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 新对话按钮 (Issue 20) */}
           <button
             type="button"
-            onClick={handleResetSession}
+            onClick={handleNewChat}
             disabled={isLoading}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-50"
-            title="清空当前对话历史"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer disabled:opacity-50"
+            title="归档当前会话并开启新话题"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>新话题</span>
+            <span>新对话</span>
           </button>
         </div>
       </div>
@@ -520,8 +731,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         </div>
       </div>
 
-      {/* 聊天会话消息流 */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      {/* 聊天会话消息流 (内部独立滚动，不影响外部窗口) */}
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           const isFactsOpen = showFactsMap[msg.id];
@@ -813,8 +1024,6 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             </button>
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
       {/* 底部输入框与字数指示 */}

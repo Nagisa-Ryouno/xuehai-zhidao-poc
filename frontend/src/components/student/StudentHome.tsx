@@ -2,12 +2,14 @@ import React from 'react';
 import { BookOpen } from 'lucide-react';
 import { TodayActionCard } from './TodayActionCard';
 import { CurrentFocusCard } from './CurrentFocusCard';
+import { TeacherRecommendationCard } from './TeacherRecommendationCard';
 import { RecentProgressCard } from './RecentProgressCard';
 import type {
   StudentBasic,
   TodayLearningAction,
   StudentProgressResponse,
   DynamicLearningRoute,
+  StudentRecommendationItem,
 } from '../../types';
 import type { CurrentFocusResult } from './taskFocusModel';
 
@@ -24,6 +26,10 @@ export interface StudentHomeProps {
   progressData: StudentProgressResponse | null;
   isAnalyticsLoading?: boolean;
   analyticsError?: string | null;
+  recommendations?: StudentRecommendationItem[];
+  isRecommendationsLoading?: boolean;
+  recommendationsError?: string | null;
+  onRetryRecommendations?: () => void;
   onExecuteTodayAction: (action: TodayLearningAction) => void;
   onStartQuiz: (knowledgeId: string, knowledgeName: string) => void;
   onViewConceptCard: (knowledgeId: string, knowledgeName: string) => void;
@@ -49,6 +55,10 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
   progressData,
   isAnalyticsLoading = false,
   analyticsError = null,
+  recommendations = [],
+  isRecommendationsLoading = false,
+  recommendationsError = null,
+  onRetryRecommendations,
   onExecuteTodayAction,
   onStartQuiz,
   onViewConceptCard,
@@ -116,7 +126,19 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
         />
       </section>
 
-      {/* 4. Recent Progress 模块（阶段学情沉淀） */}
+      {/* 4. Teacher Recommendation 模块（老师建议，辅助层） */}
+      <section aria-label="老师建议" className="space-y-2">
+        <TeacherRecommendationCard
+          recommendations={recommendations}
+          loading={isRecommendationsLoading}
+          error={recommendationsError}
+          onRetry={onRetryRecommendations}
+          onViewConceptCard={onViewConceptCard}
+          onStartQuiz={onStartQuiz}
+        />
+      </section>
+
+      {/* 5. Recent Progress 模块（阶段学情沉淀） */}
       <section aria-label="最近学习进展" className="space-y-2">
         <RecentProgressCard
           progress={progressData}

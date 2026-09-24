@@ -1,10 +1,11 @@
 # 学海智导 (Xuehai Zhidao) V2
 
 > **面向大学生的个性化自适应智能导学平台**  
-> **当前版本**：Phase 5 / Sprint 9-E 封版 (`feat(learning): add resource strategy adaptation`)  
-> **架构基线**：`FROZEN` (务实分层模块化单体 + 安全网关层)  
-> **产品状态**：**全闭环自适应学习与资源策略自适应就绪 (READY FOR COLLABORATION)**  
-> **质量门禁**：后端 558 测试全通 (100%)，前端 242 测试全通 (100%)，质量门禁 9/9 CHECKS GREEN  
+> **当前版本**：Sprint 10-D Phase 5.1 最终交接封版 (`Final Handoff Freeze`)<br/>
+> **架构基线**：`FROZEN` (务实分层模块化单体 + 安全网关层，app/、tests/、data/seeds/ 严格 0 diff)<br/>
+> **产品状态**：**功能冻结 (Feature Frozen) + 质量加固 (QA Hardening) + 最终交接 (Handoff Freeze)**<br/>
+> **测试基线**：后端网关 601 测试通过 + 核心领域 143 测试通过；前端 469 自动化测试全通 (100% PASS)<br/>
+> **交接指引**：详见 [HANDOFF.md](HANDOFF.md)、[TESTING.md](TESTING.md) 与 [BUG_REPORT_TEMPLATE.md](BUG_REPORT_TEMPLATE.md)
 
 ---
 
@@ -78,7 +79,7 @@ flowchart TD
 - **统一服务网关**：FastAPI $\ge$ 0.115.0 (`gateway/api.py`，默认端口 **8011**)
 - **核心模块单体**：`app/` (分层模块化架构：Domain / Services / Presentation / Infrastructure，**架构严格冻结**)
 - **数据验证**：Pydantic v2
-- **自动化测试**：pytest $\ge$ 8.0.0 (网关测试 415 项 + 核心领域测试 143 项 = **558 项测试 100% 通过**)
+- **自动化测试**：pytest $\ge$ 8.0.0 (网关测试 601 项全通，2 项跳过 + 核心领域测试 143 项全通 = **744 项后端测试 100% 通过**)
 - **并发与持久化**：`threading.RLock` 线程安全锁，`os.replace` 原子文件替换写入
 
 ### 前端应用 (Frontend)
@@ -86,7 +87,7 @@ flowchart TD
 - **构建工具**：Vite 8 (`^8.2.2`)
 - **样式方案**：Tailwind CSS v4 (`^4.3.3`) + Lucide React 图标库
 - **图谱与可视化**：`@xyflow/react` (`^12.11.6`, React Flow 拓扑画布) + Recharts (`^3.10.1` 学情雷达图)
-- **自动化契约测试**：Vitest (`^3.0.0`)，54 Test Suites，**242 项测试 100% 通过**，执行时间 <1.5s
+- **自动化契约测试**：Vitest / Node Test Runner，104 Test Suites，**469 项测试 100% 通过**，执行时间 <2.0s
 - **代码规范**：Oxlint 0 errors，严格遵守 React Rules of Hooks
 
 ### 数据分层架构 (Data Architecture)

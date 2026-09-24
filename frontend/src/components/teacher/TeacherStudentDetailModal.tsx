@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import type { TeacherStudentDetailResponse } from '../../types';
 import { getTeacherStudentDetail } from '../../api';
+import { TeacherActionModal } from './TeacherActionModal';
+import { TeacherActionHistory } from './TeacherActionHistory';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 interface TeacherStudentDetailModalProps {
   isOpen: boolean;
@@ -16,10 +19,18 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
   onClose,
   onEnterStudentView,
 }) => {
+  useBodyScrollLock(isOpen && !!studentId);
+
   const [detail, setDetail] = useState<TeacherStudentDetailResponse | any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'kps' | 'wrongs' | 'timeline'>('kps');
+  const [activeTab, setActiveTab] = useState<'kps' | 'wrongs' | 'timeline' | 'actions'>('kps');
   const [error, setError] = useState<string | null>(null);
+  const [selectedKnowledgeForAction, setSelectedKnowledgeForAction] = useState<{
+    knowledge_id: string;
+    knowledge_name: string;
+  } | null>(null);
+  const [actionSuccessToast, setActionSuccessToast] = useState<string | null>(null);
+  const [actionRefreshTrigger, setActionRefreshTrigger] = useState<number>(0);
 
   const loadDetail = () => {
     if (!studentId) return;
@@ -213,6 +224,18 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
                 >
                   真实学习流水 ({timeline.length})
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('actions')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'actions'
+                      ? 'bg-indigo-600 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                  data-testid="tab-teacher-actions"
+                >
+                  教学动作
+                </button>
               </div>
 
               {/* Tab Content 1: Knowledge Points */}
@@ -251,6 +274,19 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
                             style={{ width: `${Math.min(100, kp.mastery * 100)}%` }}
                           />
                         </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedKnowledgeForAction({
+                              knowledge_id: kp.knowledge_id,
+                              knowledge_name: kp.knowledge_name,
+                            })
+                          }
+                          className="w-full mt-1.5 py-1 px-2 rounded-lg text-[11px] font-semibold text-indigo-600 bg-indigo-50/70 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-indigo-100 cursor-pointer flex items-center justify-center gap-1"
+                          data-testid={`btn-teacher-action-${kp.knowledge_id}`}
+                        >
+                          教学动作
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -338,6 +374,14 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
                   )}
                 </div>
               )}
+
+              {/* Tab Content 4: Teacher Action History (Sprint 10-D Phase 4-D) */}
+              {activeTab === 'actions' && (
+                <TeacherActionHistory
+                  studentId={studentId}
+                  refreshTrigger={actionRefreshTrigger}
+                />
+              )}
             </>
           ) : (
             <div className="py-12 text-center text-slate-400 text-xs">
@@ -372,6 +416,35 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
             )}
           </div>
         </div>
+
+        {/* Phase 4-C: Teacher Action Modal */}
+        {selectedKnowledgeForAction && (
+          <TeacherActionModal
+            isOpen={!!selectedKnowledgeForAction}
+            studentId={studentId}
+            studentName={studentName}
+            knowledgeId={selectedKnowledgeForAction.knowledge_id}
+            knowledgeName={selectedKnowledgeForAction.knowledge_name}
+            onClose={() => setSelectedKnowledgeForAction(null)}
+            onSuccess={(action) => {
+              setSelectedKnowledgeForAction(null);
+              setActionSuccessToast(`已针对 ${action.knowledge_name} 成功记录教学动作`);
+              setActionRefreshTrigger((prev) => prev + 1);
+              setTimeout(() => setActionSuccessToast(null), 3000);
+            }}
+          />
+        )}
+
+        {/* Action Feedback Toast */}
+        {actionSuccessToast && (
+          <div
+            className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-full shadow-lg border border-slate-700 animate-in fade-in flex items-center gap-2"
+            data-testid="student-detail-action-toast"
+          >
+            <div className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>{actionSuccessToast}</span>
+          </div>
+        )}
       </div>
     </div>
   );

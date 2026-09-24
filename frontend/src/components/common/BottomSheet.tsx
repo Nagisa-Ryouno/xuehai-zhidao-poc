@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { BOTTOM_SHEET_STYLE_CLASSES } from './bottomSheetModel';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 export interface BottomSheetProps {
   open: boolean;
@@ -17,6 +18,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   description,
   children,
 }) => {
+  useBodyScrollLock(open);
+
   // 监听 ESC 键关闭
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -30,15 +33,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   useEffect(() => {
     if (open) {
       document.addEventListener('keydown', handleKeyDown);
-      // 避免弹窗背景滚动
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
     };
   }, [open, handleKeyDown]);
 

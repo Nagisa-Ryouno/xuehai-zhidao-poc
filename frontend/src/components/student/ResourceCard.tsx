@@ -66,11 +66,11 @@ const TYPE_CONFIG: Record<
     icon: FileText,
   },
   VIDEO: {
-    label: '导学视频',
-    badgeBg: 'bg-purple-50',
-    badgeText: 'text-purple-700',
-    borderAccent: 'border-purple-100 hover:border-purple-300',
-    actionLabel: '观看导学',
+    label: '名校微课',
+    badgeBg: 'bg-blue-50',
+    badgeText: 'text-blue-700',
+    borderAccent: 'border-blue-100 hover:border-blue-300',
+    actionLabel: '前往学习',
     icon: Video,
   },
 };

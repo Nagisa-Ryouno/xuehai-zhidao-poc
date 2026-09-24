@@ -154,6 +154,14 @@ from gateway.learning.today import (
     default_today_action_resolver,
 )
 from gateway.content.concept_cards import CONCEPT_CARDS
+from gateway.teacher_actions import (
+    TeacherActionCreateRequest,
+    TeacherActionItem,
+    TeacherActionHistoryResponse,
+    StudentRecommendationsResponse,
+    TeacherActionRepository,
+    default_teacher_action_repository,
+)
 from gateway.ai.deepseek import (
     AuthenticationError,
     PIIViolationError,
@@ -271,8 +279,12 @@ class TeacherKnowledgeDiagnosisResponse(BaseModel):
 DEMO_STUDENTS: Dict[str, Dict[str, Any]] = {}
 
 
-def create_gateway_app() -> FastAPI:
+def create_gateway_app(
+    teacher_action_repo: Optional[TeacherActionRepository] = None,
+) -> FastAPI:
     """构建独立 AI Gateway FastAPI 应用实例"""
+    active_teacher_action_repo = teacher_action_repo or default_teacher_action_repository
+
     application = FastAPI(
         title="学海智导 AI Gateway",
         description="Secure AI Gateway Boundary for Xuehai Zhidao",
@@ -1526,6 +1538,72 @@ def create_gateway_app() -> FastAPI:
             return default_today_action_resolver.resolve(student_id=student_id)
         except KeyError:
             raise HTTPException(status_code=404, detail=f"找不到学生档案：{student_id}")
+
+    # ==============================================================================
+    # 教师轻量教学动作循环端点 (Sprint 10-D Phase 4: Teacher Action Loop)
+    # ==============================================================================
+
+    @application.post(
+        "/api/teacher/students/{student_id}/actions",
+        response_model=TeacherActionItem,
+    )
+    def post_teacher_action_endpoint(
+        student_id: str,
+        req: TeacherActionCreateRequest,
+    ) -> TeacherActionItem:
+        """教师发起轻量教学动作 (Sprint 10-D Phase 4)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到指定学生：{student_id}")
+
+        if req.knowledge_id not in CONCEPT_CARDS:
+            raise HTTPException(status_code=404, detail=f"找不到指定考点：{req.knowledge_id}")
+
+        # teacher_id 严格使用服务端固定的 Demo Teacher Context "T001"
+        record = active_teacher_action_repo.record_action(
+            student_id=student_id,
+            knowledge_id=req.knowledge_id,
+            action_type=req.action_type,
+            teacher_id="T001",
+        )
+        card = CONCEPT_CARDS[req.knowledge_id]
+        return TeacherActionItem(
+            action_id=record.action_id,
+            teacher_id=record.teacher_id,
+            student_id=record.student_id,
+            knowledge_id=record.knowledge_id,
+            knowledge_name=card.knowledge_name,
+            action_type=record.action_type,
+            created_at=record.created_at,
+        )
+
+    @application.get(
+        "/api/teacher/students/{student_id}/actions",
+        response_model=TeacherActionHistoryResponse,
+    )
+    def get_teacher_student_actions_endpoint(
+        student_id: str,
+    ) -> TeacherActionHistoryResponse:
+        """获取教师端指定学生的所有历史教学动作流水 (Sprint 10-D Phase 4)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到指定学生：{student_id}")
+
+        return active_teacher_action_repo.get_teacher_action_history(student_id)
+
+    @application.get(
+        "/api/students/{student_id}/teacher-actions",
+        response_model=StudentRecommendationsResponse,
+    )
+    def get_student_teacher_actions_endpoint(
+        student_id: str,
+    ) -> StudentRecommendationsResponse:
+        """获取学生端可消费的教师轻量学习建议列表 (Sprint 10-D Phase 4)"""
+        student_info = default_companion_service.context_builder.resolve_student(student_id)
+        if not student_info:
+            raise HTTPException(status_code=404, detail=f"找不到指定学生：{student_id}")
+
+        return active_teacher_action_repo.get_student_recommendations(student_id)
 
     # 挂载核心业务应用为子路由兜底
     application.mount("/", app_main)

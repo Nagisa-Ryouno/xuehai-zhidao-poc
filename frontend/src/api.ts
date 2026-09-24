@@ -49,6 +49,10 @@ import type {
   RetentionProfile,
   TodayActionResponse,
   PersonalizedRecommendationResponse,
+  TeacherActionCreateRequest,
+  TeacherActionItem,
+  TeacherActionHistoryResponse,
+  StudentRecommendationsResponse,
 } from './types';
 
 // API 基础路径（优先走 Vite 代理 /api，若独立部署可配置环境变量）
@@ -710,6 +714,48 @@ export async function getPersonalizedRecommendations(
       method: 'POST',
       body: JSON.stringify(payload),
     }
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Sprint 10-D Phase 4: Teacher Action Loop API
+// -----------------------------------------------------------------------------
+
+/**
+ * 教师向指定学生发起轻量教学动作 (POST)
+ */
+export async function postTeacherAction(
+  studentId: string,
+  data: TeacherActionCreateRequest
+): Promise<TeacherActionItem> {
+  return request<TeacherActionItem>(
+    `/teacher/students/${encodeURIComponent(studentId)}/actions`,
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }
+  );
+}
+
+/**
+ * 获取指定学生的教师动作全量历史流水 (GET)
+ */
+export async function getTeacherActionHistory(
+  studentId: string
+): Promise<TeacherActionHistoryResponse> {
+  return request<TeacherActionHistoryResponse>(
+    `/teacher/students/${encodeURIComponent(studentId)}/actions`
+  );
+}
+
+/**
+ * 获取学生端可消费的教师学习建议列表 (GET)
+ */
+export async function getStudentRecommendations(
+  studentId: string
+): Promise<StudentRecommendationsResponse> {
+  return request<StudentRecommendationsResponse>(
+    `/students/${encodeURIComponent(studentId)}/teacher-actions`
   );
 }
 

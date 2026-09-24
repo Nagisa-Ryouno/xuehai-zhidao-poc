@@ -8,6 +8,7 @@ import {
   Check,
 } from 'lucide-react';
 import type { StudentInitRequest, StudentInitResponse } from '../../api';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 interface StudentInitModalProps {
   isOpen: boolean;
@@ -37,6 +38,8 @@ export const StudentInitModal: React.FC<StudentInitModalProps> = ({
   onSubmit,
   onSelectPresetStudent,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const [studentName, setStudentName] = useState('李华');
   const [major, setMajor] = useState('经济学');
   const [grade, setGrade] = useState('大二');

@@ -155,7 +155,7 @@ npm --prefix frontend run dev
   在系统环境变量或项目根目录 `.env` 中设置：
   ```bash
   DEEPSEEK_API_KEY=sk-your-actual-api-key
-  DEEPSEEK_MODEL=deepseek-chat
+  DEEPSEEK_MODEL=deepseek-flash
   ```
 
 ---
@@ -183,9 +183,8 @@ npm --prefix frontend run typecheck
 # 6. 前端生产打包构建 (PASS)
 npm --prefix frontend run build
 
-# 7. 检查工作区数据零污染
+# 7. 检查工作区数据零污染（正常完成的 gateway pytest 会通过 session fixture 恢复指定运行态文件；测试完成后仍必须执行 git diff -- data/ 进行最终核验）
 git diff -- data/
-# 必须输出为空
 ```
 
 ---
@@ -194,7 +193,7 @@ git diff -- data/
 
 - **知识图谱 (Knowledge Graph)**：`data/seeds/knowledge_graph.json`，共 30 个考点（K01~K30）、42 条拓扑前置依赖边、S001~S005 五名学生共 60 条基准学习记录。
 - **内部原生资源 (Internal Resources)**：`gateway/learning/resources/catalog.py`，共 130 项原生学习材料，覆盖全部 30 个考点。
-- **中国大学 MOOC 外部资源 (MOOC Resources)**：`gateway/learning/resources/mooc_catalog.py`，精选 12 项优质名校微课（北京大学王辉老师课程与武汉大学文建东教授课程）。其余 18 个考点如实标记无外链 MOOC，绝不伪造。
+- **中国大学 MOOC 外部资源 (MOOC Resources)**：`gateway/learning/resources/mooc_catalog.py`，精选 12 项优质名校微课（北京大学《微观经济学之供给与需求》PKU-1003090003 与武汉大学《微观经济学》whu-23003 官方十讲结构）。其余 18 个考点如实标记无外链 MOOC，由平台内部原生资源覆盖，绝不伪造。
 - **题库资产 (Quiz Bank)**：`gateway/content/quiz_bank.py` 与 `frontend/src/components/student/quizBankData.ts`，共 35 道权威微测试题，覆盖全部 30 个考点。
 
 ---

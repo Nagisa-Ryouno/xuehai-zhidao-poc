@@ -19,7 +19,7 @@
 - **命令**：`pytest gateway/tests/ -q`
 - **预期结果**：`601 passed, 2 skipped in ~25s`
 - **覆盖核心**：校准模型、评判安全隔离、MOOC 目录与 API、学习资源中心、成效评估、保持度建议、教师干预。
-- **数据防污染验证**：测试结束后执行 `git diff -- data/`，结果必须完全为空（由 `gateway/tests/conftest.py` 自动保障）。
+- **数据防污染验证**：正常完成的 gateway pytest 会通过 session fixture 恢复指定运行态文件；测试完成后仍必须执行 `git diff -- data/` 进行最终核验。
 
 ### 1.3 端到端质量门禁脚本 (Integration Gate)
 - **命令**：`python scripts/sprint10c_final_integration_gate.py`

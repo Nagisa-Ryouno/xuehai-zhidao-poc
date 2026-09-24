@@ -322,3 +322,44 @@ def test_20_offline_first_zero_network():
     assert len(all_res) > 0
     for r in all_res:
         assert validate_external_mooc_url(r.source_url) is True
+
+
+def test_21_mooc_catalog_factual_integrity():
+    """
+    Handoff Evidence Audit: 验证 MOOC 目录的事实真实性 (Factual Integrity)
+    1. 所有 course_id 必须为官方确认的公开课编号 (PKU-1003090003, whu-23003)；
+    2. 严禁出现历史未验证或拼写错误的 course_id；
+    3. 武汉大学课程章节必须严格符合官方十讲结构，严禁出现第十一讲及以上不可能讲次编号；
+    4. 资源总数严格为 12 项精选示范，杜绝虚构伪造。
+    """
+    import re
+    confirmed_courses = {"PKU-1003090003", "whu-23003"}
+    banned_course_ids = {
+        "PKU-1001937004", "WHU-1001593003",
+        "PKU-1002534001", "WHU-1001539001",
+        "PKU-1205934803", "WHU-1001593001"
+    }
+    chinese_num_map = {
+        "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
+        "六": 6, "七": 7, "八": 8, "九": 9, "十": 10
+    }
+
+    assert len(MOOC_RESOURCE_CATALOG) == 12, "MOOC 目录必须严格保持 12 项精选真实资源"
+
+    for res in MOOC_RESOURCE_CATALOG.values():
+        course_id = res.metadata.get("course_id")
+        assert course_id in confirmed_courses, f"资源 {res.resource_id} 使用了未经确认的课程代码: {course_id}"
+        assert course_id not in banned_course_ids, f"资源 {res.resource_id} 使用了已禁用的错误代码: {course_id}"
+        assert any(cid.lower() in res.source_url.lower() for cid in confirmed_courses), (
+            f"资源 {res.resource_id} source_url 必须指向官方已确认课程: {res.source_url}"
+        )
+
+        # 校验武汉大学十讲结构
+        if "whu" in res.source_url.lower() or res.metadata.get("university") == "武汉大学":
+            chapter = res.metadata.get("chapter", "")
+            match = re.search(r"第([一二三四五六七八九十]+)讲", chapter)
+            if match:
+                num_str = match.group(1)
+                assert num_str in chinese_num_map, f"非法或超出十讲的讲次编号: {num_str} in {chapter}"
+                lecture_num = chinese_num_map[num_str]
+                assert 1 <= lecture_num <= 10, f"武汉大学官方课程仅有十讲，禁止出现超出讲次: {chapter}"

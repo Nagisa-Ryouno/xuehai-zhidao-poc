@@ -93,7 +93,9 @@ def test_deepseek_factory_enables_http_transport(monkeypatch):
 
     provider = get_provider("deepseek")
 
-    assert isinstance(provider, ExternalLLMProvider)
+    from gateway.ai.deepseek import DeepSeekProvider
+
+    assert isinstance(provider, DeepSeekProvider)
     assert isinstance(provider.transport, HttpLLMTransport)
     assert provider.transport._get_endpoint_url() == "https://api.deepseek.com/chat/completions"
 

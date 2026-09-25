@@ -20,10 +20,24 @@ class GatewaySettings:
     timeout_ms: int = int(os.getenv("AI_GATEWAY_TIMEOUT_MS", "5000"))
 
     # Sprint 10-B: DeepSeek 官方配置基线
-    deepseek_enabled: bool = os.getenv("DEEPSEEK_ENABLED", "false").strip().lower() in ("true", "1", "yes")
-    deepseek_api_key: Optional[str] = os.getenv("DEEPSEEK_API_KEY", None)
-    deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip().rstrip("/")
-    deepseek_model: str = os.getenv("DEEPSEEK_MODEL", "deepseek-flash").strip()
+    # 优先采用 Sprint 10-B 专用变量，同时兼容既有 AI_*/LLM_* 配置，
+    # 让已部署环境升级后无需重复填写同一把密钥。
+    deepseek_enabled: bool = os.getenv(
+        "DEEPSEEK_ENABLED",
+        "true" if os.getenv("AI_PROVIDER", "").strip().lower() == "deepseek" else "false",
+    ).strip().lower() in ("true", "1", "yes")
+    deepseek_api_key: Optional[str] = os.getenv(
+        "DEEPSEEK_API_KEY",
+        os.getenv("AI_API_KEY", os.getenv("LLM_API_KEY", None)),
+    )
+    deepseek_base_url: str = os.getenv(
+        "DEEPSEEK_BASE_URL",
+        os.getenv("AI_BASE_URL", "https://api.deepseek.com"),
+    ).strip().rstrip("/")
+    deepseek_model: str = os.getenv(
+        "DEEPSEEK_MODEL",
+        os.getenv("AI_MODEL", "deepseek-flash"),
+    ).strip()
     deepseek_timeout_seconds: int = int(os.getenv("DEEPSEEK_TIMEOUT_SECONDS", "20"))
 
     def get_masked_api_key(self) -> str:

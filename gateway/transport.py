@@ -203,7 +203,12 @@ class HttpLLMTransport(LLMTransport):
             "temperature": request_payload.get("temperature", 0.0),
         }
         if "response_format" in request_payload:
-            body["response_format"] = request_payload["response_format"]
+            response_format = request_payload["response_format"]
+            body["response_format"] = (
+                {"type": response_format}
+                if isinstance(response_format, str)
+                else response_format
+            )
 
         return body
 

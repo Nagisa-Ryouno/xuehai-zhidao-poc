@@ -121,11 +121,18 @@ def main():
     # Gate 4: Backend Regression Tests
     # -------------------------------------------------------------
     print("\n[4/5] Running Backend Architecture & Regression Tests...")
-    code_arch, out_arch, err_arch = run_cmd("pytest tests/architecture/ -v", PROJECT_ROOT)
+    python = f'"{sys.executable}"'
+    code_arch, out_arch, err_arch = run_cmd(
+        f"{python} -m pytest tests/architecture/ -q", PROJECT_ROOT
+    )
     arch_match = re.search(r"(\d+)\s+passed", out_arch)
     arch_count = int(arch_match.group(1)) if arch_match else 0
 
-    code_full, out_full, err_full = run_cmd("pytest tests/ -q", PROJECT_ROOT)
+    # pyproject.toml 的 testpaths 同时包含 tests/ 与 gateway/tests/。
+    # 使用当前解释器运行完整集合，避免 PATH 中另一个 pytest 或遗漏网关测试。
+    code_full, out_full, err_full = run_cmd(
+        f"{python} -m pytest -q", PROJECT_ROOT
+    )
     full_match = re.search(r"(\d+)\s+passed", out_full)
     full_count = int(full_match.group(1)) if full_match else 0
 

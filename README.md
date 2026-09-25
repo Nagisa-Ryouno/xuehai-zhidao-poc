@@ -123,8 +123,12 @@ python -m venv venv
 # macOS/Linux:
 source venv/bin/activate
 
-# 2. 安装 Python 核心依赖与测试依赖
-pip install -r requirements.txt pytest httpx
+# 2. 安装已锁定的 Python 核心依赖与测试依赖
+python -m pip install -r requirements.txt
+
+# 依赖维护者仅在 pyproject.toml 中修改版本范围，然后重新生成锁文件
+python -m pip install "pip-tools>=7,<8"
+python -m piptools compile pyproject.toml --extra pipeline --extra dev --output-file requirements.txt --strip-extras
 
 # 3. 启动后端网关服务 (监听 8011 端口)
 python -m uvicorn gateway.api:app --host 127.0.0.1 --port 8011

@@ -15,6 +15,7 @@ Stage E: Backend AI Provider Adapter 抽象层与 External LLM Readiness
 
 import asyncio
 from abc import ABC, abstractmethod
+import json
 import logging
 from typing import Literal, Optional, Set
 
@@ -24,9 +25,11 @@ from gateway.models import (
     StructuredAIResponse,
 )
 from gateway.prompt import build_external_prompt
-from gateway.transport import DisabledNetworkTransport, LLMTransport
+from gateway.transport import DisabledNetworkTransport, HttpLLMTransport, LLMTransport
 
 logger = logging.getLogger("xuehai.gateway.adapter")
+
+_USE_CONFIGURED_API_KEY = object()
 
 FORBIDDEN_DECISION_FIELDS: Set[str] = {
     "decision",
@@ -183,16 +186,30 @@ class ExternalLLMProvider(AIProviderAdapter):
     def __init__(
         self,
         name: str = "external-llm-provider",
-        api_key: Optional[str] = None,
+        api_key: object = _USE_CONFIGURED_API_KEY,
         base_url: Optional[str] = None,
         model: Optional[str] = None,
         transport: Optional[LLMTransport] = None,
     ):
         self._name = name
-        self.api_key = api_key or gateway_settings.api_key
+        self.api_key = (
+            gateway_settings.api_key
+            if api_key is _USE_CONFIGURED_API_KEY
+            else api_key
+        )
         self.base_url = base_url or gateway_settings.base_url
         self.model = model or gateway_settings.model
-        self.transport: LLMTransport = transport or DisabledNetworkTransport()
+        if transport is not None:
+            self.transport = transport
+        elif self.base_url and self.api_key:
+            self.transport = HttpLLMTransport(
+                base_url=self.base_url,
+                api_key=self.api_key,
+                model=self.model,
+                timeout_ms=gateway_settings.timeout_ms,
+            )
+        else:
+            self.transport = DisabledNetworkTransport()
 
     @property
     def provider_name(self) -> str:
@@ -235,6 +252,27 @@ class ExternalLLMProvider(AIProviderAdapter):
             raise ProviderException(
                 "Invalid response from external LLM transport: expected JSON object"
             )
+
+        # DeepSeek 等 OpenAI-compatible API 会把 JSON 文本包在
+        # choices[0].message.content 中；测试传输则可直接返回内部对象。
+        if "choices" in raw_response and "answer" not in raw_response:
+            try:
+                content = raw_response["choices"][0]["message"]["content"]
+                if not isinstance(content, str):
+                    raise TypeError("message content is not text")
+                clean_content = content.strip()
+                if clean_content.startswith("```"):
+                    lines = clean_content.splitlines()
+                    if lines and lines[0].startswith("```"):
+                        lines = lines[1:]
+                    if lines and lines[-1].strip() == "```":
+                        lines = lines[:-1]
+                    clean_content = "\n".join(lines).strip()
+                raw_response = json.loads(clean_content)
+            except (KeyError, IndexError, TypeError, json.JSONDecodeError):
+                raise ProviderException(
+                    "Invalid structured content returned by external LLM"
+                ) from None
 
         # 5. 越权学习决策字段防御扫描 (Forbidden Decision Field Detection)
         for forbidden_key in FORBIDDEN_DECISION_FIELDS:

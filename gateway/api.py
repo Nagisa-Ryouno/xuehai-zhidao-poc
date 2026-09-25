@@ -309,7 +309,7 @@ def create_gateway_app(
         req_id = generate_request_id()
         safe_increment_metric(METRIC_FAILURES_TOTAL)
         return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content={
                 "error": "SCHEMA_VALIDATION_FAILED",
                 "detail": "请求载荷不符合网关安全白名单契约，已拒绝处理。",

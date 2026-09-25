@@ -9,9 +9,7 @@ Invariant 07 & 08: API 公开契约与前端绑定冻结测试
 2. Invariant 08: 前端 API 契约冻结，frontend/src/api.ts 自 Phase 2.1 起不得发生非授权破坏性修改。
 """
 
-import subprocess
 import unittest
-from fastapi.routing import APIRoute
 
 from app.core.config import settings
 from app.main import app
@@ -44,15 +42,16 @@ class TestApiContract(unittest.TestCase):
 
     def test_invariant_07_all_api_endpoints_registered_and_frozen(self):
         """验证所有 19 个端点 (18 API + 1 Root) 精确注册且无意外路由"""
-        actual_endpoints = set()
-        for route in app.routes:
-            if isinstance(route, APIRoute):
-                # 排除 FastAPI 内部文档与 OpenAPI 端点
-                if route.path in {"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}:
-                    continue
-                for method in route.methods:
-                    if method != "HEAD":
-                        actual_endpoints.add((method, route.path))
+        # OpenAPI 是 FastAPI 的公开接口契约；不要依赖 app.routes 的内部对象类型，
+        # 否则 FastAPI 升级后即使端点仍可访问，测试也可能因为内部表示变化而误报。
+        schema = app.openapi()
+        http_methods = {"get", "post", "put", "patch", "delete", "options", "head"}
+        actual_endpoints = {
+            (method.upper(), path)
+            for path, operations in schema["paths"].items()
+            for method in operations
+            if method in http_methods and method != "head"
+        }
 
         missing = EXPECTED_API_ENDPOINTS - actual_endpoints
         extra = actual_endpoints - EXPECTED_API_ENDPOINTS

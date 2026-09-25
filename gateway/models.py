@@ -10,7 +10,7 @@ AI Gateway 强类型输入/输出契约模型
 3. 权限隔离：绝不包含决策、解锁、状态跃迁等学习引擎内部控制字段
 """
 
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -73,6 +73,7 @@ class LearningPromptContext(BaseModel):
 
     user_question: str
     system_facts: LearningPromptSystemFacts
+    authoritative_facts: Dict[str, Any] = Field(default_factory=dict)
     grounding_rules: List[str] = Field(default_factory=list)
 
 

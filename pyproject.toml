@@ -5,25 +5,31 @@ description = "学海智导——AI驱动的大学生个性化学习指导平台
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn>=0.30.0",
-    "pydantic>=2.0.0",
-    "python-dotenv>=1.0.0",
-    "requests>=2.31.0",
+    "fastapi>=0.115,<0.116",
+    "starlette>=0.40,<0.47",
+    "uvicorn>=0.30,<1",
+    "pydantic>=2,<3",
+    "python-dotenv>=1,<2",
+    "requests>=2.31,<3",
 ]
 
 [project.optional-dependencies]
 pipeline = [
-    "openpyxl>=3.1.0",
+    "openpyxl>=3.1,<4",
 ]
 dev = [
-    "pytest>=8.0.0",
-    "httpx>=0.27.0",
+    "pytest>=8,<9",
+    "pytest-asyncio>=0.24,<1",
+    "httpx>=0.27,<0.29",
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "gateway/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v"
+asyncio_mode = "auto"
+markers = [
+    "asyncio: asynchronous test case",
+]

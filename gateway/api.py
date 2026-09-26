@@ -309,7 +309,7 @@ def create_gateway_app(
         req_id = generate_request_id()
         safe_increment_metric(METRIC_FAILURES_TOTAL)
         return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content={
                 "error": "SCHEMA_VALIDATION_FAILED",
                 "detail": "请求载荷不符合网关安全白名单契约，已拒绝处理。",
@@ -404,7 +404,7 @@ def create_gateway_app(
         except ValidationRejectedError as vre:
             logger.warning(f"Recommendation validation rejected [{request_id}]: {vre.message}")
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"AI 推荐候选未通过确定性安全校验: {vre.message}",
             )
         except PIIViolationError as pve:
@@ -781,7 +781,7 @@ def create_gateway_app(
         valid_option_keys = [opt.key for opt in question.options]
         if req.selected_option not in valid_option_keys:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"非法选项：{req.selected_option}，可选选项为：{valid_option_keys}",
             )
 

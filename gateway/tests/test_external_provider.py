@@ -150,9 +150,14 @@ async def test_e05_provider_substitutability_invariant_e1(sample_context):
 # Category 2: Configuration & Secret (E6 ~ E10)
 # ============================================================
 
-def test_e06_mock_remains_safe_default():
+def test_e06_mock_remains_safe_default(monkeypatch):
     """E6: 无任何环境变量或默认配置时，系统必须安全默认使用 MockGatewayProvider"""
-    # 模拟完全无配置环境变量
+    # 显式模拟完全无配置环境，避免开发机 .env 影响安全默认值测试。
+    monkeypatch.setattr(
+        "gateway.adapter.gateway_settings",
+        GatewaySettings(provider="mock", api_key=None, base_url=None),
+    )
+    set_provider(None)
     default_p = get_provider()
     assert isinstance(default_p, MockGatewayProvider)
     assert default_p.provider_name == "mock-gateway-provider"

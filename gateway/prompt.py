@@ -11,6 +11,7 @@ Stage E: External LLM 提示词工程与输入白名单构建器
 4. 明确结构化输出约束：指定 JSON 格式输出，与 StructuredAIResponse 契约完全对齐
 """
 
+import json
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -124,10 +125,24 @@ def build_external_prompt(
     )
     rules_section = f"\n\n[FACT GROUNDING RULES]\n{rules_text}"
 
+    authoritative_section = ""
+    if context.authoritative_facts:
+        authoritative_section = (
+            "\n\n[AUTHORITATIVE LEARNING FACTS]\n"
+            + json.dumps(
+                context.authoritative_facts,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+        )
+
     # 6. 组装学生问题
     question_section = f"\n\n[STUDENT QUESTION]\n{context.user_question}"
 
-    user_prompt = f"{student_section}\n\n{kp_section}{quiz_section}{action_section}{rules_section}{question_section}"
+    user_prompt = (
+        f"{student_section}\n\n{kp_section}{quiz_section}{action_section}"
+        f"{authoritative_section}{rules_section}{question_section}"
+    )
 
     return ExternalPromptPayload(
         system_prompt=SYSTEM_INSTRUCTION.strip(),

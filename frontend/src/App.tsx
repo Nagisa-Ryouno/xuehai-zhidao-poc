@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
       if (role === 'student' && !targetId) {
         try {
           const initRes = await initStudent({
-            student_name: '新同学',
+            student_name: '新同学01',
             major: '经济学',
             grade: '大一',
             learning_goal: '微观经济学基础入门',

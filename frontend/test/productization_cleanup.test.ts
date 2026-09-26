@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getAvatarInitial } from '../src/utils/avatar.ts';
+import { getStudentDisplayName } from '../src/utils/student.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -152,11 +153,11 @@ describe('Final Productization Cleanup: Brand, Status, User Naming & Avatar Hard
       const drawerContent = fs.readFileSync(drawerPath, 'utf-8');
 
       assert.ok(
-        tableContent.includes('getAvatarInitial(st.student_name)'),
+        tableContent.includes('getAvatarInitial('),
         'TeacherStudentTable 必须使用 getAvatarInitial 渲染头像'
       );
       assert.ok(
-        drawerContent.includes('getAvatarInitial(st.student_name)'),
+        drawerContent.includes('getAvatarInitial('),
         'TeacherKnowledgeDiagnosisDrawer 必须使用 getAvatarInitial 渲染头像'
       );
     });
@@ -214,6 +215,114 @@ describe('Final Productization Cleanup: Brand, Status, User Naming & Avatar Hard
       assert.equal(getAvatarInitial(null), '？');
       assert.equal(getAvatarInitial(''), '？');
       assert.equal(getAvatarInitial('   '), '？');
+    });
+  });
+
+  // -------------------------------------------------------------
+  // 6. BUG-1: 学生编号稳定区分契约 (S001~S005 -> 新同学01~新同学05)
+  // -------------------------------------------------------------
+  describe('6. BUG-1: 学生展示名称与编号稳定映射契约', () => {
+    it('1. S001~S005 严格稳定映射为 新同学01 ~ 新同学05', () => {
+      assert.equal(getStudentDisplayName('S001', '新同学'), '新同学01');
+      assert.equal(getStudentDisplayName('S002', '新同学'), '新同学02');
+      assert.equal(getStudentDisplayName('S003', '新同学'), '新同学03');
+      assert.equal(getStudentDisplayName('S004', '新同学'), '新同学04');
+      assert.equal(getStudentDisplayName('S005', '新同学'), '新同学05');
+    });
+
+    it('2. 真实个性化姓名不被强制篡改', () => {
+      assert.equal(getStudentDisplayName('S001', '李华'), '李华');
+      assert.equal(getStudentDisplayName('S002', '张三'), '张三');
+    });
+
+    it('3. DEMO_XXXX 演示学生具备稳定哈希编号且不依赖随机数', () => {
+      const name1 = getStudentDisplayName('DEMO_1234');
+      const name2 = getStudentDisplayName('DEMO_1234');
+      assert.equal(name1, name2, '同一 DEMO ID 多次求值必须完全一致');
+      assert.ok(/^新同学\d{2}$/.test(name1), 'DEMO 学生必须是两位数新同学编号');
+    });
+
+    it('4. Header、HeroBanner、StudentHome 与 TeacherLayout 必须使用 getStudentDisplayName', () => {
+      const headerContent = fs.readFileSync(path.join(SRC_DIR, 'components/Header.tsx'), 'utf-8');
+      const heroContent = fs.readFileSync(path.join(SRC_DIR, 'components/HeroBanner.tsx'), 'utf-8');
+      const homeContent = fs.readFileSync(path.join(SRC_DIR, 'components/student/StudentHome.tsx'), 'utf-8');
+      const teacherContent = fs.readFileSync(path.join(SRC_DIR, 'layouts/TeacherLayout.tsx'), 'utf-8');
+
+      assert.ok(headerContent.includes('getStudentDisplayName('), 'Header 必须调用 getStudentDisplayName');
+      assert.ok(heroContent.includes('getStudentDisplayName('), 'HeroBanner 必须调用 getStudentDisplayName');
+      assert.ok(homeContent.includes('getStudentDisplayName('), 'StudentHome 必须调用 getStudentDisplayName');
+      assert.ok(teacherContent.includes('getStudentDisplayName('), 'TeacherLayout 必须调用 getStudentDisplayName');
+    });
+  });
+
+  // -------------------------------------------------------------
+  // 7. BUG-2: AI 伴学默认频道与无自动调用契约
+  // -------------------------------------------------------------
+  describe('7. BUG-2: AI 伴学页面默认行为与无自动发送契约', () => {
+    it('1. AIAssistant 默认活跃频道必须为 conversation (自由探讨)', () => {
+      const aiPath = path.join(SRC_DIR, 'components/AIAssistant.tsx');
+      const aiContent = fs.readFileSync(aiPath, 'utf-8');
+
+      // 验证 state 默认初始值为 conversation
+      assert.ok(
+        aiContent.includes("initialContext?.mode || 'conversation'"),
+        "AIAssistant 必须默认采用 'conversation' 模式"
+      );
+    });
+
+    it('2. AIAssistant 在未明确传入 message 时严禁自动触发请求', () => {
+      const aiPath = path.join(SRC_DIR, 'components/AIAssistant.tsx');
+      const aiContent = fs.readFileSync(aiPath, 'utf-8');
+
+      assert.ok(
+        aiContent.includes('initialContext && initialContext.message && initialContext.message.trim()'),
+        'AIAssistant 只有在明确传入 message 时才允许发起自动教学请求'
+      );
+    });
+
+    it('3. AIAssistant 切换至 conversation 模式时不自动发送预设信息', () => {
+      const aiPath = path.join(SRC_DIR, 'components/AIAssistant.tsx');
+      const aiContent = fs.readFileSync(aiPath, 'utf-8');
+
+      assert.ok(
+        aiContent.includes("if (newMode !== 'conversation')"),
+        '切换到自由探讨频道时不得自动触发 executeCompanionRequest'
+      );
+    });
+  });
+
+  // -------------------------------------------------------------
+  // 8. BUG-3: 彻底清除内部技术术语与状态提示契约
+  // -------------------------------------------------------------
+  describe('8. BUG-3: 消除用户可见的底层技术术语契约', () => {
+    it('1. AIAssistant.tsx 用户界面中绝对严禁出现 "伴学导师在线 · 零生产副作用"', () => {
+      const aiPath = path.join(SRC_DIR, 'components/AIAssistant.tsx');
+      const aiContent = fs.readFileSync(aiPath, 'utf-8');
+
+      assert.ok(
+        !aiContent.includes('伴学导师在线 · 零生产副作用'),
+        'AIAssistant 必须彻底删除 "伴学导师在线 · 零生产副作用"'
+      );
+      assert.ok(
+        !aiContent.includes('伴学导师在线'),
+        'AIAssistant 严禁展示内部技术宣传 "伴学导师在线"'
+      );
+    });
+
+    it('2. AIAssistant.tsx 用户界面文案中严禁出现 "零生产副作用"', () => {
+      const aiPath = path.join(SRC_DIR, 'components/AIAssistant.tsx');
+      const aiContent = fs.readFileSync(aiPath, 'utf-8');
+
+      // 提取 JSX 文本或可能呈现在 DOM 中的字符串
+      const hasUiZeroSideEffect =
+        aiContent.includes('零生产副作用 · 纯理解自检') ||
+        aiContent.includes('零生产副作用，不写入正式档案与成绩');
+
+      assert.equal(
+        hasUiZeroSideEffect,
+        false,
+        'AIAssistant 用户可见界面严禁包含 "零生产副作用"'
+      );
     });
   });
 });

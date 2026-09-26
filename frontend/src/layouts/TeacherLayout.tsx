@@ -18,6 +18,7 @@ import type {
 } from '../types';
 import { getTeacherOverview, getTeacherKnowledge } from '../api';
 import { getAvatarInitial } from '../utils/avatar';
+import { getStudentDisplayName } from '../utils/student';
 import { TeacherStudentDetailModal } from '../components/teacher/TeacherStudentDetailModal';
 import { TeacherOverviewTab } from '../components/teacher/TeacherOverviewTab';
 import { TeacherKnowledgeTab } from '../components/teacher/TeacherKnowledgeTab';
@@ -135,20 +136,28 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
             </div>
 
             {/* Current Monitored Student Context Pill */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex items-center gap-4 shrink-0">
-              <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden shrink-0 select-none">
-                {getAvatarInitial(currentStudent?.student_name || '新同学')}
-              </div>
-              <div>
-                <div className="text-xs text-slate-300 font-medium">当前下钻学生上下文</div>
-                <div className="text-base font-bold text-white">
-                  {currentStudent?.student_name || '新同学'}
+            {(() => {
+              const studentDisplayName = getStudentDisplayName(
+                currentStudent?.student_id || studentId,
+                currentStudent?.student_name
+              );
+              return (
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex items-center gap-4 shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden shrink-0 select-none">
+                    {getAvatarInitial(studentDisplayName)}
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-300 font-medium">当前下钻学生上下文</div>
+                    <div className="text-base font-bold text-white">
+                      {studentDisplayName}
+                    </div>
+                    <div className="text-xs text-indigo-300 mt-0.5">
+                      {currentStudent?.major || '经济学'} · 正确率: {currentStudent ? `${currentStudent.average_accuracy.toFixed(1)}%` : '--'}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-indigo-300 mt-0.5">
-                  {currentStudent?.major || '经济学'} · 正确率: {currentStudent ? `${currentStudent.average_accuracy.toFixed(1)}%` : '--'}
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         </div>
 

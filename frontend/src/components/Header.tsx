@@ -2,6 +2,7 @@ import React from 'react';
 import { GraduationCap, Sparkles, User, ChevronDown, Plus } from 'lucide-react';
 import type { StudentListItem } from '../types';
 import { RoleSwitcher } from './RoleSwitcher';
+import { getStudentDisplayName } from '../utils/student';
 
 interface HeaderProps {
   students: StudentListItem[];
@@ -60,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 {students.map((stu) => (
                   <option key={stu.student_id} value={stu.student_id}>
-                    {stu.student_name || '新同学'}
+                    {getStudentDisplayName(stu.student_id, stu.student_name)}
                   </option>
                 ))}
               </select>

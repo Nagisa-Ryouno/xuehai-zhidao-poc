@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Users, X } from 'lucide-react';
 import type { TeacherOverviewResponse } from '../../types';
 import { TeacherStudentTable } from './TeacherStudentTable';
+import { getStudentDisplayName } from '../../utils/student';
 
 interface TeacherStudentsTabProps {
   overview: TeacherOverviewResponse | null;
@@ -37,6 +38,7 @@ export const TeacherStudentsTab: React.FC<TeacherStudentsTabProps> = ({
         (s) =>
           s.student_id.toLowerCase().includes(q) ||
           s.student_name.toLowerCase().includes(q) ||
+          getStudentDisplayName(s.student_id, s.student_name).toLowerCase().includes(q) ||
           s.major.toLowerCase().includes(q)
       );
     }

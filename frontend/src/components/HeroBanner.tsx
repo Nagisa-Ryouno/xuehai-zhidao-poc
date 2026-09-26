@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target, Compass, BookOpen } from 'lucide-react';
 import type { StudentBasic } from '../types';
+import { getStudentDisplayName } from '../utils/student';
 
 interface HeroBannerProps {
   student: StudentBasic;
@@ -51,7 +52,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            你好，{student.student_name} <span className="inline-block animate-wave">👋</span>
+            你好，{getStudentDisplayName(student.student_id, student.student_name)} <span className="inline-block animate-wave">👋</span>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">

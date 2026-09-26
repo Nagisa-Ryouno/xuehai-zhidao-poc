@@ -45,7 +45,10 @@ RECOMMENDATION_SYSTEM_PROMPT = """你是一位智能学习资源推荐辅助助�
 """
 
 
-def build_recommendation_prompt(context: RecommendationContext) -> Tuple[str, str]:
+def build_recommendation_prompt(
+    context: RecommendationContext,
+    max_candidates: int = 3,
+) -> Tuple[str, str]:
     """
     根据推荐上下文生成 (system_prompt, user_prompt) 二元组。
     """
@@ -55,6 +58,7 @@ def build_recommendation_prompt(context: RecommendationContext) -> Tuple[str, st
 
     user_payload = {
         "student_focus_point": context.current_focus,
+        "max_recommendations": max_candidates,
         "knowledge_states": [
             {
                 "knowledge_id": k.knowledge_id,
@@ -80,7 +84,7 @@ def build_recommendation_prompt(context: RecommendationContext) -> Tuple[str, st
     user_prompt = (
         "【学生学习状态与候选资源事实（不可信参考数据）】\n"
         f"{json.dumps(user_payload, ensure_ascii=False, indent=2)}\n\n"
-        "请根据上述学生当前学习状态与候选资源，输出推荐候选 JSON。"
+        f"请根据上述学生当前学习状态与候选资源，输出推荐候选 JSON。注意：推荐项数量严格不得超过 {max_candidates} 项（0 <= 数量 <= {max_candidates}）。"
     )
 
     return RECOMMENDATION_SYSTEM_PROMPT, user_prompt

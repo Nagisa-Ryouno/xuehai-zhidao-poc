@@ -367,7 +367,12 @@ async def execute_provider_with_timeout(
     """
     在安全超时保护与异常捕获容器内执行 Provider.generate()
     """
-    timeout_limit = (timeout_ms if timeout_ms is not None else gateway_settings.timeout_ms) / 1000.0
+    if timeout_ms is not None:
+        timeout_limit = timeout_ms / 1000.0
+    elif hasattr(provider, "timeout_seconds") and getattr(provider, "timeout_seconds"):
+        timeout_limit = float(getattr(provider, "timeout_seconds"))
+    else:
+        timeout_limit = gateway_settings.timeout_ms / 1000.0
 
     try:
         return await asyncio.wait_for(

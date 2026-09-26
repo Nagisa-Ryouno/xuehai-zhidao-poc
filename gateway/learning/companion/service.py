@@ -275,10 +275,15 @@ class CompanionService:
                 offline_mode = False
             except ProviderException as exc:
                 logger.warning(
-                    "AI companion provider %s unavailable; using offline fallback (%s)",
+                    "AI companion provider %s unavailable; error: %s",
                     provider.provider_name,
-                    type(exc).__name__,
+                    exc,
                 )
+                if mode == CompanionMode.CONVERSATION:
+                    # 真实 Provider 模式下失败，严禁伪装为确定性 Mock 预设回复，明确告知学生服务暂不可用
+                    answer = f"【AI 伴学服务当前不可用】未能连接至 {provider.provider_name} 大模型服务，请检查网络或稍后重试。"
+                    provider_name = f"{provider.provider_name}_error"
+                    offline_mode = True
 
         # 维护内存会话历史（最多保存 5 轮，即 10 条消息）
         session.messages.append(

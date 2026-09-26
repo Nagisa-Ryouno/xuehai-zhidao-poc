@@ -75,7 +75,7 @@ export const TodayActionCard: React.FC<TodayActionCardProps> = ({
   onRetry,
 }) => {
   // 1. Loading 骨架态：防布局跳动，维持最小高度与结构占位
-  if (loading) {
+  if (loading && !action) {
     return (
       <div
         data-testid="today-action-card"

@@ -71,7 +71,7 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
     });
   }, [items, priorityFilter, selectedKid]);
 
-  if (isLoading) {
+  if (isLoading && (!wrongAnswerData || !wrongAnswerData.wrong_answers)) {
     return (
       <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xs animate-pulse space-y-6">
         <div className="h-8 bg-slate-200 rounded-lg w-1/3" />

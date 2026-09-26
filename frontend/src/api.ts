@@ -124,7 +124,7 @@ export async function checkHealth(): Promise<boolean> {
     const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
     if (!res.ok) return false;
     const data = await res.json();
-    return data.status === 'ok';
+    return data.status === 'ok' || data.status === 'healthy';
   } catch {
     return false;
   }

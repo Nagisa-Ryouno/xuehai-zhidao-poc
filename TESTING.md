@@ -35,6 +35,14 @@
 - **类型检查**：`npm --prefix frontend run typecheck`（`tsc -b` 零报错）
 - **打包构建**：`npm --prefix frontend run build`（Vite 生产打包成功，生成 `dist/`，耗时约 700ms）
 
+### 1.6 最终关键 Bug 自动化验收脚本 (Critical Bugs Verification)
+- **命令**：`python scripts/verify_final_bugs.py`
+- **预期结果**：
+  - `BUG-1`：关闭速览微卡/学习会话模态框后页面滚动位置精确恢复（0px 偏差，杜绝跳顶与 DOM 折叠失真）。
+  - `BUG-2`：Modal / BottomSheet / Drawer 展开时背景滚动物理锁死（`position: fixed`, `overflow: hidden`, wheel / touchmove 阻断穿透）。
+  - `BUG-3`：真实 DeepSeek API 运行时联通，UI 伴学返回真实模型推理分析，严禁将调用失败伪装为预设 Mock。
+  - **验收输出**：`ALL 3 CRITICAL BUGS VERIFIED FIXED SUCCESSFULLY!`
+
 ---
 
 ## 2. 人工验收核验清单 (Manual QA Protocol)

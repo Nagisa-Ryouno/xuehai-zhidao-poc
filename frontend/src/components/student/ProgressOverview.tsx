@@ -53,7 +53,7 @@ export const ProgressOverview: React.FC<ProgressOverviewProps> = ({
     return list;
   }, [progressData, activeTab, searchQuery]);
 
-  if (isLoading) {
+  if (isLoading && (!progressData || !progressData.knowledge_points || progressData.knowledge_points.length === 0)) {
     return (
       <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xs animate-pulse space-y-6">
         <div className="h-8 bg-slate-200 rounded-lg w-1/3" />

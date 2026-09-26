@@ -35,7 +35,7 @@ export interface AskCompanionOptions {
   readonly timeoutMs?: number;
 }
 
-const DEFAULT_TIMEOUT_MS = 5000;
+const DEFAULT_TIMEOUT_MS = 25000;
 
 // 全局默认使用 Backend Secure AI Gateway Provider
 let defaultProvider: AIProvider = new AIGatewayProvider();

@@ -3,6 +3,7 @@ import { X, BookOpen, Layers, AlertTriangle, Flame, RotateCcw } from 'lucide-rea
 import type { TeacherKnowledgeDiagnosisResponse } from '../../types';
 import { getTeacherKnowledgeDiagnosis } from '../../api';
 import { TeacherEmptyState } from './TeacherEmptyState';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 
 interface TeacherKnowledgeDiagnosisDrawerProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const TeacherKnowledgeDiagnosisDrawer: React.FC<TeacherKnowledgeDiagnosis
   onSelectStudentForDetail,
   onEnterStudentView,
 }) => {
+  useBodyScrollLock(isOpen);
   const [data, setData] = useState<TeacherKnowledgeDiagnosisResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

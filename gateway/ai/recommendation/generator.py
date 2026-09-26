@@ -62,7 +62,7 @@ class DeepSeekCandidateGenerator:
         raw_output 可能是 parsed_json 字典，或原始未解析文本字符串（供校验器做语法拦截）。
         """
         # 1. 构建提示词对
-        sys_prompt, usr_prompt = build_recommendation_prompt(context)
+        sys_prompt, usr_prompt = build_recommendation_prompt(context, max_candidates=max_candidates)
 
         # 2. 准备候选池元数据（供离线确定性 Mock 使用，避免文本猜测）
         candidate_pool = [
@@ -90,6 +90,9 @@ class DeepSeekCandidateGenerator:
         provider = self.resolve_provider(provider_override)
         ai_resp = await provider.complete(ai_req)
 
-        # 5. 提取响应载荷
+        # 5. 提取响应载荷，若模型返回项数超出客户端请求限制则安全截断至 max_candidates
         raw_payload = ai_resp.parsed_json if ai_resp.parsed_json is not None else ai_resp.content
+        if isinstance(raw_payload, dict) and isinstance(raw_payload.get("recommendations"), list):
+            if len(raw_payload["recommendations"]) > max_candidates:
+                raw_payload["recommendations"] = raw_payload["recommendations"][:max_candidates]
         return raw_payload, provider.provider_name

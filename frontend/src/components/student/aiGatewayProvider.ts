@@ -24,7 +24,7 @@ export interface AIGatewayProviderOptions {
 }
 
 const DEFAULT_GATEWAY_ENDPOINT = '/api/ai/companion';
-const DEFAULT_GATEWAY_TIMEOUT_MS = 8000;
+const DEFAULT_GATEWAY_TIMEOUT_MS = 25000;
 
 export class AIGatewayProvider implements AIProvider {
   readonly endpoint: string;

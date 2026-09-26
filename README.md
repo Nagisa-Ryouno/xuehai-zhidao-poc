@@ -217,7 +217,7 @@ cd frontend
 # 1. 静态类型检查 (确认 TS 无语法与类型错误)
 npm run typecheck
 
-# 2. 运行全量前端契约测试 (秒级完成，确认 242 项测试全绿)
+# 2. 运行全量前端契约测试 (秒级完成，确认 469 项测试全绿)
 npm test
 
 # 3. 生产打包验证 (确认 Vite 打包成功)
@@ -231,23 +231,19 @@ npm run build
 系统具备极为完善严密的质量守护网络：
 
 ```bash
-# 1. 运行 Sprint 9-E 专用质量门禁 (9 项自动化自检)
-python scripts/sprint9e_quality_gate.py
-# -> [SUCCESS] SPRINT 9-E QUALITY GATE PASSED: 9/09 CHECKS GREEN!
+# 1. 运行端到端产品门禁 (25/25 checks PASS)
+python scripts/sprint10c_final_integration_gate.py
 
 # 2. 运行全局五大核心质量门禁
 python scripts/quality_gate.py
 # -> 5/5 GATES PASSED (100%)
 
-# 3. 运行后端全量测试套件 (558 项测试)
-pytest gateway/tests/ -v   # 415 passed
+# 3. 运行后端全量测试套件 (749 项通过，2 项跳过)
 pytest tests/ -q           # 143 passed
+pytest gateway/tests/ -q   # 606 passed, 2 skipped
 
-# 4. 运行前端全量契约测试套件 (242 项测试)
+# 4. 运行前端全量契约测试套件 (469 项测试，104 Suites)
 npm test --prefix frontend
-
-# 5. 运行 Playwright 真实浏览器端到端 UAT 自动化测试 (6 大用户真实旅程)
-python scripts/uat_sprint9e_browser.py
 ```
 
 ---

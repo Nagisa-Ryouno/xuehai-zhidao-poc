@@ -353,6 +353,8 @@ def create_gateway_app(
             headers={"X-Request-ID": req_id},
         )
 
+    @application.get("/health")
+    @application.get("/api/health")
     @application.get("/api/ai/health")
     def health_check() -> Dict[str, Any]:
         """网关健康检查探针 (静态就绪状态，不发起外部探活网络请求)"""

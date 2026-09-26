@@ -333,13 +333,18 @@ def get_provider(provider_type: Optional[str] = None) -> AIProviderAdapter:
         return MockGatewayProvider()
     elif selected_type in ("deepseek", "deepseek-flash", "deepseek-v4-pro"):
         from gateway.ai.deepseek import DeepSeekProvider
+        api_key = gateway_settings.deepseek_api_key or gateway_settings.api_key
+        # 若显式配置了 deepseek_enabled，或 provider 明确为 deepseek 且具有 API key，则启用
+        is_enabled = gateway_settings.deepseek_enabled or bool(
+            api_key and gateway_settings.provider in ("deepseek", "deepseek-flash", "deepseek-v4-pro")
+        )
         return DeepSeekProvider(
             name="deepseek",
-            api_key=gateway_settings.deepseek_api_key or gateway_settings.api_key,
+            api_key=api_key,
             base_url=gateway_settings.deepseek_base_url or gateway_settings.base_url,
             model=gateway_settings.deepseek_model or gateway_settings.model,
             timeout_seconds=gateway_settings.deepseek_timeout_seconds,
-            enabled=gateway_settings.deepseek_enabled,
+            enabled=is_enabled,
         )
     elif selected_type in ("external", "openai"):
         return ExternalLLMProvider(name=selected_type)

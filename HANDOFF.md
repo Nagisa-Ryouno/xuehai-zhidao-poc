@@ -168,7 +168,7 @@ npm --prefix frontend run dev
 # 1. 运行核心架构与领域测试 (143 项全通)
 pytest tests/ -q
 
-# 2. 运行网关与集成测试套件 (601 passed, 2 skipped)
+# 2. 运行网关与集成测试套件 (606 passed, 2 skipped)
 pytest gateway/tests/ -q
 
 # 3. 运行端到端产品门禁 (25/25 checks PASS)

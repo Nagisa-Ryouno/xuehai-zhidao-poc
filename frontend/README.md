@@ -15,7 +15,7 @@
 - **图表与图谱**：
   - `@xyflow/react` (`^12.11.6`, React Flow 30考点拓扑网络画布)
   - `recharts` (`^3.10.1`, 多维学情能力雷达图)
-- **自动化测试**：Vitest 3.x (`npm test`, 54 Suites / 242 Tests, 执行时间 <1.5s)
+- **自动化测试**：Node Test Runner (`node --test`, `npm test`, 104 Suites / 469 Tests, 执行时间 <2.0s, 100% 通过)
 - **静态代码检查**：Oxlint
 
 ---
@@ -49,19 +49,30 @@ npm run dev
 src/
 ├── components/
 │   ├── student/
-│   │   ├── ResourceHub.tsx           # ⭐ 自适应学习材料中心 (包含自适应推荐材料、4步学习会话看板、成效反馈卡片、为什么推荐气泡)
+│   │   ├── StudentHome.tsx           # ⭐ 学生端主页与核心学习入口 (TodayActionCard, CurrentFocusCard, TasksQuickNav)
+│   │   ├── ResourceHub.tsx           # ⭐ 学习材料中心 (包含自适应推荐材料、4步学习看板、成效反馈、为什么推荐)
 │   │   ├── CurrentFocusCard.tsx      # ⭐ 今日任务核心聚焦卡片 (当前焦点知识点、推进按钮、推荐依据面板)
-│   │   ├── ExampleReaderModal.tsx    # ⭐ 典型例题精读弹窗 (包含生活商业真实情境剖析、向AI提问快捷入口)
-│   │   ├── ResourceCard.tsx          # 学习资源卡片组件 (概念微卡、典型例题、靶向微练)
-│   │   ├── KnowledgeGraphView.tsx    # 知识图谱 Tab 主视图
-│   │   ├── GraphCanvas.tsx           # React Flow 拓扑图谱渲染核心 (支持缩放、连线高亮、掌握度颜色)
+│   │   ├── TodayActionCard.tsx       # 今日首选行动卡片 (Hero CTA)
+│   │   ├── ExampleReaderModal.tsx    # ⭐ 典型例题精读弹窗 (生活商业真实情境剖析、向AI提问快捷入口)
+│   │   ├── ConceptCardModal.tsx      # 概念微卡弹窗 (核心机制、生活直觉、避坑指南)
+│   │   ├── ExternalRedirectModal.tsx # 中国大学 MOOC 外部安全跳转免责弹窗
 │   │   ├── KnowledgePointQuiz.tsx    # 考点微测验交互组件与防连击状态机
-│   │   ├── WrongAnswersView.tsx      # 错题集与靶向巩固练习视图
-│   │   ├── StudentDashboard.tsx      # 学生端学情主看板
-│   │   ├── ProfileView.tsx           # 学情档案与能力雷达图
-│   │   └── BottomNav.tsx             # 移动端触控底部导航栏
+│   │   ├── WrongAnswerReview.tsx     # 错题集与靶向巩固练习视图
+│   │   ├── ResourceCard.tsx          # 学习资源卡片组件 (概念微卡、典型例题、靶向微练)
+│   │   ├── BottomNav.tsx             # 移动端触控底部导航栏
+│   │   └── MobileContainer.tsx       # 移动优先窄屏容器
 │   ├── teacher/
-│   │   └── TeacherDashboard.tsx      # 教师端班级宏观分析、薄弱考点预警与干预建议
+│   │   ├── TeacherOverviewTab.tsx    # 教师端班级宏观总览 (平均掌握度、Top-5 薄弱点、预警统计)
+│   │   ├── TeacherKnowledgeTab.tsx   # 教师端 30 考点全景分析与掌握度分布
+│   │   ├── TeacherStudentsTab.tsx    # 教师端学生花名册与学情画像下钻
+│   │   ├── TeacherKnowledgeDiagnosisDrawer.tsx # 考点错因诊断抽屉
+│   │   ├── TeacherStudentDetailModal.tsx       # 学生全维档案弹窗
+│   │   ├── TeacherActionModal.tsx    # 教学干预建议发起弹窗
+│   │   └── TeacherActionHistory.tsx  # 教师干预历史记录
+│   ├── KnowledgeGraph.tsx            # ⭐ React Flow 30 考点拓扑网络画布主视图
+│   ├── KnowledgeGraphDetailDrawer.tsx# 知识图谱节点详情抽屉
+│   ├── LearningPath.tsx              # 动态自适应学习路径全景视图
+│   ├── LearningProfile.tsx           # 学情档案与能力雷达图
 │   ├── AIAssistant.tsx               # ⭐ AI 伴学对话抽屉、引导式操作 (Guided Actions) 与快速自测 (Quick Check)
 │   ├── Header.tsx                    # 顶部导航栏 (包含学生切换、当前考点快速下拉选择)
 │   └── RoleSwitcher.tsx              # 右下角学生端 / 教师端身份切换浮动胶囊
@@ -112,7 +123,7 @@ src/
 # 1. 静态类型检查 (确认无类型语法报错)
 npm run typecheck
 
-# 2. 运行全量契约测试 (242 项测试必须全部通过)
+# 2. 运行全量契约测试 (469 项测试 / 104 Suites 必须全部通过)
 npm test
 
 # 3. 生产打包验证 (确认 Vite 编译打包零错误)

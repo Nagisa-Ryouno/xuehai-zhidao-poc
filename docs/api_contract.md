@@ -2,6 +2,11 @@
 
 本文档定义学海智导 V2 系统前后端通信的全部数据契约与接口规范。
 
+> [!NOTE] 架构层级与统一网关说明 (Architecture Scope)
+> 本文档定义的是系统核心领域层基础契约（对应 `app/api` 模块）。
+> 在当前生产部署与端到端运行中，系统采用 `gateway/api.py` 统一安全服务网关（端口 **8011**），为前端 Student PWA 与 Teacher Web 提供聚合路由（如 `/api/students/{id}/dashboard`、`/api/learning/today/{id}`、`/api/teacher/overview` 等）。
+> 生产环境接口完整调用清单请以 `gateway/api.py` 及根目录 [HANDOFF.md](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/HANDOFF.md) 为准。
+
 ---
 
 ## 一、通用约定

@@ -1,5 +1,9 @@
 # Sprint 10-C Phase 2 — 学习会话产品化 (Learning Session Productization) 实施方案
 
+> [!NOTE] 历史归档说明 (Historical Archive)
+> 本文档为 Sprint 10-C Phase 2 学习会话产品化实施方案的历史设计文档。
+> 项目当前最新整体交接基线与运行指南请参阅根目录 [HANDOFF.md](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/HANDOFF.md) 与 [README.md](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/README.md)。
+
 > **阶段定位**: 学生端产品化核心推进阶段 (Student Productization)  
 > **核心使命**: 解决学生「我点下去以后，能不能顺畅地完成一次真正的学习？」的核心体验问题，将现有分散的概念微卡、学习资源、微测验、即时判题与学情进展串联为连续、直觉、人本闭环的 5-10 分钟学习会话（Learning Session）。  
 > **硬性红线**: 

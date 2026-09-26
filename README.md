@@ -4,7 +4,7 @@
 > **当前版本**：Sprint 10-D Phase 5.1 最终交接封版 (`Final Handoff Freeze`)<br/>
 > **架构基线**：`FROZEN` (务实分层模块化单体 + 安全网关层，app/、tests/、data/seeds/ 严格 0 diff)<br/>
 > **产品状态**：**功能冻结 (Feature Frozen) + 质量加固 (QA Hardening) + 最终交接 (Handoff Freeze)**<br/>
-> **测试基线**：后端网关 601 测试通过 + 核心领域 143 测试通过；前端 469 自动化测试全通 (100% PASS)<br/>
+> **测试基线**：后端网关 606 测试通过 (2 项跳过) + 核心领域 143 测试通过 = 749 项通过；前端 469 自动化测试全通 (104 Suites, 100% PASS)<br/>
 > **交接指引**：详见 [HANDOFF.md](HANDOFF.md)、[TESTING.md](TESTING.md) 与 [BUG_REPORT_TEMPLATE.md](BUG_REPORT_TEMPLATE.md)
 
 ---
@@ -79,7 +79,7 @@ flowchart TD
 - **统一服务网关**：FastAPI $\ge$ 0.115.0 (`gateway/api.py`，默认端口 **8011**)
 - **核心模块单体**：`app/` (分层模块化架构：Domain / Services / Presentation / Infrastructure，**架构严格冻结**)
 - **数据验证**：Pydantic v2
-- **自动化测试**：pytest $\ge$ 8.0.0 (网关测试 601 项全通，2 项跳过 + 核心领域测试 143 项全通 = **744 项后端测试 100% 通过**)
+- **自动化测试**：pytest $\ge$ 8.0.0 (网关测试 606 项全通，2 项跳过 + 核心领域测试 143 项全通 = **749 项后端测试 100% 通过**)
 - **并发与持久化**：`threading.RLock` 线程安全锁，`os.replace` 原子文件替换写入
 
 ### 前端应用 (Frontend)
@@ -87,7 +87,7 @@ flowchart TD
 - **构建工具**：Vite 8 (`^8.2.2`)
 - **样式方案**：Tailwind CSS v4 (`^4.3.3`) + Lucide React 图标库
 - **图谱与可视化**：`@xyflow/react` (`^12.11.6`, React Flow 拓扑画布) + Recharts (`^3.10.1` 学情雷达图)
-- **自动化契约测试**：Vitest / Node Test Runner，104 Test Suites，**469 项测试 100% 通过**，执行时间 <2.0s
+- **自动化契约测试**：Node Test Runner (`node --test`)，104 Test Suites，**469 项测试 100% 通过**，执行时间 <2.0s
 - **代码规范**：Oxlint 0 errors，严格遵守 React Rules of Hooks
 
 ### 数据分层架构 (Data Architecture)
@@ -168,20 +168,31 @@ npm run dev
 frontend/src/
 ├── components/
 │   ├── student/
-│   │   ├── ResourceHub.tsx            # ⭐ 学习资源中心 (自适应推荐材料、4步学习看板、成效反馈卡片)
+│   │   ├── StudentHome.tsx            # ⭐ 学生端主页与核心学习入口 (TodayActionCard, CurrentFocusCard, TasksQuickNav)
+│   │   ├── ResourceHub.tsx            # ⭐ 学习材料中心 (自适应推荐材料、4步学习看板、成效反馈、为什么推荐)
 │   │   ├── CurrentFocusCard.tsx       # ⭐ 今日任务核心聚焦卡片、下一步行动引导
+│   │   ├── TodayActionCard.tsx        # 今日首选行动卡片 (Hero CTA)
 │   │   ├── ExampleReaderModal.tsx     # ⭐ 典型例题深度剖析弹窗
-│   │   ├── ResourceCard.tsx           # 单项学习资源卡片组件
-│   │   ├── KnowledgeGraphView.tsx     # 30 考点知识图谱视图
-│   │   ├── GraphCanvas.tsx            # React Flow 拓扑图谱渲染核心
+│   │   ├── ConceptCardModal.tsx       # 概念微卡弹窗 (核心机制、生活直觉、避坑指南)
+│   │   ├── ExternalRedirectModal.tsx  # 中国大学 MOOC 外部安全跳转免责弹窗
 │   │   ├── KnowledgePointQuiz.tsx     # 考点微测验交互组件与作答状态机
-│   │   ├── WrongAnswersView.tsx       # 错题集与靶向复习视图
-│   │   ├── StudentDashboard.tsx       # 学生端学情主看板
-│   │   ├── ProfileView.tsx            # 学情档案与能力雷达图
-│   │   └── BottomNav.tsx              # 移动端底部自适应导航栏
+│   │   ├── WrongAnswerReview.tsx      # 错题集与靶向复习视图
+│   │   ├── ResourceCard.tsx           # 单项学习资源卡片组件
+│   │   ├── BottomNav.tsx              # 移动端底部自适应导航栏
+│   │   └── MobileContainer.tsx        # 移动优先窄屏容器
 │   ├── teacher/
-│   │   └── TeacherDashboard.tsx       # 教师端班级宏观分析与风险雷达
-│   ├── AIAssistant.tsx                # ⭐ AI 伴学对话抽屉、引导式操作快捷按钮
+│   │   ├── TeacherOverviewTab.tsx     # 教师端班级宏观总览 (平均掌握度、Top-5 薄弱点、预警统计)
+│   │   ├── TeacherKnowledgeTab.tsx    # 教师端 30 考点全景分析与掌握度分布
+│   │   ├── TeacherStudentsTab.tsx     # 教师端学生花名册与学情画像下钻
+│   │   ├── TeacherKnowledgeDiagnosisDrawer.tsx # 考点错因诊断抽屉
+│   │   ├── TeacherStudentDetailModal.tsx       # 学生全维档案弹窗
+│   │   ├── TeacherActionModal.tsx     # 教学干预建议发起弹窗
+│   │   └── TeacherActionHistory.tsx   # 教师干预历史记录
+│   ├── KnowledgeGraph.tsx             # ⭐ React Flow 30 考点拓扑网络画布主视图
+│   ├── KnowledgeGraphDetailDrawer.tsx # 知识图谱节点详情抽屉
+│   ├── LearningPath.tsx               # 动态自适应学习路径全景视图
+│   ├── LearningProfile.tsx            # 学情档案与能力雷达图
+│   ├── AIAssistant.tsx                # ⭐ AI 伴学对话抽屉、引导式操作快捷按钮与自测
 │   ├── Header.tsx                     # 顶部导航栏、考点快速选择器与学生切换器
 │   └── RoleSwitcher.tsx               # 学生端 / 教师端身份切换浮窗
 ├── layouts/
@@ -286,8 +297,15 @@ git push -u origin feat/ui-enhancement
 
 ## 9. 核心工程与演进文档导航 (Documentation Index)
 
-- **Sprint 封版交付演练指南 (Walkthroughs)**：
-  - [Sprint 9-E: 学习保持度验证与资源策略自适应 Lite](docs/PHASE5_SPRINT9E_WALKTHROUGH.md) ⭐ **【最新】**
+- **项目交接与全量测试总指南 (Core Handoff & Testing Guides)**：
+  - [交接封版说明书 (HANDOFF.md)](HANDOFF.md) ⭐ **【当前交接核心入口】**
+  - [自动化与人工验收测试指南 (TESTING.md)](TESTING.md) ⭐ **【当前全量测试入口】**
+  - [缺陷工单模板 (BUG_REPORT_TEMPLATE.md)](BUG_REPORT_TEMPLATE.md)
+- **历史 Sprint 封版交付演练指南归档 (Historical Walkthroughs)**：
+  - [Sprint 10-C Phase 5: 学生端 UX/UI 可用性打磨](walkthrough.md)
+  - [Sprint 9-G: 今日行动与自适应下一步](docs/PHASE5_SPRINT9G_WALKTHROUGH.md)
+  - [Sprint 9-F: 学习留存检验 Lite](docs/PHASE5_SPRINT9F_WALKTHROUGH.md)
+  - [Sprint 9-E: 学习保持度验证与资源策略自适应 Lite](docs/PHASE5_SPRINT9E_WALKTHROUGH.md)
   - [Sprint 9-D: 学习效果验证与资源自适应反馈](docs/PHASE5_SPRINT9D_WALKTHROUGH.md)
   - [Sprint 9-C: 30 考点资源中心与自适应推荐](docs/PHASE5_SPRINT9C_WALKTHROUGH.md)
   - [Sprint 9-B: 引导式学习动作与快速自测](docs/PHASE5_SPRINT9B_WALKTHROUGH.md)

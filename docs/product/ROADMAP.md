@@ -1,9 +1,10 @@
 # 学海智导 (Xuehai Zhidao) V2 产品演进路线图 (Product Roadmap)
 
-> **版本**：Phase 5 / Sprint 9-E Complete & Phase 6 Initiation  
-> **更新时间**：2026-09-16  
-> **当前基线**：`2a3ece6 feat(learning): add resource strategy adaptation`  
-> **核心导向**：以自适应学习真实闭环为基石，保持后端与算法稳定，支持团队高效协同推进界面 UI/UX 优化。
+> **版本**：Phase 6 Complete / Final Handoff Freeze Baseline
+> **更新时间**：2026-09-26
+> **当前基线**：`handoff-final-2026-09` (`99c68a2`)
+> **产品状态**：**[ACCEPTED / FEATURE FROZEN] (已全部验收 / 功能彻底冻结 / 交付交接)**
+> **核心导向**：以自适应学习真实闭环为基石，保持后端与算法稳定，支持团队高效交接与人工验收。
 
 ---
 
@@ -33,7 +34,17 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ Phase 5 / Sprint 9-E: Resource Strategy Adaptation Lite      [ACCEPTED]     │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ Phase 6: UI/UX Design Polish & Experience Enhancement        [IN PROGRESS]  │
+│ Phase 5 / Sprint 9-F: Retention Check & Spaced Review Lite   [ACCEPTED]     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Phase 5 / Sprint 9-G: Today Action & Next Step Orchestration [ACCEPTED]     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Phase 6 / Sprint 10-A: Curated MOOC & External Redirect      [ACCEPTED]     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Phase 6 / Sprint 10-B: AI Recommendation & DeepSeek Provider [ACCEPTED]     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Phase 6 / Sprint 10-C: Student PWA & Session Productization  [ACCEPTED]     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Phase 6 / Sprint 10-D: Teacher Web 30-KP Loop & Freeze       [ACCEPTED]     │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -95,25 +106,37 @@
 - **成果**：
   - 纯确定性 +2/+1/0/-1 分级微调算法，稳定保序排序；
   - 展示「💡 为什么推荐？」理由气泡、紫色「成效优选 (+2)」徽章与「🔄 这次换一种方式试试」卡片；
-  - 数据不足时优雅自然保序兜底，杜绝数据伪造；
   - 9/9 质量门禁全绿，6/6 真实 Chromium 浏览器端到端 UAT 全数通过。
+
+### Phase 5 / Sprint 9-F & 9-G: Retention Check & Today Action Orchestration 【已验收 / ACCEPTED】
+- **目标**：打通记忆留存间隔复习检查与学生端今日唯一最高优先级行动调度。
+- **成果**：
+  - 交付 `TodayActionResolver` 引擎，基于掌握度与遗忘曲线确定「攻克薄弱/间隔复习/靶向微练」；
+  - 前端上线 `TodayActionCard`，作为学生端首页唯一主 Hero CTA。
 
 ---
 
-## 四、Phase 6 演进目标：UI/UX 视觉与交互体验打磨 (Phase 6 Roadmap)
+## 四、Phase 6 核心里程碑：产品化闭环与最终交接封版 (Phase 6 Milestones)
 
-> **当前阶段**：`IN PROGRESS` (协作开展界面 UI 视觉优化)
+> **当前阶段**：`[ACCEPTED / FEATURE FROZEN]` (功能彻底冻结，通过全量质量门禁与工程审计)
 
-- **核心目标**：
-  在保持现有后端业务逻辑、API 契约与质量门禁 100% 绿灯的前提下，全面升级学生端与教师端的视觉美感、信息层级与操作流畅度。
-- **重点优化模块**：
-  1. **Resource Hub 视觉升级**：重构学习材料卡片层次，提升「💡 为什么推荐？」气泡与徽章的质感，优化 4 步学习看板进度条动效。
-  2. **AI 伴学对话体验优化**：优化抽屉动画、气泡交互，提升 Guided Actions 按钮的触控反馈与微测验选项卡片视觉。
-  3. **今日任务与聚焦卡片 (CurrentFocusCard)**：优化焦点知识点视觉比重与推进动效，提升推荐依据手风琴面板的美观度。
-  4. **知识图谱 (Knowledge Graph)**：优化 React Flow 节点的排版、高亮光效与抽屉弹窗的移动端体验。
-  5. **移动端 375px 窄视口精致适配**：在紧凑视口下打磨字体字阶、行高、边距与触控靶点（$\ge 44\text{px}$）。
-- **质量验收标准**：
-  - `npm run typecheck` 保持 0 错误；
-  - `npm test --prefix frontend` 242 项契约测试 100% PASS；
-  - `npm run build --prefix frontend` 生产构建成功；
-  - 所有现有 `data-testid` 属性完整保留。
+### Phase 6 / Sprint 10-A: 权威精选名校 MOOC 与安全跳转闭环 【已验收 / ACCEPTED】
+- **成果**：
+  - 引入北京大学与武汉大学 12 项真实微课条目，其余 18 项如实由平台原生资源覆盖，杜绝数据伪造；
+  - 交付前端 `ExternalRedirectModal`，严格进行域名白名单、HTTPS 协议与跳转免责校验。
+
+### Phase 6 / Sprint 10-B: AI 个性化推荐与 DeepSeek 官方大模型接入 【已验收 / ACCEPTED】
+- **成果**：
+  - 官方接入 DeepSeek 模型，实现离线启发式安全兜底；
+  - 建立三层推荐校验器，严格保障推荐结果 100% 存在于统一目录，杜绝幻觉链接。
+
+### Phase 6 / Sprint 10-C: 学生端 PWA 离线外壳与学习会话产品化 【已验收 / ACCEPTED】
+- **成果**：
+  - 交付 Web App Manifest 与 Service Worker，`/api/*` 强制 Network-Only 策略防止脏缓存；
+  - 学习会话重塑为 5 步微时序看板（导引 ➔ 概念 ➔ 材料 ➔ 测验 ➔ 结算），提供极致人本体验。
+
+### Phase 6 / Sprint 10-D: 教师端观察与干预中台闭环与封版 【已验收 / ACCEPTED】
+- **成果**：
+  - 交付 Overview / Knowledge / Students 3-Tab 架构，支持 30 考点全景分析与错因诊断抽屉；
+  - 支持学生全维学情画像下钻与 3 类教学干预动作发起（REVIEW_CONCEPT / RETRY_PRACTICE / MARK_FOLLOWED）；
+  - 执行工程质量加固，达成 749 项后端测试全绿、469 项前端测试全绿、25/25 最终门禁全通，完成交接封版。

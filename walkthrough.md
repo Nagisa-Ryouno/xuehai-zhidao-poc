@@ -1,5 +1,9 @@
 # Sprint 10-C Phase 5 — Student UX/UI Usability Polish Walkthrough
 
+> [!NOTE] 历史归档说明 (Historical Archive)
+> 本文档为 Sprint 10-C Phase 5 学生端 UX 打磨阶段的历史实施与验证记录。
+> 项目当前最新整体交接基线与运行指南请参阅根目录 [HANDOFF.md](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/HANDOFF.md) 与 [README.md](file:///c:/Users/XSL/Desktop/国创/xuehai-zhidao-poc/README.md)。
+
 学海智导 (Xuehai Zhidao) — **Sprint 10-C Phase 5: Student UX/UI Usability Audit & Product Polish** 已全面实施并通过所有 12 项 UAT 自动化验收与全量质量门禁。
 
 ---

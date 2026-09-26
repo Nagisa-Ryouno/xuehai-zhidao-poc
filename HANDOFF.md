@@ -12,12 +12,43 @@
 
 ---
 
-## 2. 当前状态 (Current Status)
+## 2. 当前状态与 Git 基线 (Current Status & Git Baseline)
 
+### 2.1 产品生命周期状态
 - **产品生命周期**：**Feature Frozen (功能彻底冻结)**
 - **开发策略**：**No New Feature Development (禁止任何新功能开发)**
 - **最新阶段**：Sprint 10-D (Teacher Action Loop & Product Hardening) 封版
 - **主要工作模式**：QA Hardening、代码可靠性整理、人工验收验证、缺陷记录与修复。
+
+### 2.2 Git 交付事实基线 (Git Delivery Baseline)
+- **交付分支 (Branch)**：`master`（主要交付分支），`main`（完全镜像同步，两者 SHA 严格一致）
+- **交付 Tag**：`handoff-final-2026-09`（指向当前封版 HEAD）
+- **历史 Freeze Tag**：`handoff-freeze-2026-09-r1`, `handoff-freeze-2026-09`, `v0.6.0`
+- **远程仓库 (Remote)**：`origin` -> `https://github.com/Nagisa-Ryouno/xuehai-zhidao-poc.git`
+- **工作区状态**：Clean（0 未跟踪文件，0 未提交修改）
+- **推荐接手拉取命令**：
+  ```bash
+  git clone https://github.com/Nagisa-Ryouno/xuehai-zhidao-poc.git
+  cd xuehai-zhidao-poc
+  git checkout master
+  ```
+
+### 2.3 功能状态与验证分类 (Status & Verification Categories)
+- **已实现且已自动化验证 (Implemented & Automated Verified)**：
+  - 核心领域层：BKT 数学公式、PathState 状态机、Decision Core 决策矩阵、1-hop 局部动态重规划（`tests/`: 143 passed）；
+  - 服务网关层：DeepSeek 伴学、离线启发保底、评测隔离、MOOC 目录与 API、资源中心、成效评估、保持度建议、教师干预（`gateway/tests/`: 606 passed, 2 skipped）；
+  - 前端工程：组件契约、模型转换、防穿透锁、学生端会话、教师端 3-Tab（`frontend test`: 469 passed / 104 suites）；
+  - 质量门禁：`sprint10c_final_integration_gate.py`（25/25 checks PASS）、`quality_gate.py`（5/5 GATES PASSED）；
+  - 静态检查与打包：`npm run typecheck`（0 errors）、`npm run build`（Vite 生产打包成功）。
+- **已实现但待人工体验核验 (Implemented, Pending Manual QA)**：
+  - 学生端 5 步微时序学习会话（真实浏览器点击流畅度、正误反馈人本口吻）；
+  - 移动端 375px 窄视口下的触控靶点、排版折行与防横向溢出；
+  - 模态框打开与关闭时的背景滚动锁体验；
+  - 教师端 30 考点诊断抽屉展开与学生全维档案卡片交互；
+  - 中国大学 MOOC 外部跳转免责弹窗的浏览器点击与标签页呼起。
+- **未验证事项 (Not Verified)**：
+  - 中国大学 MOOC 外部第三方网站的实时 HTTP 连通性（测试处于离线隔离沙箱，不发起对外部外网的真实网络请求）；
+  - 百人以上并发高负载下的服务器承载表现（当前架构定位于单机务实单体原型 POC）。
 
 ---
 
@@ -206,3 +237,35 @@ git diff -- data/
 | 前端提示跨域或 API 连接失败 | 检查后端网关是否在 8011 端口启动 | 确认 `uvicorn` 正在监听 `127.0.0.1:8011` |
 | 模态框打开时背景滚动条消失导致抖动 | `frontend/src/utils/useBodyScrollLock.ts` 滚动条补偿逻辑 | 检查浏览器是否启用了浮动隐藏式滚动条 |
 | AI 伴学返回超时或提示不可用 | 未配置 `DEEPSEEK_API_KEY` 或外部网络连接超时 | 属于设计内的离线安全回退，检查网络或补充 `.env` 配置 |
+
+---
+
+## 9. 当前已知问题与局限 (Known Issues & Limitations)
+
+1. **外部 MOOC 资源连通性依赖第三方网络**：
+   - 12 项精选 MOOC 微课严格指向中国大学 MOOC 官方真实公开课程（PKU-1003090003 与 whu-23003）。自动化测试在离线沙箱中验证了元数据、URL 协议与跳转逻辑，但无法保证第三方 MOOC 平台服务器的 7×24h 绝对实时可用性。若外部平台维护，前端将提示用户通过平台内部原生材料学习。
+2. **轻量离线启发式伴学回答较为简短**：
+   - 在未配置 `DEEPSEEK_API_KEY` 时，伴学系统自动回退至离线关键词与启发式模板引擎。此模式保障学习闭环绝对不阻断，但生成内容的丰富度逊于接入真实 LLM API。
+3. **架构规模边界**：
+   - 本系统为国家级大创项目教育科技原型（POC），底层采用轻量原子文件替换持久化（`data/*.json`, `data/*.jsonl`），适合单机/演示/教学试验场景，不适用于数千并发的高吞吐生产环境。
+
+---
+
+## 10. 接手同学第一步快速指引 (First Step for Next Engineer)
+
+下一位同学接手仓库后的**唯一标准第一步**：
+
+```bash
+# 1. 验证工作区与分支
+git status
+git branch
+
+# 2. 依次运行全量自动化门禁确认当前基线完全绿灯 (约 30 秒)
+pytest tests/ -q && pytest gateway/tests/ -q && python scripts/sprint10c_final_integration_gate.py && npm --prefix frontend test -- --run && npm --prefix frontend run typecheck && npm --prefix frontend run build
+
+# 3. 启动前后端服务并参照 TESTING.md 开始人工体验点测
+# 终端 1 (后端网关):
+python -m uvicorn gateway.api:app --host 127.0.0.1 --port 8011 --reload
+# 终端 2 (前端界面):
+npm --prefix frontend run dev
+```

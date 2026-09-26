@@ -10,6 +10,8 @@ import {
 import { AppContext } from './AppContextObject';
 import type { AppContextValue } from './types';
 
+const DEMO_STUDENT_STORAGE_KEY = 'xuehai_demo_student_id';
+
 export interface AppProviderProps {
   children: ReactNode;
   initialPath?: string;
@@ -19,7 +21,7 @@ export interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({
   children,
   initialPath,
-  initialStudentId = 'S001',
+  initialStudentId,
 }) => {
   const getInitialPath = (): string => {
     if (initialPath) return initialPath;
@@ -29,8 +31,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({
     return '/student/tasks';
   };
 
+  const getInitialStudentId = (): string => {
+    if (initialStudentId) return initialStudentId;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(DEMO_STUDENT_STORAGE_KEY);
+      if (saved) return saved;
+    }
+    return '';
+  };
+
   const [routerState, setRouterState] = useState<RouterState>(() =>
-    createRouterState(getInitialPath(), initialStudentId)
+    createRouterState(getInitialPath(), getInitialStudentId())
   );
 
   // 同步浏览器 URL
@@ -79,6 +90,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({
   }, [syncBrowserUrl]);
 
   const selectStudent = useCallback((newStudentId: string) => {
+    if (typeof window !== 'undefined' && newStudentId) {
+      localStorage.setItem(DEMO_STUDENT_STORAGE_KEY, newStudentId);
+    }
     setRouterState((prev) => selectStudentState(prev, newStudentId));
   }, []);
 

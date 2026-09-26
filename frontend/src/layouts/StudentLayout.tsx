@@ -104,8 +104,15 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [subRoute]);
 
-  // 学习目标设定与新学生模态框状态
-  const [isInitModalOpen, setIsInitModalOpen] = useState<boolean>(false);
+  // 学习目标设定与新学生模态框状态：如果是首次进入的新 Demo 用户，自动展示引导建档弹窗
+  const [isInitModalOpen, setIsInitModalOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const isNew = localStorage.getItem('xuehai_is_new_demo');
+      const dismissed = localStorage.getItem('xuehai_onboarding_dismissed');
+      return isNew === 'true' && dismissed !== 'true';
+    }
+    return false;
+  });
 
   // 3题极速前测与自适应动态航线状态 (Sprint 8-B)
   const [isPretestModalOpen, setIsPretestModalOpen] = useState<boolean>(false);
@@ -328,6 +335,12 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       try {
         const res = await initStudent(data);
         if (res && res.student_id) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('xuehai_demo_student_id', res.student_id);
+            localStorage.setItem('xuehai_onboarding_dismissed', 'true');
+            localStorage.removeItem('xuehai_is_new_demo');
+          }
+          setIsInitModalOpen(false);
           onSelectStudent(res.student_id);
           if (onRefresh) {
             await onRefresh();
@@ -824,9 +837,23 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       {/* 学习目标与新学生初始化模态框 */}
       <StudentInitModal
         isOpen={isInitModalOpen}
-        onClose={() => setIsInitModalOpen(false)}
+        onClose={() => {
+          setIsInitModalOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('xuehai_onboarding_dismissed', 'true');
+            localStorage.removeItem('xuehai_is_new_demo');
+          }
+        }}
         onSubmit={handleInitStudentSubmit}
-        onSelectPresetStudent={onSelectStudent}
+        onSelectPresetStudent={(presetId) => {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('xuehai_demo_student_id', presetId);
+            localStorage.setItem('xuehai_onboarding_dismissed', 'true');
+            localStorage.removeItem('xuehai_is_new_demo');
+          }
+          setIsInitModalOpen(false);
+          onSelectStudent(presetId);
+        }}
       />
 
       {/* 3题极速前测与自适应学情诊断模态框 */}

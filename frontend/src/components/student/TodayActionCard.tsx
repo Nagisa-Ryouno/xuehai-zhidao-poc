@@ -199,7 +199,7 @@ export const TodayActionCard: React.FC<TodayActionCardProps> = ({
               </span>
             )}
 
-            {currentMasteryPercent !== null && currentMasteryPercent !== undefined && (
+            {currentMasteryPercent !== null && currentMasteryPercent !== undefined && currentMasteryPercent > 0 && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-100/80 text-indigo-800 border border-indigo-200/80">
                 当前掌握度 {Math.round(currentMasteryPercent)}%
               </span>

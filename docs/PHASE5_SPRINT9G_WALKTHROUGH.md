@@ -1,6 +1,6 @@
 # Phase 5 / Sprint 9-G — 今日学习行动聚合 Lite 交付总览
 
-> **国家级大学生创新创业训练计划项目 · 学海智导 (Xuehai Zhidao)**  
+> **中国国际大学生创新大赛（2026）参赛项目 · 学海智导 (Xuehai Zhidao)**  
 > **阶段**：Phase 5 — Today's Learning Action Aggregation Lite (今日学习行动聚合 Lite)  
 > **封版日期**：2026-09-19  
 > **Git 推荐提交信息**：`feat(learning): add today's learning action`

@@ -853,6 +853,17 @@ def create_gateway_app(
             logger.error(f"BKT event processor error: {exc}")
             learning_state = None
 
+        if (
+            req.student_id in DEMO_STUDENTS
+            and isinstance(DEMO_STUDENTS[req.student_id], dict)
+            and "overall_profile" in DEMO_STUDENTS[req.student_id]
+        ):
+            dp = DEMO_STUDENTS[req.student_id]["overall_profile"]
+            dp["practice_count"] = dp.get("practice_count", 0) + 1
+            curr_correct = dp.get("_correct_count", 0) + (1 if is_correct else 0)
+            dp["_correct_count"] = curr_correct
+            dp["average_accuracy"] = round((curr_correct / dp["practice_count"]) * 100.0, 1)
+
         return QuizSubmitResponse(
             is_correct=is_correct,
             correct_option=question.answer,
@@ -959,7 +970,7 @@ def create_gateway_app(
                     "knowledge_id": s.knowledge_id,
                     "knowledge_name": s.knowledge_name,
                     "chapter": s.chapter,
-                    "current_accuracy": round(s.mastery * 100, 1),
+                    "current_accuracy": 0.0 if p.get("overall_profile", {}).get("practice_count", 0) == 0 else round(s.mastery * 100, 1),
                     "priority": "高" if s.role == "CURRENT" else "中",
                     "priority_score": round(s.score * 100, 1),
                     "source": "动态自适应推荐",

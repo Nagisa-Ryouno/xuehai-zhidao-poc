@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           <span className="text-slate-500">AI驱动的大学生个性化学习成长助手</span>
         </div>
         <div className="text-slate-400 text-center sm:text-right">
-          国家级大学生创新创业训练计划项目 · 阶段五：前端可视化 Demo
+          中国国际大学生创新大赛（2026）参赛项目 · 学海智导 Demo
         </div>
       </div>
     </footer>

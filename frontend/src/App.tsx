@@ -3,8 +3,10 @@ import { AppProvider } from './context/AppContext';
 import { useApp } from './context/useApp';
 import { StudentLayout } from './layouts/StudentLayout';
 import { TeacherLayout } from './layouts/TeacherLayout';
-import { getStudents, getStudentDashboard, checkHealth, getStudentPathStates } from './api';
+import { getStudents, getStudentDashboard, checkHealth, getStudentPathStates, initStudent } from './api';
 import type { StudentListItem, StudentDashboardResponse, PathState } from './types';
+
+const DEMO_STUDENT_STORAGE_KEY = 'xuehai_demo_student_id';
 
 const AppContent: React.FC = () => {
   const { role, studentId, selectStudent } = useApp();
@@ -36,10 +38,47 @@ const AppContent: React.FC = () => {
       ]);
 
       setIsOnline(online);
-      setStudents(studentsRes.students);
+      let studentList = [...studentsRes.students];
 
-      // 若当前 studentId 未加载，默认使用首个学生或 S001
-      const targetId = studentId || studentsRes.students[0]?.student_id || 'S001';
+      // 读取持久化的 Demo 学生 ID
+      let targetId = studentId;
+      if (!targetId && typeof window !== 'undefined') {
+        targetId = localStorage.getItem(DEMO_STUDENT_STORAGE_KEY) || '';
+      }
+
+      // 如果当前是教师端角色，且 targetId 不是预设学生，优先使用 S001 展现班级宏观数据
+      if (role === 'teacher' && (!targetId || targetId.startsWith('DEMO_'))) {
+        targetId = 'S001';
+      }
+
+      // 学生端首次进入：如果没有任何已保存的学生 ID，创建全新的 Demo 学生
+      if (role === 'student' && !targetId) {
+        try {
+          const initRes = await initStudent({
+            student_name: '新同学',
+            major: '经济学',
+            grade: '大一',
+            learning_goal: '微观经济学基础入门',
+            start_knowledge_id: 'K01',
+          });
+          if (initRes && initRes.student_id) {
+            targetId = initRes.student_id;
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(DEMO_STUDENT_STORAGE_KEY, targetId);
+              localStorage.setItem('xuehai_is_new_demo', 'true');
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to auto-init demo student, falling back to S001:', e);
+          targetId = 'S001';
+        }
+      }
+
+      // 兜底防御
+      if (!targetId) {
+        targetId = studentsRes.students[0]?.student_id || 'S001';
+      }
+
       activeStudentRef.current = targetId;
       selectStudent(targetId);
 
@@ -51,6 +90,28 @@ const AppContent: React.FC = () => {
       // 防御异步竞态：如果当前目标学生已被切换或已有新请求，丢弃过期响应
       if (activeStudentRef.current !== targetId || reqId !== requestIdRef.current) return;
 
+      // 如果当前学生是 Demo 学生且不在 students 列表中，将其动态加入下拉列表中展示
+      if (dashboard?.profile?.student) {
+        const exists = studentList.some((s) => s.student_id === targetId);
+        if (!exists) {
+          studentList = [
+            {
+              student_id: targetId,
+              student_name: dashboard.profile.student.student_name,
+              major: dashboard.profile.student.major,
+              grade: dashboard.profile.student.grade,
+              learning_goal: dashboard.profile.student.learning_goal,
+              average_accuracy: dashboard.profile.overall_profile.average_accuracy || 0,
+              mastery_level: dashboard.profile.overall_profile.mastery_level || '薄弱',
+              activity_level: 'active',
+              completion_level: 'in_progress',
+            },
+            ...studentList,
+          ];
+        }
+      }
+
+      setStudents(studentList);
       setDashboardData(dashboard);
       setPathStates(pathStatesRes.states || {});
     } catch (err: unknown) {
@@ -115,6 +176,9 @@ const AppContent: React.FC = () => {
 
   // 学生切换处理 (具备严格的异步竞态防御与上下文隔离)
   const handleSelectStudent = async (targetStudentId: string) => {
+    if (typeof window !== 'undefined' && targetStudentId) {
+      localStorage.setItem(DEMO_STUDENT_STORAGE_KEY, targetStudentId);
+    }
     if (targetStudentId === studentId && dashboardData) return;
 
     activeStudentRef.current = targetStudentId;

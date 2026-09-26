@@ -87,7 +87,7 @@ class TodayActionResolver:
                 return
         except Exception:
             pass
-        if student_id in ("S001", "S002"):
+        if student_id in ("S001", "S002") or student_id.startswith("DEMO_"):
             return
         raise KeyError(f"Student not found: {student_id}")
 
@@ -235,14 +235,26 @@ class TodayActionResolver:
         continue_kid = in_progress_kid or available_kid
         if continue_kid:
             kname = self._get_knowledge_name(continue_kid)
+            is_new_demo = student_id.startswith("DEMO_")
+            title = f"开始你的第一次学习：{kname}" if is_new_demo else f"继续学习：{kname}"
+            description = (
+                "从微观经济学第一站开始，跟随自适应导学建立你的个人学情档案。"
+                if is_new_demo
+                else "这是你当前学习路径中的下一步内容。"
+            )
+            priority_reason = (
+                "开启微观经济学自适应学习之旅"
+                if is_new_demo
+                else "当前学习路径中的首要未完成任务"
+            )
             return TodayActionResponse(
                 student_id=student_id,
                 action=TodayLearningAction(
                     action_type=TodayActionType.CONTINUE_LEARNING,
-                    title=f"继续学习：{kname}",
-                    description="这是你当前学习路径中的下一步内容。",
+                    title=title,
+                    description=description,
                     cta_label="开始学习",
-                    priority_reason="当前学习路径中的首要未完成任务",
+                    priority_reason=priority_reason,
                     knowledge_id=continue_kid,
                     knowledge_name=kname,
                     suggested_action="REVIEW_CONCEPT",

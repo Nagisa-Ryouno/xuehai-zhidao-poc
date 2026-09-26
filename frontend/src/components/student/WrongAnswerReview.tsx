@@ -130,10 +130,10 @@ export const WrongAnswerReview: React.FC<WrongAnswerReviewProps> = ({
           </div>
           <div className="space-y-1">
             <h3 className="text-lg font-bold text-slate-900">
-              太棒了！目前没有需要复盘的错题
+              还没有错题
             </h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              你的所有练习均已达成正确或尚未产生错题。可前往「今日任务」继续推进学习航线。
+              完成第一次练习后，这里会自动记录需要复习的内容。可前往「今日任务」开启自适应学习。
             </p>
           </div>
         </div>

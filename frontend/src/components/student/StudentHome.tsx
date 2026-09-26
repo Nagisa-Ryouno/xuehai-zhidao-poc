@@ -4,6 +4,7 @@ import { TodayActionCard } from './TodayActionCard';
 import { CurrentFocusCard } from './CurrentFocusCard';
 import { TeacherRecommendationCard } from './TeacherRecommendationCard';
 import { RecentProgressCard } from './RecentProgressCard';
+import { getStudentDisplayName } from '../../utils/student';
 import type {
   StudentBasic,
   TodayLearningAction,
@@ -91,7 +92,7 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
           </span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          {greeting}，{student.student_name} <span className="inline-block animate-wave">👋</span>
+          {greeting}，{getStudentDisplayName(student.student_id, student.student_name)} <span className="inline-block animate-wave">👋</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
           今天也学一点吧

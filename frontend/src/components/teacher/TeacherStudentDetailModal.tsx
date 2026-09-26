@@ -6,6 +6,7 @@ import { TeacherActionModal } from './TeacherActionModal';
 import { TeacherActionHistory } from './TeacherActionHistory';
 import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 import { getAvatarInitial } from '../../utils/avatar';
+import { getStudentDisplayName } from '../../utils/student';
 
 interface TeacherStudentDetailModalProps {
   isOpen: boolean;
@@ -60,9 +61,7 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
 
   // 防御性统一读取（兼容平铺与嵌套模型）
   const rawName = detail?.student_name ?? detail?.summary?.student_name;
-  const isDemoStudent = Boolean(studentId && studentId.startsWith('DEMO_'));
-  const fallbackName = isDemoStudent ? '新同学' : (studentId || '新同学');
-  const studentName = rawName || fallbackName;
+  const studentName = getStudentDisplayName(studentId, rawName);
   const major = detail?.major ?? detail?.summary?.major ?? '经济学';
   const grade = detail?.grade ?? detail?.summary?.grade ?? '大二';
   const learningGoal = detail?.learning_goal ?? detail?.summary?.learning_goal ?? '微观经济学核心概念掌握';

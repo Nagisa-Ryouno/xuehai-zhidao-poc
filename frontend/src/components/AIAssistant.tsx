@@ -115,7 +115,7 @@ const MODE_CONFIGS: Record<
 export const AIAssistant: React.FC<AIAssistantProps> = ({
   currentStudentId,
   studentName,
-  isOnline,
+  isOnline: _isOnline,
   initialContext,
   latestActionResult,
   onNavigateToKnowledge,
@@ -125,10 +125,10 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   onNavigateToWrongAnswers,
 }) => {
   const [activeMode, setActiveMode] = useState<CompanionMode>(
-    initialContext?.mode || 'concept_explain'
+    initialContext?.mode || 'conversation'
   );
   const [activeKnowledgeId, setActiveKnowledgeId] = useState<string | null>(
-    initialContext?.knowledgeId || (initialContext?.mode === 'conversation' ? null : 'K01')
+    initialContext?.knowledgeId || null
   );
   const [activeQuestionId, setActiveQuestionId] = useState<string>(
     initialContext?.questionId || 'Q-K01-01'
@@ -324,7 +324,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setActiveContextMeta(null);
     setQuickCheckAnswers({});
 
-    const initialMode = initialContext?.mode || 'concept_explain';
+    const initialMode = initialContext?.mode || 'conversation';
     const initialKid =
       initialContext?.knowledgeId || (initialMode === 'conversation' ? null : 'K01');
     const initialQid = initialContext?.questionId || 'Q-K01-01';
@@ -333,13 +333,16 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setActiveKnowledgeId(initialKid);
     setActiveQuestionId(initialQid);
 
-    // 自动发起初始教学
-    executeCompanionRequest(
-      initialMode,
-      initialContext?.message,
-      initialKid,
-      initialQid
-    );
+    // 只有在明确传入 message 时才自动发起请求（如从知识点微卡或错题本携带问题跳转）
+    // 直接打开 AI 伴学页面时，默认进入“自由探讨”频道，绝不自动调用 API
+    if (initialContext && initialContext.message && initialContext.message.trim()) {
+      executeCompanionRequest(
+        initialMode,
+        initialContext.message,
+        initialKid,
+        initialQid
+      );
+    }
 
     return () => {
       if (abortControllerRef.current) {
@@ -369,7 +372,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const handleModeChange = (newMode: CompanionMode) => {
     if (newMode === activeMode || isLoading) return;
     setActiveMode(newMode);
-    executeCompanionRequest(newMode);
+    if (newMode !== 'conversation') {
+      executeCompanionRequest(newMode);
+    }
   };
 
   // 手工发送消息
@@ -383,7 +388,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   // 点击确定性引导行动 (Sprint 9-B 核心闭环)
   const handleGuidedActionClick = (action: CompanionSuggestedAction) => {
     const targetKid = action.target_knowledge_id || activeKnowledgeId || undefined;
-    // 异步记录引导行动点击辅助事件 (零生产副作用)
+    // 异步记录引导行动点击辅助事件
     recordLearningEvent({
       student_id: currentStudentId,
       event_type: 'AI_ACTION_CLICK',
@@ -474,7 +479,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       const qcMsg: DisplayMessage = {
         id: `qc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         role: 'assistant',
-        content: `针对「${activeContextMeta?.knowledge_name || activeKnowledgeId || '核心考点'}」，导师为你准备了一道微理解自测题（本测验为纯理解自测，零生产副作用，不写入正式档案与成绩）：`,
+        content: `针对「${activeContextMeta?.knowledge_name || activeKnowledgeId || '核心考点'}」，导师为你准备了一道微理解自测题（本自测仅供随堂自检，不计入正式考核成绩）：`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         mode: 'concept_explain',
         quick_check: qc,
@@ -623,12 +628,6 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             <span>考点微检验</span>
           </button>
 
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
-            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isOnline ? '伴学导师在线' : '离线确定性保障'} · 零生产副作用</span>
-          </div>
-
           {/* 历史对话下拉 (Issue 20) */}
           <div className="relative">
             <button
@@ -733,6 +732,45 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
       {/* 聊天会话消息流 (内部独立滚动，不影响外部窗口) */}
       <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* 空状态导引 (自由探讨默认静默等待提问) */}
+        {messages.length === 0 && !isLoading && (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center max-w-md mx-auto space-y-4 text-slate-500 animate-in fade-in duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-xs">
+              <Bot className="w-7 h-7" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-slate-800 text-sm sm:text-base">
+                {MODE_CONFIGS[activeMode].label}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {activeMode === 'conversation'
+                  ? '欢迎来到自由探讨频道！你可以随时提问微观经济学概念推导、解题思路或现实案例，AI 伴学导师将为你提供苏格拉底式的启发辅导。'
+                  : MODE_CONFIGS[activeMode].description}
+              </p>
+            </div>
+            {activeMode === 'conversation' && (
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                {[
+                  '请解释需求价格弹性与总收益的关系',
+                  '边际报酬递减规律在什么条件下成立？',
+                  '完全竞争与垄断市场的定价机制有何差异？',
+                ].map((sample, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setInputMessage(sample);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-600 text-xs font-medium transition-colors cursor-pointer border border-slate-200/80"
+                  >
+                    {sample}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           const isFactsOpen = showFactsMap[msg.id];
@@ -853,7 +891,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                         <span>考点微理解快速自测</span>
                       </div>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/60">
-                        零生产副作用 · 纯理解自检
+                        随堂理解自测
                       </span>
                     </div>
 

@@ -5,6 +5,7 @@ import { getTeacherKnowledgeDiagnosis } from '../../api';
 import { TeacherEmptyState } from './TeacherEmptyState';
 import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
 import { getAvatarInitial } from '../../utils/avatar';
+import { getStudentDisplayName } from '../../utils/student';
 
 interface TeacherKnowledgeDiagnosisDrawerProps {
   isOpen: boolean;
@@ -268,11 +269,11 @@ export const TeacherKnowledgeDiagnosisDrawer: React.FC<TeacherKnowledgeDiagnosis
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-lg bg-indigo-600/10 text-indigo-700 font-bold flex items-center justify-center shrink-0 overflow-hidden select-none text-xs">
-                              {getAvatarInitial(st.student_name)}
+                              {getAvatarInitial(getStudentDisplayName(st.student_id, st.student_name))}
                             </div>
                             <div>
                               <div className="font-bold text-slate-900 text-xs sm:text-sm">
-                                {st.student_name}
+                                {getStudentDisplayName(st.student_id, st.student_name)}
                               </div>
                               <div className="text-[11px] text-slate-400">
                                 {st.major} · {st.grade}

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { TeacherStudentSummary } from '../../types';
 import { getAvatarInitial } from '../../utils/avatar';
+import { getStudentDisplayName } from '../../utils/student';
 
 interface TeacherStudentTableProps {
   students: TeacherStudentSummary[];
@@ -94,10 +95,10 @@ export const TeacherStudentTable: React.FC<TeacherStudentTableProps> = ({
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-indigo-600/10 text-indigo-700 font-bold flex items-center justify-center shrink-0 overflow-hidden select-none text-xs">
-                        {getAvatarInitial(st.student_name)}
+                        {getAvatarInitial(getStudentDisplayName(st.student_id, st.student_name))}
                       </div>
                       <div>
-                        <div className="font-bold text-slate-900">{st.student_name}</div>
+                        <div className="font-bold text-slate-900">{getStudentDisplayName(st.student_id, st.student_name)}</div>
                         <div className="text-[11px] text-slate-400">
                           {st.major} · {st.grade}
                         </div>

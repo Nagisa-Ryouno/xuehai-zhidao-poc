@@ -40,6 +40,7 @@ import { ProgressOverview } from '../components/student/ProgressOverview';
 import { WrongAnswerReview } from '../components/student/WrongAnswerReview';
 import { ResourceHub } from '../components/student/ResourceHub';
 import { StudentHome } from '../components/student/StudentHome';
+import { getStudentDisplayName } from '../utils/student';
 import { LearningSessionModal, type SessionStep } from '../components/student/LearningSessionModal';
 import { type ConceptCardData } from '../components/student/conceptCardData';
 import {
@@ -615,12 +616,12 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
                   <h2 className="text-xl font-bold text-slate-900">知识图谱全景视图</h2>
                   <p className="text-xs text-slate-500 mt-1">
-                    当前展示 {dashboardData.profile.student.student_name} 的微观经济学认知知识网络。
+                    当前展示 {getStudentDisplayName(studentId, dashboardData.profile.student.student_name)} 的微观经济学认知知识网络。
                   </p>
                 </div>
                 <KnowledgeGraph
                   currentStudentId={studentId}
-                  studentName={dashboardData.profile.student.student_name}
+                  studentName={getStudentDisplayName(studentId, dashboardData.profile.student.student_name)}
                   pathStates={pathStates}
                   activeRoute={dynamicRoute}
                   onStartQuiz={handleStartQuiz}
@@ -740,13 +741,13 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
                   <h2 className="text-xl font-bold text-slate-900">AI 学习伴学助手</h2>
                   <p className="text-xs text-slate-500 mt-1">
-                    实时针对 {dashboardData.profile.student.student_name} 的学情进行苏格拉底式答疑与个性化辅导。
+                    实时针对 {getStudentDisplayName(studentId, dashboardData.profile.student.student_name)} 的学情进行苏格拉底式答疑与个性化辅导。
                   </p>
                 </div>
                 <div ref={assistantRef}>
                   <AIAssistant
                     currentStudentId={studentId}
-                    studentName={dashboardData.profile.student.student_name}
+                    studentName={getStudentDisplayName(studentId, dashboardData.profile.student.student_name)}
                     isOnline={isOnline}
                     learningContext={learningContext}
                     initialContext={activeCompanionContext}

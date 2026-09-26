@@ -126,7 +126,7 @@ export const StudentInitModal: React.FC<StudentInitModalProps> = ({
               onClick={handleQuickS001}
               className="px-3 py-1.5 rounded-lg bg-white border border-indigo-200 text-indigo-700 text-xs font-bold hover:bg-indigo-50 transition-colors shrink-0 shadow-2xs cursor-pointer"
             >
-              载入 S001 (张三)
+              载入 S001 (新同学01)
             </button>
           </div>
 

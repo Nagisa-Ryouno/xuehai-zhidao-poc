@@ -41,7 +41,7 @@
 - **已实现且已自动化验证 (Implemented & Automated Verified)**：
   - 核心领域层：BKT 数学公式、PathState 状态机、Decision Core 决策矩阵、1-hop 局部动态重规划（`tests/`: 143 passed）；
   - 服务网关层：DeepSeek 伴学、离线启发保底、评测隔离、MOOC 目录与 API、资源中心、成效评估、保持度建议、教师干预（`gateway/tests/`: 606 passed, 2 skipped）；
-  - 前端工程：组件契约、模型转换、防穿透锁、学生端会话、教师端 3-Tab（`frontend test`: 469 passed / 104 suites）；
+  - 前端工程：组件契约、模型转换、防穿透锁、学生端会话、教师端 3-Tab（`frontend test`: 483 passed / 110 suites）；
   - 质量门禁：`sprint10c_final_integration_gate.py`（25/25 checks PASS）、`quality_gate.py`（5/5 GATES PASSED）；
   - 静态检查与打包：`npm run typecheck`（0 errors）、`npm run build`（Vite 生产打包成功）。
 - **已实现但待人工体验核验 (Implemented, Pending Manual QA)**：
@@ -273,3 +273,18 @@ python -m uvicorn gateway.api:app --host 127.0.0.1 --port 8011 --reload
 # 终端 2 (前端界面):
 npm --prefix frontend run dev
 ```
+
+---
+
+## 11. UI 产品化与界面一致性规范 (UI Productization Rules)
+
+1. **用户界面不展示内部 AI Provider / AI Service 状态标签**：
+   - 彻底移除“AI分析服务在线”与内部状态框；AI 功能自然融入伴学辅导、智能推荐与错题分析，不设立独立宣示性状态位。
+2. **用户名称只使用 display_name**：
+   - 用户名统一使用简洁自然的展示名（如“新同学”、“张三”），严禁将内部 ID 如 `DEMO_XXXX` 拼接到姓名中，严禁在姓名后拼接“（经济学·正确率xx%）”等身份摘要。
+3. **student_id 与 display_name 彻底分离**：
+   - `student_id` 仅用于底层服务交互、路由匹配与数据持久化，绝不直接作为用户可见名称暴露在 UI 上。
+4. **Avatar 只显示一个稳定首字符**：
+   - 所有用户头像统一使用 `getAvatarInitial(name)` 工具函数提取单字符（如“新同学” $\to$ “新”，“Alice” $\to$ “A”），容器设置 `overflow: hidden` 与固定尺寸，杜绝任何字符溢出。
+5. **“学海智导”品牌标题必须保持单行**：
+   - 品牌标题具备 `whitespace-nowrap flex-shrink-0 select-none` 样式约束，在任何移动端与桌面视口（375x667 至 1440x900）均绝对保持单行呈现，不发生截断或挤压折行。

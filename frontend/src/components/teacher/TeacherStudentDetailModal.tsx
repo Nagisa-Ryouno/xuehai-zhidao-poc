@@ -5,6 +5,7 @@ import { getTeacherStudentDetail } from '../../api';
 import { TeacherActionModal } from './TeacherActionModal';
 import { TeacherActionHistory } from './TeacherActionHistory';
 import { useBodyScrollLock } from '../../utils/useBodyScrollLock';
+import { getAvatarInitial } from '../../utils/avatar';
 
 interface TeacherStudentDetailModalProps {
   isOpen: boolean;
@@ -58,7 +59,10 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
   if (!isOpen || !studentId) return null;
 
   // 防御性统一读取（兼容平铺与嵌套模型）
-  const studentName = detail?.student_name ?? detail?.summary?.student_name ?? studentId;
+  const rawName = detail?.student_name ?? detail?.summary?.student_name;
+  const isDemoStudent = Boolean(studentId && studentId.startsWith('DEMO_'));
+  const fallbackName = isDemoStudent ? '新同学' : (studentId || '新同学');
+  const studentName = rawName || fallbackName;
   const major = detail?.major ?? detail?.summary?.major ?? '经济学';
   const grade = detail?.grade ?? detail?.summary?.grade ?? '大二';
   const learningGoal = detail?.learning_goal ?? detail?.summary?.learning_goal ?? '微观经济学核心概念掌握';
@@ -93,8 +97,8 @@ export const TeacherStudentDetailModal: React.FC<TeacherStudentDetailModalProps>
         {/* Modal Top Header */}
         <div className="p-6 bg-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-mono font-bold text-sm">
-              {studentId}
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base overflow-hidden shrink-0 select-none">
+              {getAvatarInitial(studentName)}
             </div>
             <div>
               <div className="flex items-center gap-2">

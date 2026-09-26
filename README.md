@@ -4,7 +4,7 @@
 > **当前版本**：Sprint 10-D Phase 5.1 最终交接封版 (`Final Handoff Freeze`)<br/>
 > **架构基线**：`FROZEN` (务实分层模块化单体 + 安全网关层，app/、tests/、data/seeds/ 严格 0 diff)<br/>
 > **产品状态**：**功能冻结 (Feature Frozen) + 质量加固 (QA Hardening) + 最终交接 (Handoff Freeze)**<br/>
-> **测试基线**：后端网关 606 测试通过 (2 项跳过) + 核心领域 143 测试通过 = 749 项通过；前端 469 自动化测试全通 (104 Suites, 100% PASS)<br/>
+> **测试基线**：后端网关 606 测试通过 (2 项跳过) + 核心领域 143 测试通过 = 749 项通过；前端 483 自动化测试全通 (110 Suites, 100% PASS)<br/>
 > **交接指引**：详见 [HANDOFF.md](HANDOFF.md)、[TESTING.md](TESTING.md) 与 [BUG_REPORT_TEMPLATE.md](BUG_REPORT_TEMPLATE.md)
 
 ---

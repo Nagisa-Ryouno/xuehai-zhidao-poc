@@ -27,13 +27,13 @@
 
 ### 1.4 前端自动化契约与单元测试 (Frontend Contract Tests)
 - **命令**：`npm --prefix frontend test -- --run`
-- **预期结果**：`ℹ tests 469, ℹ suites 104, ℹ pass 469, ℹ fail 0`
+- **预期结果**：`ℹ tests 483, ℹ suites 110, ℹ pass 483, ℹ fail 0`
 - **执行时间**：`< 2.0s`
-- **覆盖核心**：`useBodyScrollLock` 防穿透与引用计数、Esc/Backdrop 关闭契约、AI 请求防重互斥、学生上下文隔离、资源研读完成状态、错题本、教师端交互。
+- **覆盖核心**：`useBodyScrollLock` 防穿透与引用计数、Esc/Backdrop 关闭契约、AI 请求防重互斥、学生上下文隔离、资源研读完成状态、错题本、教师端交互、产品化 UI 规范。
 
 ### 1.5 前端类型检查与打包构建 (Typecheck & Build)
 - **类型检查**：`npm --prefix frontend run typecheck`（`tsc -b` 零报错）
-- **打包构建**：`npm --prefix frontend run build`（Vite 生产打包成功，生成 `dist/`，耗时约 700ms）
+- **打包构建**：`npm --prefix frontend run build`（Vite 生产打包成功，生成 `dist/`，耗时约 600ms）
 
 ### 1.6 最终关键 Bug 自动化验收脚本 (Critical Bugs Verification)
 - **命令**：`python scripts/verify_final_bugs.py`
@@ -42,6 +42,16 @@
   - `BUG-2`：Modal / BottomSheet / Drawer 展开时背景滚动物理锁死（`position: fixed`, `overflow: hidden`, wheel / touchmove 阻断穿透）。
   - `BUG-3`：真实 DeepSeek API 运行时联通，UI 伴学返回真实模型推理分析，严禁将调用失败伪装为预设 Mock。
   - **验收输出**：`ALL 3 CRITICAL BUGS VERIFIED FIXED SUCCESSFULLY!`
+
+### 1.7 产品化与界面一致性自动化测试 (Productization Cleanup Tests)
+- **测试文件**：`frontend/test/productization_cleanup.test.ts`
+- **预期结果**：14/14 checks PASS
+- **覆盖核心**：
+  - “学海智导”品牌标题单行与防挤压约束；
+  - 彻底移除“AI分析服务在线”与“分析服务离线”；
+  - 彻底移除“AI Learning Pilot”内部标签；
+  - 用户展示名纯净无 DEMO_ 前缀、无（经济学·正确率）后缀；
+  - 头像单字符提取（`getAvatarInitial`）与固定尺寸防溢出。
 
 ---
 

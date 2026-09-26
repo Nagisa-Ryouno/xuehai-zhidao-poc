@@ -17,6 +17,7 @@ import type {
   TeacherKnowledgeResponse,
 } from '../types';
 import { getTeacherOverview, getTeacherKnowledge } from '../api';
+import { getAvatarInitial } from '../utils/avatar';
 import { TeacherStudentDetailModal } from '../components/teacher/TeacherStudentDetailModal';
 import { TeacherOverviewTab } from '../components/teacher/TeacherOverviewTab';
 import { TeacherKnowledgeTab } from '../components/teacher/TeacherKnowledgeTab';
@@ -135,16 +136,16 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
             {/* Current Monitored Student Context Pill */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex items-center gap-4 shrink-0">
-              <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                {studentId}
+              <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden shrink-0 select-none">
+                {getAvatarInitial(currentStudent?.student_name || '新同学')}
               </div>
               <div>
                 <div className="text-xs text-slate-300 font-medium">当前下钻学生上下文</div>
                 <div className="text-base font-bold text-white">
-                  {currentStudent?.student_name || studentId} ({currentStudent?.major || '经济学'})
+                  {currentStudent?.student_name || '新同学'}
                 </div>
                 <div className="text-xs text-indigo-300 mt-0.5">
-                  正确率: {currentStudent ? `${currentStudent.average_accuracy.toFixed(1)}%` : '--'}
+                  {currentStudent?.major || '经济学'} · 正确率: {currentStudent ? `${currentStudent.average_accuracy.toFixed(1)}%` : '--'}
                 </div>
               </div>
             </div>

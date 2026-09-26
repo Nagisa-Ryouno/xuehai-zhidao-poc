@@ -133,7 +133,6 @@ export const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
             <div>
               <span className="text-slate-500 font-medium">目标学生：</span>
               <span className="font-bold text-slate-900 ml-1">{studentName}</span>
-              <span className="font-mono text-slate-500 ml-1 text-[11px]">({studentId})</span>
             </div>
             <div className="text-right">
               <span className="text-slate-500 font-medium">目标考点：</span>
